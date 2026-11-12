@@ -1,0 +1,10 @@
+{
+  "name": "ALKÉ Network",
+  "short_name": "ALKÉ",
+  "description": "Mine. Play. Invite. Grow.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08070D",
+  "theme_color": "#08070D",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
