@@ -1,0 +1,1 @@
+{ "firestore": { "rules": "combined.rules" }, "emulators": { "firestore": { "port": 8181 }, "ui": { "enabled": false } } }

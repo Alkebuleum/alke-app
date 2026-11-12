@@ -1,13 +1,24 @@
-import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { cloneElement, lazy, Suspense, useEffect } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { AuthProvider, useAuth } from "./auth/AuthProvider";
+import { Loading } from "./ui/kit";
+import { normInvite } from "./lib/member";
 
 import Splash from "./screens/Splash";
+
+// First run: real screens.
+const SignUp = lazy(() => import("./pages/onboarding/SignUp"));
+const VerifyEmail = lazy(() => import("./pages/onboarding/VerifyEmail"));
+const ProfileSetup = lazy(() => import("./pages/onboarding/ProfileSetup"));
+const Rules = lazy(() => import("./pages/onboarding/Rules"));
+const FirstSession = lazy(() => import("./pages/onboarding/FirstSession"));
+const AccountProblem = lazy(() => import("./pages/onboarding/AccountProblem"));
+
+// Public explainer screens (from the design).
 const Welcome = lazy(() => import("./screens/Welcome"));
 const HowItWorks = lazy(() => import("./screens/HowItWorks"));
-const SignUp = lazy(() => import("./screens/SignUp"));
-const ProfileSetup = lazy(() => import("./screens/ProfileSetup"));
-const Rules = lazy(() => import("./screens/Rules"));
-const FirstSession = lazy(() => import("./screens/FirstSession"));
+
+// Member screens (from the design; wired to live data next).
 const Home = lazy(() => import("./screens/Home"));
 const MineIdle = lazy(() => import("./screens/MineIdle"));
 const MineActive = lazy(() => import("./screens/MineActive"));
@@ -28,98 +39,169 @@ const Network = lazy(() => import("./screens/Network"));
 const Profile = lazy(() => import("./screens/Profile"));
 const Notifications = lazy(() => import("./screens/Notifications"));
 const Settings = lazy(() => import("./screens/Settings"));
-const StateLoading = lazy(() => import("./screens/StateLoading"));
-const StateEmpty = lazy(() => import("./screens/StateEmpty"));
 const StateVerify = lazy(() => import("./screens/StateVerify"));
-const StateError = lazy(() => import("./screens/StateError"));
 const StateInactive = lazy(() => import("./screens/StateInactive"));
 const HomeLight = lazy(() => import("./screens/HomeLight"));
 const MineActiveLight = lazy(() => import("./screens/MineActiveLight"));
 
-const ONBOARDED = "alke.onboarded.v1";
-const isOnboarded = () => {
-  try {
-    return localStorage.getItem(ONBOARDED) === "1";
-  } catch {
-    return false;
-  }
-};
+/* ── Guards ─────────────────────────────────────────────────────────────── */
 
-/* Splash shows the brand moment, then moves on: members to Home, everyone else to Welcome. */
-function SplashRoute() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const t = setTimeout(() => navigate(isOnboarded() ? "/home" : "/welcome", { replace: true }), 1800);
-    return () => clearTimeout(t);
-  }, [navigate]);
-  return <Splash />;
-}
-
-/* Reaching Home means the first run is done; next launch skips onboarding. */
-function MarkOnboarded({ children }) {
-  useEffect(() => {
-    try {
-      localStorage.setItem(ONBOARDED, "1");
-    } catch {
-      /* private mode: onboarding just shows again */
-    }
-  }, []);
+/** Public screens: a signed-in person goes to where they are in the first run. */
+function Public({ children }) {
+  const { ready, stepPath } = useAuth();
+  if (!ready) return <Loading />;
+  if (stepPath && stepPath !== "/welcome") return <Navigate to={stepPath} replace />;
   return children;
 }
 
+/** One first-run step: shown only when it's the person's current step. */
+function Step({ name, children }) {
+  const { ready, step, stepPath } = useAuth();
+  const holdingFirstSession = name === "firstSession" && sessionStorage.getItem("alke.firstSession") === "1";
+  if (!ready || (step === null && !holdingFirstSession)) return <Loading />;
+  if (step !== name && !holdingFirstSession) return <Navigate to={stepPath} replace />;
+  return children;
+}
+
+function maskEmail(e) {
+  if (!e || !e.includes("@")) return "";
+  const [u, d] = e.split("@");
+  return `${u[0]}•••@${d}`;
+}
+
+function greeting(d = new Date()) {
+  const h = d.getHours();
+  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
+
+/** Member screens: only after the first run is complete. The screen gets the
+    member's details as props (the design screens read them as $.memberName…). */
+function Member({ children }) {
+  const a = useAuth();
+  if (!a.ready || a.step === null) return <Loading />;
+  if (a.step !== "done") return <Navigate to={a.stepPath} replace />;
+  const since = a.member?.createdAt?.toDate?.();
+  return cloneElement(children, {
+    memberName: a.displayName,
+    initials: a.initials,
+    username: a.member?.username || "",
+    greeting: greeting(),
+    memberId: a.nuruId,
+    memberBadge: "Member",
+    memberSince: since ? since.toLocaleDateString(undefined, { month: "short", year: "numeric" }) : "",
+    sessionCount: String(a.member?.sessionCount || 0),
+    streak: "0",
+    lessons: "0",
+    contribution: "0",
+    maskedEmail: maskEmail(a.user?.email),
+    personhood: "Not yet",
+    signOut: a.signOut,
+  });
+}
+
+/** The brand moment, then wherever the person belongs. */
+function SplashRoute() {
+  const navigate = useNavigate();
+  const { ready, stepPath } = useAuth();
+  useEffect(() => {
+    if (!ready || !stepPath) return;
+    const t = setTimeout(() => navigate(stepPath, { replace: true }), 1400);
+    return () => clearTimeout(t);
+  }, [ready, stepPath, navigate]);
+  return <Splash />;
+}
+
+/** alke.network invite links: /join/CODE. */
+function JoinRoute() {
+  const { code } = useParams();
+  rememberInvite(code);
+  return <Navigate to="/" replace />;
+}
+
+function rememberInvite(code) {
+  const c = normInvite(code);
+  if (!c) return;
+  try {
+    sessionStorage.setItem("alke.invite", c);
+  } catch {
+    /* private mode: the code just isn't prefilled */
+  }
+}
+
+/* ── Routes ─────────────────────────────────────────────────────────────── */
+
+const pub = (el) => <Public>{el}</Public>;
+const step = (name, el) => <Step name={name}>{el}</Step>;
+const member = (el) => <Member>{el}</Member>;
+
 const ROUTES = [
   ["/", <SplashRoute />],
-  ["/welcome", <Welcome />],
-  ["/how-it-works", <HowItWorks />],
-  ["/sign-up", <SignUp />],
-  ["/profile-setup", <ProfileSetup />],
-  ["/rules", <Rules />],
-  ["/first-session", <FirstSession />],
-  ["/home", <MarkOnboarded><Home /></MarkOnboarded>],
-  ["/mine", <MineIdle />],
-  ["/mine/session", <MineActive />],
-  ["/mine/allocation", <Rewards />],
-  ["/mine/history", <History />],
-  ["/games", <GamesHub />],
-  ["/games/hex", <HexHub />],
-  ["/games/hex/play", <HexPlay />],
-  ["/games/hex/victory", <HexVictory />],
-  ["/games/hex/defeat", <HexDefeat />],
-  ["/games/hex/leaderboards", <HexLeaderboard />],
-  ["/games/rush", <RushIntro />],
-  ["/games/rush/play", <RushPlay />],
-  ["/games/rush/lost", <RushHazard />],
-  ["/games/rush/banked", <RushBanked />],
-  ["/games/rush/leaderboards", <RushLeaderboard />],
-  ["/network", <Network />],
-  ["/profile", <Profile />],
-  ["/notifications", <Notifications />],
-  ["/settings", <Settings />],
-  ["/verify", <StateVerify />],
-  ["/status/loading", <StateLoading />],
-  ["/status/empty", <StateEmpty />],
-  ["/status/error", <StateError />],
-  ["/status/inactive", <StateInactive />],
-  ["/light/home", <HomeLight />],
-  ["/light/mine/session", <MineActiveLight />],
+  ["/join/:code", <JoinRoute />],
+  ["/welcome", pub(<Welcome />)],
+  ["/how-it-works", pub(<HowItWorks />)],
+  ["/sign-up", pub(<SignUp mode="signup" />)],
+  ["/sign-in", pub(<SignUp mode="signin" />)],
+  ["/verify-email", step("verifyEmail", <VerifyEmail />)],
+  ["/profile-setup", step("profile", <ProfileSetup />)],
+  ["/rules", step("rules", <Rules />)],
+  ["/first-session", step("firstSession", <FirstSession />)],
+  ["/account-problem", step("error", <AccountProblem />)],
+  ["/home", member(<Home />)],
+  ["/mine", member(<MineIdle />)],
+  ["/mine/session", member(<MineActive />)],
+  ["/mine/allocation", member(<Rewards />)],
+  ["/mine/history", member(<History />)],
+  ["/games", member(<GamesHub />)],
+  ["/games/hex", member(<HexHub />)],
+  ["/games/hex/play", member(<HexPlay />)],
+  ["/games/hex/victory", member(<HexVictory />)],
+  ["/games/hex/defeat", member(<HexDefeat />)],
+  ["/games/hex/leaderboards", member(<HexLeaderboard />)],
+  ["/games/rush", member(<RushIntro />)],
+  ["/games/rush/play", member(<RushPlay />)],
+  ["/games/rush/lost", member(<RushHazard />)],
+  ["/games/rush/banked", member(<RushBanked />)],
+  ["/games/rush/leaderboards", member(<RushLeaderboard />)],
+  ["/network", member(<Network />)],
+  ["/profile", member(<Profile />)],
+  ["/notifications", member(<Notifications />)],
+  ["/settings", member(<Settings />)],
+  ["/verify", member(<StateVerify />)],
+  ["/status/inactive", member(<StateInactive />)],
+  ["/light/home", member(<HomeLight />)],
+  ["/light/mine/session", member(<MineActiveLight />)],
 ];
 
-export default function App() {
-  const { pathname } = useLocation();
+function Shell() {
+  const { pathname, search } = useLocation();
   const light = pathname.startsWith("/light/");
+
+  // ?invite=CODE on any link is kept for the profile step.
+  useEffect(() => {
+    const code = new URLSearchParams(search).get("invite");
+    if (code) rememberInvite(code);
+  }, [search]);
+
   return (
     <div className="stage" data-theme={light ? "light" : "dark"}>
       <div className="device">
-        {/* key remounts each screen on navigation, so timers and scroll start fresh */}
         <Suspense fallback={<div className="screen" />}>
-        <Routes>
-          {ROUTES.map(([path, el]) => (
-            <Route key={path} path={path} element={<div className="screen" key={path}>{el}</div>} />
-          ))}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          <Routes>
+            {ROUTES.map(([path, el]) => (
+              <Route key={path} path={path} element={<div className="screen" key={path}>{el}</div>} />
+            ))}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </Suspense>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Shell />
+    </AuthProvider>
   );
 }

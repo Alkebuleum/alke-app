@@ -1,0 +1,61 @@
+    // ── ALKÉ Network app (app.alke.network) ────────────────────────────────
+    // Paste inside `match /databases/{database}/documents { … }` of the LIVE
+    // amid-7592b ruleset (Firebase console → Firestore → Rules), above the
+    // `match /{collection}/{document=**}` fallback. Don't deploy a local file:
+    // the project is shared and a deploy replaces every team's rules.
+    // Uses the existing helpers isAuthed(), verifiedAin() (the `nid` claim set
+    // by nuruAuth) and isVerifiedAs(id), and changed().
+    //
+    // ALSO: add 'alke_members' to the exclusion list of the fallback
+    // `match /{collection}/{document=**} { allow read: if !(collection in [...]) }`
+    // (next to 'nuru_people'). Rules are OR-ed: without that, the fallback makes
+    // every member record publicly readable.
+
+    function alkeUsername(name) {
+      return name is string && name.matches('^[a-z0-9._]{3,20}$');
+    }
+
+    // alke_usernames/{name} → { nuruId, createdAt }: one username per member.
+    match /alke_usernames/{name} {
+      allow read: if isAuthed();
+      allow create: if verifiedAin() != null
+        && alkeUsername(name)
+        && request.resource.data.keys().hasOnly(['nuruId', 'createdAt'])
+        && request.resource.data.nuruId == verifiedAin()
+        && request.resource.data.createdAt == request.time
+        // created in the same batch as the member record that names it
+        && getAfter(/databases/$(database)/documents/alke_members/$(verifiedAin())).data.username == name;
+      allow update, delete: if false;
+    }
+
+    // alke_members/{nuruId}: the member's ALKÉ record.
+    match /alke_members/{nuruId} {
+      allow read: if isVerifiedAs(nuruId);
+
+      allow create: if isVerifiedAs(nuruId)
+        && request.resource.data.keys().hasOnly(['username', 'invitedBy', 'createdAt', 'updatedAt'])
+        && alkeUsername(request.resource.data.username)
+        && getAfter(/databases/$(database)/documents/alke_usernames/$(request.resource.data.username)).data.nuruId == nuruId
+        && (request.resource.data.invitedBy == null
+            || (request.resource.data.invitedBy is string && request.resource.data.invitedBy.size() <= 20))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isVerifiedAs(nuruId)
+        && changed().hasOnly(['rulesVersion', 'rulesAcceptedAt', 'onboardedAt', 'lastSessionAt', 'sessionCount', 'updatedAt'])
+        && request.resource.data.updatedAt == request.time
+        // rules: stamped with the server time
+        && (!changed().hasAny(['rulesVersion', 'rulesAcceptedAt'])
+            || (request.resource.data.rulesAcceptedAt == request.time && request.resource.data.rulesVersion is int))
+        // first run finishes once
+        && (!changed().hasAny(['onboardedAt'])
+            || (resource.data.get('onboardedAt', null) == null && request.resource.data.onboardedAt == request.time))
+        // a session: server time, one at a time, at most one per 24 hours
+        && (!changed().hasAny(['lastSessionAt', 'sessionCount'])
+            || (request.resource.data.lastSessionAt == request.time
+                && request.resource.data.sessionCount == resource.data.get('sessionCount', 0) + 1
+                && (resource.data.get('lastSessionAt', null) == null
+                    || request.time > resource.data.lastSessionAt + duration.value(24, 'h'))));
+
+      allow delete: if false;
+    }

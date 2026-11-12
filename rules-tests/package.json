@@ -1,0 +1,13 @@
+{
+  "name": "alke-rules-tests",
+  "private": true,
+  "type": "module",
+  "description": "Firestore rules tests for the ALKÉ collections, run against Nuru's ruleset in the emulator",
+  "scripts": {
+    "test": "node build-rules.mjs && firebase emulators:exec --only firestore --project demo-alke-rules \"node --test alke.rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0"
+  }
+}
