@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
-import { liveStreak, tintHex } from "../../lib/member";
+import { handleOf, liveStreak, tintHex } from "../../lib/member";
 import { gameStatus } from "../../lib/games";
 import { useMemberData } from "../../lib/useMemberData";
 import { AppBar, AppPage, Avatar, Ico, IconLink, Row, Section, Stat, alke } from "../../ui/shell";
@@ -8,6 +9,14 @@ export default function Profile() {
   const { member, person, displayName, initials } = useAuth();
   const { allocation } = useMemberData({ allocation: true });
   const g = gameStatus();
+  const [handle, setHandle] = useState("");
+  useEffect(() => {
+    let live = true;
+    handleOf(person).then((h) => live && setHandle(h));
+    return () => {
+      live = false;
+    };
+  }, [person]);
   const since = member?.createdAt?.toDate?.();
   const sessions = member?.sessionCount || 0;
   const best = member?.bestStreak || 0;
@@ -35,9 +44,9 @@ export default function Profile() {
         <Avatar size={64} color={tintHex(person?.emojiColor)} initials={initials} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName}</div>
-          <div style={{ fontSize: 14, color: "var(--text-3)" }}>
-            @{member?.username}
-            {since ? ` · since ${since.toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : ""}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontSize: 14, color: "var(--text-3)" }}>
+            {handle ? <span className="ob-pill accent">{handle}</span> : <span className="ob-pill">Member</span>}
+            {since ? <span>since {since.toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span> : null}
           </div>
         </div>
       </section>

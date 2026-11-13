@@ -39,7 +39,7 @@ const SCREENS = {
   signup: () => <SignUp mode="signup" />,
   signin: () => <SignUp mode="signin" />,
   verify: VerifyEmail,
-  profile: ProfileSetup,
+  setup: ProfileSetup,
   rules: Rules,
   first: FirstSession,
   problem: AccountProblem,
@@ -80,7 +80,7 @@ const SCREENS = {
   rushbanked: RushBanked,
   rushlost: RushHazard,
   rushboard: () => (
-    <Leaderboard game="rush" memberId="me" boards={{ rushToday: [{ id: "a", username: "kojo.b", rushBest: 320 }, { id: "me", username: "amara", rushBest: 250 }, { id: "c", username: "esi_m", rushBest: 140 }], rushAll: [], hexToday: [], hexAll: [] }} />
+    <Leaderboard game="rush" memberId="me" demoNames={{ a: "Kojo Boateng", c: "Esi Mensah" }} boards={{ rushToday: [{ id: "a", rushBest: 320 }, { id: "me", rushBest: 250 }, { id: "c", rushBest: 140 }], rushAll: [], hexToday: [], hexAll: [] }} />
   ),
 };
 

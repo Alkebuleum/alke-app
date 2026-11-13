@@ -82,9 +82,9 @@ export function AuthProvider({ children }) {
       ...state,
       step,
       stepPath: step ? STEPS[step] : null,
-      displayName: name || state.member?.username || "Alker",
-      firstName: (name || state.member?.username || "Alker").split(/\s+/)[0],
-      initials: initialsOf(name, state.member?.username),
+      displayName: name || "Alker",
+      firstName: (name || "Alker").split(/\s+/)[0],
+      initials: initialsOf(name, "A"),
       /** Re-checks the account (after verifying an email, or a failed open). */
       refresh: () => openAccount(auth.currentUser),
       signOut: async () => {

@@ -82,7 +82,6 @@ function Member({ children }) {
   return cloneElement(children, {
     memberName: a.displayName,
     initials: a.initials,
-    username: a.member?.username || "",
     greeting: greeting(),
     memberId: a.nuruId,
     memberBadge: "Member",

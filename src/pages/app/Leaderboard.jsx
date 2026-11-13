@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../auth/AuthProvider";
+import { namesOf } from "../../lib/member";
 import { dayKey, gameStatus, personLook } from "../../lib/games";
 import { AppPage, Ico, Row, Section, SubBar, clock, useNow } from "../../ui/shell";
 
@@ -30,8 +32,10 @@ function readHex() {
 
 const MEDAL = ["var(--gold)", "#D4D4D8", "#E0A577"];
 
-export default function Leaderboard({ game = "hex", boards, memberId, username }) {
+export default function Leaderboard({ game = "hex", boards, memberId, demoNames }) {
+  const { displayName } = useAuth();
   const [tab, setTab] = useState("today");
+  const [names, setNames] = useState(demoNames || {});
   useNow(1000);
   const g = gameStatus();
   const isHex = game === "hex";
@@ -42,7 +46,7 @@ export default function Leaderboard({ game = "hex", boards, memberId, username }
   const value = (r) => (isHex ? (tab === "today" ? r.hexDaily : r.hexXp) : tab === "today" ? r.rushBest : r.rushXp);
   const rows = (src || []).map((r) => ({
     id: r.id,
-    name: r.username || "Alker",
+    name: r.id === memberId ? displayName : names[r.id] || "Alker",
     v: value(r),
     meta: isHex && tab === "today" ? mmss(r.hexDailyTime) : "",
     me: r.id === memberId,
@@ -63,12 +67,23 @@ export default function Leaderboard({ game = "hex", boards, memberId, username }
         : 0
       : g.rushXp;
   if (mine > 0 && !rows.some((r) => r.me)) {
-    rows.push({ id: "me", name: username || "You", v: mine, meta: "", me: true });
+    rows.push({ id: "me", name: displayName || "You", v: mine, meta: "", me: true });
     rows.sort((a, b) => b.v - a.v);
   }
   const myIdx = rows.findIndex((r) => r.me);
   const shown = rows.slice(0, 20);
   const meOutside = myIdx >= 20;
+
+  // Names come from the shared Nuru profile (members have no handle).
+  const shownIds = shown.map((r) => r.id).join(",");
+  useEffect(() => {
+    if (demoNames || !shownIds) return;
+    let live = true;
+    namesOf(shownIds.split(",")).then((n) => live && setNames((old) => ({ ...old, ...n })));
+    return () => {
+      live = false;
+    };
+  }, [shownIds, demoNames]);
 
   const chal = rush.day === today && rush.chal ? rush.chal : { best: 0, done: false, block: false };
 

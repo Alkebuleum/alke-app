@@ -1,8 +1,8 @@
 /* ALKÉ member data.
  *
  *   nuru_people/{nuruId}     shared Nuru person: name, emojiColor (avatar tint)
- *   alke_members/{nuruId}    ALKÉ record: username, invitedBy, rules, sessions
- *   alke_usernames/{name}    { nuruId } — one username per member, unique
+ *   alke_members/{nuruId}    ALKÉ record: username (internal key, see memberKey), invitedBy, rules, sessions
+ *   alke_usernames/{key}     { nuruId } — keeps that key unique
  *   alke_members/{id}/sessions/{n}         one record per session (history)
  *   alke_members/{id}/allocation/summary   server-written ALKE totals
  *   alke_members/{id}/entries/{id}         server-written ledger lines
@@ -45,6 +45,36 @@ export async function inviterName(code) {
     return null;
   }
 }
+/** A wallet person's on-chain handle (Nuru's ain_cache), e.g. "kojo.alke";
+    '' for members (no wallet → no handle). */
+export async function handleOf(person) {
+  const ain = person && person.ain;
+  if (!ain) return "";
+  try {
+    const d = (await getDoc(doc(db, "ain_cache", ain))).data() || {};
+    const h = String(d.primaryHandle || (typeof d.ansName === "string" ? d.ansName : "") || "").trim();
+    return h ? (h.includes(".") ? h : `${h}.alke`) : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Display names for Nuru IDs (nuru_people), for lists like leaderboards. */
+export async function namesOf(ids) {
+  const out = {};
+  await Promise.all(
+    [...new Set(ids)].filter(Boolean).slice(0, 40).map(async (id) => {
+      try {
+        const s = await getDoc(doc(db, "nuru_people", id));
+        if (s.exists() && s.data().name) out[id] = s.data().name;
+      } catch {
+        /* unreadable: falls back to "Alker" */
+      }
+    }),
+  );
+  return out;
+}
+
 export const SESSION_MS = 24 * 60 * 60 * 1000;
 /** A session that starts within this long of the previous one keeps the streak. */
 export const STREAK_MS = 48 * 60 * 60 * 1000;
@@ -88,30 +118,38 @@ export async function usernameStatus(name, nuruId) {
   return snap.data().nuruId === nuruId ? "mine" : "taken";
 }
 
-/**
- * Creates the ALKÉ member record and reserves the username in one batch, then
- * saves the display name and avatar colour on the shared Nuru person.
- */
-export async function createMember(nuruId, { username, displayName, tint, invitedBy }) {
-  const u = normUsername(username);
-  if (!USERNAME_RE.test(u)) throw new Error("Use 3 to 20 letters, numbers, dots or underscores.");
-  const status = await usernameStatus(u, nuruId);
-  if (status === "taken") throw new Error("That username is taken. Try another.");
+/* Members sign up without a wallet, so they have no @handle (handles belong
+   to wallet users and are registered on-chain). The record still needs a
+   unique key in the username field (the rules require it), so it's derived
+   from the Nuru ID and never shown. */
+export const memberKey = (nuruId) => {
+  const k = String(nuruId || "").toLowerCase().replace(/[^a-z0-9._]/g, "").slice(0, 20);
+  return k.length >= 3 ? k : `m.${k}`.padEnd(3, "0");
+};
 
+/**
+ * Saves the display name and avatar colour on the shared Nuru person, then
+ * creates the ALKÉ member record (keyed by memberKey) in one batch. The name
+ * goes first: the app moves on as soon as the member record appears.
+ */
+export async function createMember(nuruId, { displayName, tint, invitedBy }) {
+  const name = String(displayName || "").trim().slice(0, 60);
+  if (!name) throw new Error("Enter the name other members will see.");
+  await updateDoc(doc(db, "nuru_people", nuruId), { name, emojiColor: tint, updatedAt: serverTimestamp() });
+
+  const u = memberKey(nuruId);
+  const status = await usernameStatus(u, nuruId);
+  if (status === "taken") throw new Error("Couldn't set up your profile. Contact support.");
+  const inv = normInvite(invitedBy);
   const batch = writeBatch(db);
   if (status !== "mine") batch.set(doc(db, "alke_usernames", u), { nuruId, createdAt: serverTimestamp() });
   batch.set(doc(db, "alke_members", nuruId), {
     username: u,
-    invitedBy: normInvite(invitedBy) || null,
+    invitedBy: inv && inv !== nuruId ? inv : null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   await batch.commit();
-
-  const person = { emojiColor: tint, updatedAt: serverTimestamp() };
-  const name = String(displayName || "").trim().slice(0, 60);
-  if (name) person.name = name;
-  await updateDoc(doc(db, "nuru_people", nuruId), person);
 }
 
 export async function acceptRules(nuruId) {
