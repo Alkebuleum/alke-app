@@ -3,7 +3,6 @@ import { useAuth } from "../../auth/AuthProvider";
 import { inviteLink } from "../../lib/member";
 import { Button } from "../../ui/ob";
 import { AppBar, AppPage, Ico, Row } from "../../ui/shell";
-import { WarmingRules } from "./Warming";
 
 /* Community chat + your invite link. The invite code is your Nuru ID; who
    joined with it is recorded (invitedBy) and counted once the server side
@@ -86,7 +85,11 @@ export default function Network() {
         </div>
       </section>
 
-      <WarmingRules />
+      <ul className="ob-list">
+        <li>
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Mining, warming and converting, step by step" />
+        </li>
+      </ul>
     </AppPage>
   );
 }

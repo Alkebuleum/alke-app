@@ -1,5 +1,5 @@
 import { useMemberData } from "../../lib/useMemberData";
-import { WarmingRules, WarmingSection } from "./Warming";
+import { WarmingSection } from "./Warming";
 import { AppPage, Ico, Row, Section, SubBar, alke } from "../../ui/shell";
 
 /* The member's ALKE allocation. Totals come from the server-written
@@ -62,7 +62,11 @@ export default function Allocation() {
       </Section>
 
       <WarmingSection cold={Number(a.locked) || 0} />
-      <WarmingRules />
+      <ul className="ob-list">
+        <li>
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Mining, warming and converting, step by step" />
+        </li>
+      </ul>
 
       <p className="ob-small center">No listing, release date or price is promised.</p>
     </AppPage>

@@ -21,7 +21,8 @@ import Notifications from "../pages/app/Notifications";
 import Settings from "../pages/app/Settings";
 import Leaderboard from "../pages/app/Leaderboard";
 import Chat from "../pages/app/Chat";
-import { WarmingRules, WarmingSection } from "../pages/app/Warming";
+import { WarmingSection } from "../pages/app/Warming";
+import Redeem from "../pages/app/Redeem";
 import { AppPage, SubBar } from "../ui/shell";
 import HexHub from "../screens/HexHub";
 import HexPlay from "../screens/HexPlay";
@@ -56,7 +57,6 @@ const SCREENS = {
   warming: () => (
     <AppPage tab="mine" bar={<SubBar title="Allocation" back="/mine" />}>
       <WarmingSection cold={120} />
-      <WarmingRules />
     </AppPage>
   ),
   chat: () => {
@@ -72,6 +72,7 @@ const SCREENS = {
     ];
     return <Chat demo={{ ids: { chatId: "x", communityId: "y", name: "Alké Network" }, joined: new URLSearchParams(window.location.search).get("join") !== "1", chat: { name: "Alkers", memberCount: 1284 }, msgs }} />;
   },
+  redeem: Redeem,
   hexhub: HexHub,
   hexplay: HexPlay,
   hexboard: () => <Leaderboard game="hex" boards={{ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }} />,

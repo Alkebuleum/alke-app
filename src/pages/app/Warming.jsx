@@ -1,5 +1,4 @@
 import { CONTRIBUTIONS, warmingToday } from "../../lib/contribution";
-import { I } from "../../ui/ob";
 import { Ico, Row, Section, useNow } from "../../ui/shell";
 
 /* Contributions warm cold ALKE, each kind at its own weight (lib/contribution.js).
@@ -42,27 +41,5 @@ export function WarmingSection({ cold = 0, invites = 0 }) {
             : "You've reached today's maximum from games."}
       </p>
     </Section>
-  );
-}
-
-export function WarmingRules() {
-  return (
-    <details className="ob-disclosure">
-      <summary>
-        How warming works
-        <I.Chevron />
-      </summary>
-      <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 10, fontSize: 14, color: "var(--text-2)", lineHeight: 1.5 }}>
-        <p style={{ margin: 0 }}>Your allocation is cold ALKE. Contributions warm it, and only warmed ALKE converts at listing.</p>
-        <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
-          {CONTRIBUTIONS.map((c) => (
-            <li key={c.id}>
-              <b style={{ color: "var(--text)", fontWeight: 600 }}>{c.label}:</b> {c.rule}.
-            </li>
-          ))}
-        </ul>
-        <p style={{ margin: 0 }}>Invites count most. Unverified invites, practice runs and mining sessions warm nothing.</p>
-      </div>
-    </details>
   );
 }

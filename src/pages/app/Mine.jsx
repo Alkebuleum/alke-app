@@ -91,6 +91,9 @@ export default function Mine() {
         <li>
           <Row to="/mine/history" icon={<Ico.History />} title="History" sub="Every session and how it was counted" />
         </li>
+        <li>
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cold ALKE to your wallet" />
+        </li>
       </ul>
 
       <p className="ob-small center">Sessions record participation. They never create new ALKE.</p>

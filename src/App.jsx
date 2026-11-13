@@ -38,6 +38,7 @@ const Profile = lazy(() => import("./pages/app/Profile"));
 const Notifications = lazy(() => import("./pages/app/Notifications"));
 const Settings = lazy(() => import("./pages/app/Settings"));
 const Chat = lazy(() => import("./pages/app/Chat"));
+const Redeem = lazy(() => import("./pages/app/Redeem"));
 const Verify = lazy(() => import("./pages/app/Verify"));
 const Preview = import.meta.env.DEV ? lazy(() => import("./dev/Preview")) : null;
 
@@ -168,6 +169,7 @@ const ROUTES = [
   ["/games/rush/leaderboards", member(<Boards><Leaderboard game="rush" /></Boards>)],
   ["/network", member(<Network />)],
   ["/chat", member(<Chat />)],
+  ["/how-to-redeem", member(<Redeem />)],
   ["/profile", member(<Profile />)],
   ["/notifications", member(<Notifications />)],
   ["/settings", member(<Settings />)],
