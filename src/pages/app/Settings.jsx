@@ -96,7 +96,7 @@ export default function Settings() {
         </li>
       </ul>
 
-      <p className="ob-small center">ALKÉ Network v0.1 · Alkebuleum Technology LLC</p>
+      <p className="ob-small center">ALKE v0.1 · Alkebuleum Technology LLC</p>
     </AppPage>
   );
 }

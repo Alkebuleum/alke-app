@@ -123,7 +123,7 @@ export default function SignUp({ mode = "signup" }) {
 
       <div className="ob-push" style={{ textAlign: "center" }}>
         <p className="ob-small" style={{ fontSize: 15, color: "var(--text-2)" }}>
-          {signingUp ? "Already a member? " : "New to ALKÉ? "}
+          {signingUp ? "Already a member? " : "New to ALKE? "}
           <Link to={signingUp ? "/sign-in" : "/sign-up"} className="ob-textlink accent" style={{ fontSize: 15, minHeight: 0, display: "inline" }}>
             {signingUp ? "Sign in" : "Create an account"}
           </Link>

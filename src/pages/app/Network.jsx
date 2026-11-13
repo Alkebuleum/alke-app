@@ -27,7 +27,7 @@ export default function Network() {
   const canShare = typeof navigator !== "undefined" && !!navigator.share;
   const share = async () => {
     try {
-      await navigator.share({ title: "Join me on ALKÉ Network", text: "Join the Alké Network community with my invite:", url: link });
+      await navigator.share({ title: "Join me on ALKE", text: "Join me on ALKE with my invite:", url: link });
     } catch {
       /* cancelled */
     }

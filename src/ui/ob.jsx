@@ -130,16 +130,9 @@ export function MarkPaths({ stroke = "#fff", width = 8 }) {
   );
 }
 
-/** The app icon: the ALKÉ mark on a rounded tile. */
+/** The app icon (the gold 3D ALKE hexagon, public/favicon.svg). */
 export function Logo({ size = 40 }) {
-  const m = Math.round(size * 0.5);
-  return (
-    <span className="ob-logo" style={{ width: size, height: size, borderRadius: size * 0.28 }} aria-hidden="true">
-      <svg width={m} height={m * 1.12} viewBox="0 0 100 112">
-        <MarkPaths width={size > 60 ? 7 : 9} />
-      </svg>
-    </span>
-  );
+  return <img src="/favicon.svg" width={size} height={size} alt="" aria-hidden="true" style={{ display: "block", flex: "none", borderRadius: size * 0.22, boxShadow: size > 60 ? "0 18px 40px -18px rgba(94,58,255,.8)" : "none" }} />;
 }
 
 export function Wordmark({ size = 30 }) {
@@ -147,7 +140,7 @@ export function Wordmark({ size = 30 }) {
     <span className="ob-wordmark">
       <Logo size={size} />
       <span>
-        ALKÉ <small>Network</small>
+        ALKE
       </span>
     </span>
   );

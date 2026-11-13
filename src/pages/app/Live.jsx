@@ -110,7 +110,7 @@ export default function Live() {
       <div className="ob-live-join">
         {qr ? <img src={qr} alt={`QR code for ${link}`} width="96" height="96" /> : null}
         <div>
-          <b>Join me on ALKÉ Network</b>
+          <b>Join me on ALKE</b>
           <span className="num">{link.replace("https://", "")}</span>
           <small>Scan to sign up with my invite</small>
         </div>

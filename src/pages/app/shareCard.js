@@ -5,15 +5,6 @@ import { inviteLink } from "../../lib/member";
    and the invite link. Shared through the phone's share sheet when it can
    take files, else downloaded. Real figures only. */
 
-const MARK = [
-  "M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z",
-  "M50 27 L50 85",
-  "M20 45 L32 56 L20 67",
-  "M30 45 L42 56 L30 67",
-  "M80 45 L68 56 L80 67",
-  "M70 45 L58 56 L70 67",
-];
-
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -49,25 +40,22 @@ export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
 
-  // Logo tile + wordmark
-  const tile = ctx.createLinearGradient(80, 80, 200, 200);
-  tile.addColorStop(0, "#8A6CFF");
-  tile.addColorStop(1, "#6243F0");
-  ctx.fillStyle = tile;
-  roundRect(ctx, 80, 80, 120, 120, 32);
-  ctx.fill();
-  ctx.save();
-  ctx.translate(110, 106);
-  ctx.scale(0.6, 0.6);
-  ctx.strokeStyle = "#FFFFFF";
-  ctx.lineWidth = 9;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  MARK.forEach((d) => ctx.stroke(new Path2D(d)));
-  ctx.restore();
+  // App icon + name
+  try {
+    const icon = new Image();
+    icon.src = "/icon-192.png";
+    await icon.decode();
+    ctx.save();
+    roundRect(ctx, 80, 80, 120, 120, 28);
+    ctx.clip();
+    ctx.drawImage(icon, 80, 80, 120, 120);
+    ctx.restore();
+  } catch {
+    /* no icon: the name still shows */
+  }
   ctx.fillStyle = "#FFFFFF";
   ctx.font = font(800, 54);
-  ctx.fillText("ALKÉ Network", 230, 158);
+  ctx.fillText("ALKE", 230, 158);
 
   // Who + streak
   ctx.font = font(600, 46);
@@ -99,7 +87,7 @@ export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
   ctx.fill();
   ctx.fillStyle = "#FFFFFF";
   ctx.font = font(700, 40);
-  ctx.fillText("Join me on ALKÉ Network", 120, 1072);
+  ctx.fillText("Join me on ALKE", 120, 1072);
   ctx.font = font(500, 34);
   ctx.fillStyle = "#B4A2FF";
   ctx.fillText(inviteLink(nuruId).replace("https://", ""), 120, 1124);
@@ -110,10 +98,10 @@ export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
 
   const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
   if (!blob) return;
-  const file = new File([blob], "alke-network.png", { type: "image/png" });
+  const file = new File([blob], "alke.png", { type: "image/png" });
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "ALKÉ Network", text: `Join me on ALKÉ Network: ${inviteLink(nuruId)}` });
+      await navigator.share({ files: [file], title: "ALKE", text: `Join me on ALKE: ${inviteLink(nuruId)}` });
       return;
     }
   } catch {
@@ -121,7 +109,7 @@ export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
   }
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "alke-network.png";
+  a.download = "alke.png";
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }

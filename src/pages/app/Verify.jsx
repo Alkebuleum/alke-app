@@ -36,7 +36,7 @@ export default function Verify() {
           ))}
         </ul>
       </section>
-      <p className="ob-small">Your documents and images never appear in ALKÉ Network or on the blockchain.</p>
+      <p className="ob-small">Your documents and images never appear in ALKE or on the blockchain.</p>
     </Page>
   );
 }
