@@ -1,4 +1,4 @@
-import { CONTRIBUTIONS, warmingToday } from "../../lib/contribution";
+import { CONTRIBUTIONS, pct, warmingToday } from "../../lib/contribution";
 import { Ico, Row, Section, useNow } from "../../ui/shell";
 
 /* Contributions warm cold ALKE, each kind at its own weight (lib/contribution.js).
@@ -11,10 +11,10 @@ const LINKS = { invites: "/network", games: "/games" };
 export function WarmingSection({ cold = 0, invites = 0 }) {
   useNow(30000);
   const w = warmingToday({ invites });
-  const days = w.total > 0 && cold > 0 ? Math.ceil(cold / w.total) : null;
+  const days = w.total > 0 && cold > 0 ? Math.ceil(100 / w.total) : null;
 
   return (
-    <Section title="Contributions" action={<span className="num">Warming {w.total} / day</span>}>
+    <Section title="Contributions" action={<span className="num">Warming {pct(w.total)} a day</span>}>
       <ul className="ob-list">
         {CONTRIBUTIONS.map((c) => {
           const Icon = ICONS[c.id];
@@ -27,7 +27,7 @@ export function WarmingSection({ cold = 0, invites = 0 }) {
                 tone={c.live ? undefined : "plain"}
                 title={c.label}
                 sub={c.rule}
-                end={c.live ? <b className="num">{c.cap ? `${v} / ${c.cap}` : v}</b> : <span className="ob-pill">Soon</span>}
+                end={c.live ? <b className="num">{c.cap ? `${pct(v)} / ${pct(c.cap)}` : pct(v)}</b> : <span className="ob-pill">Soon</span>}
               />
             </li>
           );
@@ -37,7 +37,7 @@ export function WarmingSection({ cold = 0, invites = 0 }) {
         {days
           ? `At today's rate your cold ALKE fully warms in about ${days} days.`
           : w.games.nextAt
-            ? `Earn ${w.games.nextAt - w.games.xp} more game XP today to warm ${w.games.warm ? "another" : "your first"} ALKE.`
+            ? `Earn ${w.games.nextAt - w.games.xp} more game XP today to warm ${w.games.warm ? "another" : "your first"} 0.1%.`
             : "You've reached today's maximum from games."}
       </p>
     </Section>

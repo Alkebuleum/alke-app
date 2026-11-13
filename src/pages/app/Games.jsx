@@ -94,7 +94,7 @@ export default function Games() {
             sub={w.nextAt ? `${w.nextAt - w.xp} XP to the next one today` : "Today's maximum reached"}
             end={
               <b className="num">
-                {w.warm} / {w.cap}
+                {(w.warm * 0.1).toFixed(1)}% / {(w.cap * 0.1).toFixed(1)}%
               </b>
             }
           />
@@ -112,7 +112,7 @@ export default function Games() {
         </ul>
       </Section>
 
-      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to 3 cold ALKE a day.</p>
+      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to 0.3% of your cold ALKE a day.</p>
     </AppPage>
   );
 }

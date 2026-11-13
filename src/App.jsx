@@ -39,6 +39,7 @@ const Notifications = lazy(() => import("./pages/app/Notifications"));
 const Settings = lazy(() => import("./pages/app/Settings"));
 const Chat = lazy(() => import("./pages/app/Chat"));
 const Redeem = lazy(() => import("./pages/app/Redeem"));
+const Live = lazy(() => import("./pages/app/Live"));
 const Verify = lazy(() => import("./pages/app/Verify"));
 const Preview = import.meta.env.DEV ? lazy(() => import("./dev/Preview")) : null;
 
@@ -170,6 +171,7 @@ const ROUTES = [
   ["/network", member(<Network />)],
   ["/chat", member(<Chat />)],
   ["/how-to-redeem", member(<Redeem />)],
+  ["/mine/live", member(<Live />)],
   ["/profile", member(<Profile />)],
   ["/notifications", member(<Notifications />)],
   ["/settings", member(<Settings />)],

@@ -3,7 +3,8 @@ import { useAuth } from "../../auth/AuthProvider";
 import { handleOf, liveStreak, tintHex } from "../../lib/member";
 import { gameStatus } from "../../lib/games";
 import { useMemberData } from "../../lib/useMemberData";
-import { AppBar, AppPage, Avatar, Ico, IconLink, Row, Section, Stat, alke } from "../../ui/shell";
+import { AppBar, AppPage, Avatar, Ico, IconLink, Row, Section, Stat } from "../../ui/shell";
+import { shortC, toC } from "../../lib/genesis";
 
 export default function Profile() {
   const { member, person, displayName, initials } = useAuth();
@@ -71,7 +72,7 @@ export default function Profile() {
       <Section title="Activity">
         <ul className="ob-list">
           <li>
-            <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" end={<span className="num">{alke(allocation?.locked)} ALKE</span>} />
+            <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" end={<span className="num">{shortC(toC(allocation?.locked))} cALKE</span>} />
           </li>
           <li>
             <Row to="/mine/history" icon={<Ico.History />} title="History" end={<span className="num">{sessions} sessions</span>} />

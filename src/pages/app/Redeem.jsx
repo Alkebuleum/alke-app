@@ -1,12 +1,12 @@
-import { CONTRIBUTIONS } from "../../lib/contribution";
+import { CONTRIBUTIONS, pct } from "../../lib/contribution";
+import { C_PER_ALKE, GENESIS_POOL, PHASES, STREAK_BOOSTS, fmtC } from "../../lib/genesis";
 import { AppPage, Ico, Row, SubBar } from "../../ui/shell";
 
-/* How to redeem ALKE: the whole journey in one place — mining cold ALKE,
-   warming it with contributions (and their weights), verification, the
-   conversion to hot ALKE and claiming. Weights come from lib/contribution.js. */
+/* How to redeem ALKE: the whole journey in one place. Figures come from
+   lib/genesis.js (unit, phases, boosts) and lib/contribution.js (warming). */
 
-const EX = { cold: 1000, invites: 2, games: 3 };
-const exRate = EX.invites * 10 + EX.games;
+const EX = { invites: 3, other: 0.6 }; // 3 invites + full games and lessons
+const exRate = EX.invites * 1 + EX.other;
 
 function Step({ n, title, children }) {
   return (
@@ -22,7 +22,7 @@ function Step({ n, title, children }) {
 
 export default function Redeem() {
   return (
-    <AppPage tab="mine" bar={<SubBar title="How to redeem ALKE" back="/mine/allocation" />}>
+    <AppPage tab="mine" bar={<SubBar title="How to redeem ALKE" back="/mine" />}>
       <p className="ob-sub" style={{ margin: "0 4px" }}>
         From your daily session to ALKE in your wallet, in five steps.
       </p>
@@ -30,22 +30,37 @@ export default function Redeem() {
       <ol className="ob-guide">
         <Step n="1" title="Mine cold ALKE">
           <p>
-            Start a session each day. Once a day is verified, you're allocated a share of ALKE's existing community allocation, within the published daily budget. It
-            arrives as <b>cold ALKE</b>: locked, not transferable.
+            Start a session each day. Everyone with a verified session shares that day's pool, up to a per-member maximum. Your share arrives as <b>cALKE</b> (cold
+            ALKE): locked, not transferable.
           </p>
-          <div className="ob-flow" aria-label="Allocation stages">
-            {["Pending", "Verified", "Locked (cold)"].map((s, i) => (
-              <span key={s}>
-                {i ? <Ico.Chevron size={14} /> : null}
-                <b>{s}</b>
-              </span>
+          <div className="ob-formula">1 ALKE = {fmtC(C_PER_ALKE)} cALKE</div>
+          <ul className="ob-list">
+            {PHASES.map((p) => (
+              <li key={p.n}>
+                <div className="ob-row static" style={{ minHeight: 52 }}>
+                  <span className="tx">
+                    <b>
+                      Phase {p.n} · {p.name}
+                    </b>
+                    <span>Until {p.untilMembers.toLocaleString("en-US")} members</span>
+                  </span>
+                  <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 0 }}>
+                    <b className="num">{p.daily.toLocaleString("en-US")} ALKE/day</b>
+                    <span style={{ fontSize: 12 }}>max {fmtC(p.maxPerMember * C_PER_ALKE)} cALKE each</span>
+                  </span>
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
+          <p>
+            Streaks earn a bigger share of the same pool: {STREAK_BOOSTS.slice().reverse().map((b) => `×${b.boost} at ${b.days} days`).join(", ")}. The Genesis Program
+            shares {GENESIS_POOL.toLocaleString("en-US")} ALKE in total.
+          </p>
           <p className="note">Sessions never create new ALKE, and amounts are estimates until verified.</p>
         </Step>
 
         <Step n="2" title="Warm it with contributions">
-          <p>Contributions warm your cold ALKE every day. Each kind has its own weight, and invites count most.</p>
+          <p>Each day, contributions warm a share of your cALKE. Invites count most.</p>
           <ul className="ob-list">
             {CONTRIBUTIONS.map((c) => (
               <li key={c.id}>
@@ -55,16 +70,16 @@ export default function Redeem() {
                     <span>{c.rule}</span>
                   </span>
                   <span className="end">
-                    <b className="num">{c.cap ? `max ${c.cap}` : `${c.per} each`}</b>
+                    <b className="num">{c.cap ? `max ${pct(c.cap)}` : `${pct(c.per)} each`}</b>
                   </span>
                 </div>
               </li>
             ))}
           </ul>
-          <div className="ob-formula">Warmed per day = invites × 10 + lessons + games + discussions</div>
+          <div className="ob-formula">Warmed per day = invites × 1% + lessons + games + discussions</div>
           <p>
-            <b>Example:</b> {EX.cold.toLocaleString()} cold ALKE, {EX.invites} verified invites and a full day of games warms {exRate} a day, so it's fully warm in about{" "}
-            {Math.ceil(EX.cold / exRate)} days.
+            <b>Example:</b> with {EX.invites} verified invites plus full games and lessons, you warm {pct(exRate)} a day and your cALKE is fully warm in about{" "}
+            {Math.ceil(100 / exRate)} days. With no invites, about {Math.ceil(100 / EX.other)} days.
           </p>
           <p className="note">Unverified invites, practice runs and mining sessions warm nothing.</p>
         </Step>
@@ -75,7 +90,7 @@ export default function Redeem() {
 
         <Step n="4" title="Convert to hot ALKE">
           <p>
-            Only <b>warmed</b> ALKE converts to hot ALKE, under the published release policy. Cold ALKE that isn't warmed yet stays cold until it is.
+            Warmed cALKE converts at {fmtC(C_PER_ALKE)} cALKE = 1 ALKE, under the published release policy. Cold cALKE that isn't warmed yet stays cold until it is.
           </p>
           <ul className="ob-list">
             <li>
@@ -92,9 +107,7 @@ export default function Redeem() {
         </Step>
 
         <Step n="5" title="Claim to your wallet">
-          <p>
-            When ALKE becomes claimable, connect a wallet (Nuru or another) and claim it. A wallet is only needed then. Claimed ALKE is yours to hold or move.
-          </p>
+          <p>When ALKE becomes claimable, connect a wallet (Nuru or another) and claim it. A wallet is only needed then.</p>
         </Step>
       </ol>
 

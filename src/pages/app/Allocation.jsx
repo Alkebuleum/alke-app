@@ -1,6 +1,7 @@
 import { useMemberData } from "../../lib/useMemberData";
 import { WarmingSection } from "./Warming";
-import { AppPage, Ico, Row, Section, SubBar, alke } from "../../ui/shell";
+import { AppPage, Ico, Row, Section, SubBar } from "../../ui/shell";
+import { approxAlke, fmtC, shortC, toC } from "../../lib/genesis";
 
 /* The member's ALKE allocation. Totals come from the server-written
    alke_members/{id}/allocation/summary; nothing here is computed on the phone. */
@@ -23,15 +24,16 @@ export default function Allocation() {
     <AppPage tab="mine" bar={<SubBar title="Allocation" back="/mine" />}>
       <section className="ob-hero" aria-label="Locked allocation">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-          <span className="lbl">Locked allocation</span>
+          <span className="lbl">Cold ALKE (locked)</span>
           <span className="ob-pill accent">
             <Ico.Lock size={12} />
             Not transferable
           </span>
         </div>
-        <div className="num" style={{ fontSize: 34, fontWeight: 700, lineHeight: 1 }}>
-          {alke(a.locked)} <span style={{ fontSize: 16, fontWeight: 500, color: "var(--text-2)", letterSpacing: 0 }}>ALKE</span>
+        <div className="num" style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>
+          {fmtC(toC(a.locked))} <span style={{ fontSize: 16, fontWeight: 500, color: "var(--text-2)", letterSpacing: 0 }}>cALKE</span>
         </div>
+        <div className="ob-small" style={{ marginTop: -6 }}>{approxAlke(toC(a.locked))}</div>
         <p className="ob-small" style={{ color: "var(--text-2)" }}>
           {allocation ? "Your share of the existing community allocation, locked until release." : "Appears once your sessions are verified."}
         </p>
@@ -41,7 +43,7 @@ export default function Allocation() {
         <ul className="ob-list">
           {rows.map(([t, d, v, dot]) => (
             <li key={t}>
-              <Row icon={<Dot style={dot} />} tone="plain" title={t} sub={d} end={<b className="num">{alke(v)}</b>} />
+              <Row icon={<Dot style={dot} />} tone="plain" title={t} sub={d} end={<b className="num">{shortC(toC(v))}</b>} />
             </li>
           ))}
         </ul>
@@ -61,7 +63,7 @@ export default function Allocation() {
         </ul>
       </Section>
 
-      <WarmingSection cold={Number(a.locked) || 0} />
+      <WarmingSection cold={toC(a.locked)} />
       <ul className="ob-list">
         <li>
           <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Mining, warming and converting, step by step" />

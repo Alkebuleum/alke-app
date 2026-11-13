@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { SESSION_MS, sessionRemaining } from "../../lib/member";
 import { useMemberData } from "../../lib/useMemberData";
-import { AppPage, Ico, SubBar, alke, hhmm, useNow } from "../../ui/shell";
+import { AppPage, Ico, SubBar, hhmm, useNow } from "../../ui/shell";
+import { fmtC, toC } from "../../lib/genesis";
 
 const TABS = [
   ["all", "All"],
@@ -118,7 +119,7 @@ export default function History() {
                       <span>{i.sub}</span>
                     </span>
                     <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "") + alke(i.amount)}</b> : null}
+                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "") + fmtC(toC(i.amount))}</b> : null}
                       <span className={statusCls}>{statusLabel}</span>
                     </span>
                   </button>

@@ -1,31 +1,38 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
-import { SESSION_MS, STREAK_MS, liveStreak, sessionRemaining, startSession } from "../../lib/member";
-import { useMemberData } from "../../lib/useMemberData";
+import { STREAK_MS, startSession } from "../../lib/member";
+import { approxAlke, fmtC, shortC } from "../../lib/genesis";
 import { Button, Notice } from "../../ui/ob";
-import { AppBar, AppPage, Ico, IconLink, Ring, Row, Stat, alke, clock, hhmm, useNow } from "../../ui/shell";
+import { AppBar, AppPage, Ico, IconLink, Row, Stat, clock, hhmm } from "../../ui/shell";
+import { Burst, Core, Counter, buzz, useMilestones, useMining } from "./mining";
+import { shareCard } from "./shareCard";
 
-/* Community mining: the daily session. Idle → one tap → 24 hours,
-   counted down from the server's start time. */
+/* Community mining: one tap starts a 24-hour session; today's estimated
+   cALKE climbs live while it runs. */
 export default function Mine() {
-  const { nuruId, member } = useAuth();
-  const { allocation } = useMemberData({ allocation: true });
-  const now = useNow(1000);
+  const { nuruId, member, displayName } = useAuth();
+  const m = useMining();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [burst, setBurst] = useState(0);
+  const [toast, setToast] = useState(null);
 
-  const remaining = sessionRemaining(member, now);
-  const running = remaining > 0;
-  const last = member?.lastSessionAt?.toDate?.();
-  const streak = liveStreak(member, now);
-  const keepBy = last ? new Date(last.getTime() + STREAK_MS) : null;
+  const onMilestone = useCallback((v) => {
+    setBurst(Date.now());
+    setToast(`${shortC(v)} cALKE today`);
+    setTimeout(() => setToast(null), 2200);
+    buzz([20, 40, 20]);
+  }, []);
+  useMilestones(m.todayC, onMilestone);
 
   const start = async () => {
-    if (running || busy) return;
+    if (m.running || busy) return;
     setBusy(true);
     setError(null);
     try {
       await startSession(nuruId, member);
+      setBurst(Date.now());
+      buzz(30);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -33,70 +40,119 @@ export default function Mine() {
     }
   };
 
-  const hint = running
-    ? `Started at ${hhmm(last)} · next session opens when this ends`
-    : streak && keepBy
-      ? `Start by ${keepBy.toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" })} to keep your streak`
-      : "One tap starts a 24-hour session";
+  const last = member?.lastSessionAt?.toDate?.();
+  const keepBy = last ? new Date(last.getTime() + STREAK_MS) : null;
 
   return (
     <AppPage
       tab="mine"
       bar={
         <AppBar title="Mine">
+          <IconLink to="/mine/live" label="Stream mode">
+            <Ico.Play size={20} />
+          </IconLink>
           <IconLink to="/mine/history" label="Session history">
             <Ico.History size={22} />
           </IconLink>
         </AppBar>
       }
     >
-      <section aria-label="Session" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "12px 0 4px" }}>
-        <span className={running ? "ob-pill green" : "ob-pill"}>
-          <span className="d" />
-          {running ? "Mining" : "Not mining"}
-        </span>
-        <div role={running ? "timer" : undefined} aria-label={running ? `${clock(remaining)} left` : undefined} style={{ width: "min(220px, 32cqh)", aspectRatio: "1" }}>
-          <Ring size="100%" stroke={4} fraction={running ? remaining / SESSION_MS : 0} active={running}>
-            {running ? (
-              <>
-                <span className="num" style={{ fontSize: 34, fontWeight: 700 }}>
-                  {clock(remaining)}
-                </span>
-                <span style={{ fontSize: 13, color: "var(--text-3)" }}>remaining</span>
-              </>
-            ) : null}
-          </Ring>
+      <section className="ob-mine" aria-label="Mining">
+        <div className="ob-mine-pills">
+          <span className="ob-pill accent">
+            Phase {m.phase.n} · {m.phase.name}
+          </span>
+          {m.boost > 1 ? (
+            <span className="ob-pill gold ob-boost">
+              <Ico.Flame size={12} />×{m.boost.toFixed(2)} streak boost
+            </span>
+          ) : null}
         </div>
-        <p className="ob-small" style={{ textAlign: "center", fontSize: 14 }}>
-          {hint}
-        </p>
-        {!running ? (
-          <Button busy={busy} onClick={start}>
-            Start session
-          </Button>
-        ) : null}
+
+        <div className="ob-mine-core">
+          <Core fraction={m.fraction} running={m.running} onIdleTap={start} />
+          <Burst k={burst} />
+          {toast ? <span className="ob-toast">{toast}</span> : null}
+        </div>
+
+        {m.running ? (
+          <div className="ob-mine-count" role="status" aria-label={`Today's estimate ${fmtC(m.todayC)} cALKE`}>
+            <span className="lbl">
+              <span className="dot" />
+              Mining · today's estimate{m.hasLive ? "" : " (up to)"}
+            </span>
+            <span className="plus">
+              <span>+</span>
+              <Counter value={m.todayC} />
+            </span>
+            <span className="sub">
+              cALKE · {approxAlke(m.todayC)} · {clock(m.remaining)} left
+            </span>
+          </div>
+        ) : (
+          <div className="ob-mine-count">
+            <span className="lbl">Your cold balance</span>
+            <Counter value={m.balanceC} decimals={false} />
+            <span className="sub">
+              cALKE · {approxAlke(m.balanceC)}
+            </span>
+            <Button busy={busy} onClick={start}>
+              Start mining
+            </Button>
+            <span className="ob-small">
+              {m.streak && keepBy ? `Start by ${hhmm(keepBy)} ${keepBy.toLocaleDateString(undefined, { weekday: "short" })} to keep your ${m.streak}-day streak` : "One tap starts a 24-hour session"}
+            </span>
+          </div>
+        )}
         {error ? <Notice kind="error">{error}</Notice> : null}
       </section>
 
+      {m.live ? (
+        <div className="ob-pulse" aria-label="Network">
+          <span>
+            <i className="dot" />
+            <b className="num">{(m.live.miningNow || 0).toLocaleString("en-US")}</b> mining now
+          </span>
+          {m.live.poolToday ? (
+            <span>
+              Pool <b className="num">{Number(m.live.poolToday).toLocaleString("en-US")}</b> ALKE
+            </span>
+          ) : null}
+          {m.live.members ? (
+            <span>
+              <b className="num">{Math.min(100, Math.round((m.live.members / m.phase.untilMembers) * 100))}%</b> to Phase {m.phase.n + 1}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="ob-stats">
-        <Stat label="Streak" icon={<Ico.Flame size={13} />} value={streak} unit={`best ${member?.bestStreak || 0}`} />
-        <Stat to="/mine/history" label="Sessions" value={member?.sessionCount || 0} />
-        <Stat to="/mine/allocation" label="Locked" icon={<Ico.Lock size={13} />} value={alke(allocation?.locked)} unit="ALKE" />
+        <Stat label="Cold" icon={<Ico.Lock size={13} />} value={shortC(m.balanceC)} unit="cALKE" to="/mine/allocation" />
+        <Stat label="Streak" icon={<Ico.Flame size={13} />} value={m.streak} unit={`best ${member?.bestStreak || 0}`} />
+        <Stat label="Sessions" value={member?.sessionCount || 0} to="/mine/history" />
+      </div>
+
+      <div className="ob-stats two">
+        <Button kind="secondary" size="sm" to="/mine/live" style={{ width: "100%" }}>
+          <Ico.Play size={14} />
+          Stream mode
+        </Button>
+        <Button kind="secondary" size="sm" style={{ width: "100%" }} onClick={() => shareCard({ name: displayName, streak: m.streak, balanceC: m.balanceC, todayC: m.todayC, nuruId })}>
+          <Ico.Link size={16} />
+          Share card
+        </Button>
       </div>
 
       <ul className="ob-list">
         <li>
-          <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" sub="Pending, verified and locked ALKE" />
+          <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" sub="Pending, verified and locked" />
         </li>
         <li>
-          <Row to="/mine/history" icon={<Ico.History />} title="History" sub="Every session and how it was counted" />
-        </li>
-        <li>
-          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cold ALKE to your wallet" />
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cALKE to your wallet" />
         </li>
       </ul>
 
-      <p className="ob-small center">Sessions record participation. They never create new ALKE.</p>
+      <p className="ob-small center">Today's figure is an estimate; the amount is set when the day is verified. Sessions never create new ALKE.</p>
     </AppPage>
   );
 }

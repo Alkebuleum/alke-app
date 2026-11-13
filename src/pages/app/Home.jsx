@@ -5,6 +5,7 @@ import { SESSION_MS, liveStreak, sessionRemaining, startSession, tintHex } from 
 import { lastDays, useMemberData } from "../../lib/useMemberData";
 import { gameStatus } from "../../lib/games";
 import { Button, Notice } from "../../ui/ob";
+import { shortC, toC } from "../../lib/genesis";
 import { AppPage, Avatar, Ico, IconLink, Ring, Row, Section, Stat, alke, clock, useNow } from "../../ui/shell";
 
 function greeting(d = new Date()) {
@@ -94,7 +95,7 @@ export default function Home() {
       {error ? <Notice kind="error">{error}</Notice> : null}
 
       <div className="ob-stats">
-        <Stat to="/mine/allocation" label="Locked" icon={<Ico.Lock size={13} />} value={alke(allocation?.locked)} unit="ALKE" />
+        <Stat to="/mine/allocation" label="Cold" icon={<Ico.Lock size={13} />} value={shortC(toC(allocation?.locked))} unit="cALKE" />
         <Stat to="/mine/history" label="Sessions" value={member?.sessionCount || 0} />
         <Stat to="/games" label="Game XP" value={games.total} />
       </div>
@@ -116,7 +117,7 @@ export default function Home() {
             <Row to="/chat" icon={<Ico.Users />} tone="green" title="Alkers chat" sub="Say hi to the community" />
           </li>
           <li>
-            <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Your biggest contribution to warming" />
+            <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Each verified invite warms 1% a day" />
           </li>
         </ul>
       </Section>

@@ -301,6 +301,78 @@
 .ob-bar-track { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .ob-bar-track span { display: block; height: 100%; border-radius: 6px; background: var(--cyan); }
 
+/* ── Mining: the live core, counter and celebrations ──────────────────── */
+.ob-mine { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 4px 0; text-align: center; }
+.ob-mine::before { content: ""; position: absolute; left: -16px; right: -16px; top: -40px; height: 420px; background: radial-gradient(60% 50% at 50% 40%, rgba(110, 72, 255, .28), rgba(110, 72, 255, 0) 70%); pointer-events: none; z-index: 0; }
+.ob-mine > * { position: relative; z-index: 1; }
+.ob-mine-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ob-boost { box-shadow: 0 0 0 1px rgba(245, 196, 81, .35), 0 0 14px rgba(245, 196, 81, .35); animation: obBoost 2.4s ease-in-out infinite; }
+@keyframes obBoost { 50% { box-shadow: 0 0 0 1px rgba(245, 196, 81, .55), 0 0 22px rgba(245, 196, 81, .55); } }
+.ob-mine-core, .ob-live-core { position: relative; display: flex; justify-content: center; }
+
+.ob-core { position: relative; aspect-ratio: 1; border: 0; padding: 0; background: transparent; border-radius: 50%; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.ob-core .ring { position: relative; z-index: 1; display: block; width: 100%; height: 100%; overflow: visible; }
+.ob-core .halo { position: absolute; inset: 6%; border-radius: 50%; background: radial-gradient(circle, rgba(124, 92, 255, .55) 0%, rgba(94, 58, 255, .12) 45%, rgba(94, 58, 255, 0) 70%); filter: blur(6px); opacity: .5; }
+.ob-core.on .halo { opacity: 1; animation: obHalo 3.2s ease-in-out infinite; }
+.ob-core .dots { transform-origin: 50px 50px; }
+.ob-core.on .dots { animation: obSpin 40s linear infinite; }
+.ob-core.on .mark { animation: obPulseMark 2.4s ease-in-out infinite; }
+.ob-core:active .ring { transform: scale(.97); transition: transform .08s ease; }
+@keyframes obHalo { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.06); } }
+@keyframes obPulseMark { 50% { opacity: .75; } }
+.ob-core .spark { position: absolute; z-index: 2; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 12px 4px rgba(180, 162, 255, .9); pointer-events: none; animation: obSpark .7s ease-out forwards; }
+@keyframes obSpark { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.6) translateY(-24px); opacity: 0; } }
+.ob-core .combo { position: absolute; z-index: 3; top: 6%; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 999px; background: rgba(0, 0, 0, .55); color: #FFFFFF; font-size: 13px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; pointer-events: none; animation: obCombo .35s ease-out; }
+@keyframes obCombo { from { transform: translate(-50%, 6px) scale(.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+
+.ob-burst { position: absolute; left: 50%; top: 50%; z-index: 3; width: 0; height: 0; pointer-events: none; }
+.ob-burst i { position: absolute; width: 14px; height: 16px; margin: -8px 0 0 -7px; background: linear-gradient(160deg, #FFF3D1, #F5C451); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); animation: obBurst 1.1s cubic-bezier(.15, .7, .3, 1) forwards; }
+.ob-burst i:nth-child(3n) { background: linear-gradient(160deg, #FFFFFF, #B4A2FF); }
+@keyframes obBurst { from { transform: rotate(var(--a)) translateY(0) scale(var(--s)); opacity: 1; } to { transform: rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(calc(var(--s) * .4)); opacity: 0; } }
+.ob-toast { position: absolute; z-index: 4; bottom: 4%; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: #F5C451; color: #1A1205; font-size: 14px; font-weight: 800; white-space: nowrap; box-shadow: 0 8px 24px -8px rgba(245, 196, 81, .7); animation: obToast 2.2s ease forwards; }
+@keyframes obToast { 0% { transform: translate(-50%, 10px) scale(.8); opacity: 0; } 12% { transform: translate(-50%, 0) scale(1.06); opacity: 1; } 20% { transform: translate(-50%, 0) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
+
+.ob-counter { font-weight: 800; letter-spacing: -.03em; line-height: 1; color: var(--text); }
+.ob-counter small { font-size: .45em; font-weight: 700; color: var(--text-3); letter-spacing: 0; margin-left: 1px; }
+.ob-mine-count { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+.ob-mine-count .lbl { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+.ob-mine-count .lbl .dot, .ob-pulse .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: obBlink 1.6s ease-in-out infinite; }
+@keyframes obBlink { 50% { opacity: .35; } }
+.ob-mine-count .plus { display: inline-flex; align-items: baseline; gap: 2px; color: var(--success); }
+.ob-mine-count .plus > span:first-child { font-size: 30px; font-weight: 800; }
+.ob-mine-count .plus .ob-counter { color: var(--text); text-shadow: 0 0 24px rgba(124, 92, 255, .45); }
+.ob-mine-count .sub { font-size: 13px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.ob-mine-count .ob-btn { margin-top: 6px; }
+
+.ob-pulse { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); font-size: 13px; color: var(--text-2); }
+.ob-pulse span { display: inline-flex; align-items: center; gap: 6px; }
+.ob-pulse b { color: var(--text); }
+
+/* Stream mode */
+.ob-live { background: radial-gradient(120% 70% at 50% 30%, #2A1690 0%, #170D4A 45%, #0A0A0F 80%); align-items: center; justify-content: space-between; padding-bottom: calc(var(--safe-bottom) + 16px); overflow: hidden; }
+.ob-live-top { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + 8px) 12px 0; }
+.ob-onair { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 999px; background: rgba(0, 0, 0, .4); font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.ob-onair i { width: 8px; height: 8px; border-radius: 50%; background: #F87171; box-shadow: 0 0 10px #F87171; animation: obBlink 1.2s ease-in-out infinite; }
+.ob-live-who { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 0 20px; }
+.ob-live-who b { font-size: 20px; font-weight: 800; }
+.ob-live-who span { font-size: 13px; color: #E4DCFF; }
+.ob-live-count { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.ob-live-count .lbl { font-size: 13px; font-weight: 700; color: #E4DCFF; text-transform: uppercase; letter-spacing: .08em; }
+.ob-live-count .plus { display: inline-flex; align-items: baseline; gap: 2px; }
+.ob-live-count .plus > span:first-child { font-size: 34px; font-weight: 800; color: var(--success); }
+.ob-live-count .ob-counter { text-shadow: 0 0 30px rgba(180, 162, 255, .6); }
+.ob-live-count .sub { font-size: 14px; color: rgba(228, 220, 255, .75); font-variant-numeric: tabular-nums; }
+.ob-live-join { display: flex; align-items: center; gap: 14px; margin: 0 16px; padding: 12px; border-radius: 18px; background: rgba(0, 0, 0, .4); border: 1px solid rgba(255, 255, 255, .12); }
+.ob-live-join img { border-radius: 10px; flex: none; }
+.ob-live-join div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ob-live-join b { font-size: 16px; font-weight: 800; }
+.ob-live-join span { font-size: 14px; color: var(--accent-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ob-live-join small { font-size: 12px; color: rgba(228, 220, 255, .7); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-core.on .halo, .ob-core.on .dots, .ob-core.on .mark, .ob-boost, .ob-mine-count .lbl .dot, .ob-pulse .dot, .ob-onair i { animation: none; }
+}
+
 /* How to redeem ALKE: a step guide */
 .ob-guide { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .ob-guide-step { position: relative; display: flex; gap: 14px; padding-bottom: 26px; }
