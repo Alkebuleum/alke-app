@@ -1,11 +1,17 @@
 import { WarmingRules } from "./Warming";
-import { AppBar, AppPage, Ico, Section } from "../../ui/shell";
+import { AppBar, AppPage, Ico, Row, Section } from "../../ui/shell";
 
 /* Invitations and circles aren't live yet: say so plainly instead of
    showing sample numbers. */
 export default function Network() {
   return (
     <AppPage tab="network" bar={<AppBar title="Network" />}>
+      <ul className="ob-list">
+        <li>
+          <Row to="/chat" icon={<Ico.Users />} title="Alkers community chat" sub="Shared with the Nuru app" end={<span className="ob-pill green"><span className="d" />Live</span>} />
+        </li>
+      </ul>
+
       <section className="ob-hero" aria-label="Invite friends">
         <div className="top">
           <span className="ob-tile" style={{ width: 48, height: 48, borderRadius: 14 }}>

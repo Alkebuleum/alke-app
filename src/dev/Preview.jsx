@@ -20,6 +20,7 @@ import Profile from "../pages/app/Profile";
 import Notifications from "../pages/app/Notifications";
 import Settings from "../pages/app/Settings";
 import Leaderboard from "../pages/app/Leaderboard";
+import Chat from "../pages/app/Chat";
 import { WarmingRules, WarmingSection } from "../pages/app/Warming";
 import { AppPage, SubBar } from "../ui/shell";
 import HexHub from "../screens/HexHub";
@@ -58,6 +59,19 @@ const SCREENS = {
       <WarmingRules />
     </AppPage>
   ),
+  chat: () => {
+    const t = (min) => ({ toDate: () => new Date(Date.now() - min * 60000) });
+    const msgs = [
+      { id: "s", type: "system", text: "Kojo joined", createdAt: t(300) },
+      { id: "1", type: "text", senderAin: "K1", senderName: "Kojo Boateng", text: "Morning Alkers! Who started their session today?", createdAt: t(240) },
+      { id: "2", type: "text", senderAin: "K1", senderName: "Kojo Boateng", text: "Day 12 for me", createdAt: t(239) },
+      { id: "3", type: "text", senderAin: "preview", senderName: "Amara Mensah", text: "Day 5 here. The new app looks clean!", createdAt: t(200) },
+      { id: "4", type: "image", senderAin: "E2", senderName: "Esi Mensah", text: "", createdAt: t(120) },
+      { id: "5", type: "text", senderAin: "E2", senderName: "Esi Mensah", text: "Anyone cleared Hex level 10 yet? The traps are brutal", createdAt: t(119) },
+      { id: "6", type: "text", senderAin: "preview", senderName: "Amara Mensah", text: "Not yet, stuck on 7", createdAt: t(30) },
+    ];
+    return <Chat demo={{ ids: { chatId: "x", communityId: "y", name: "Alké Network" }, joined: new URLSearchParams(window.location.search).get("join") !== "1", chat: { name: "Alkers", memberCount: 1284 }, msgs }} />;
+  },
   hexhub: HexHub,
   hexplay: HexPlay,
   hexboard: () => <Leaderboard game="hex" boards={{ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }} />,

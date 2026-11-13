@@ -301,6 +301,32 @@
 .ob-bar-track { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .ob-bar-track span { display: block; height: 100%; border-radius: 6px; background: var(--cyan); }
 
+/* Community chat */
+.ob-chat { display: flex; flex-direction: column; }
+.ob-chat-list { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px 12px; margin-top: auto; }
+.ob-chat-day { align-self: center; margin: 12px 0 6px; padding: 3px 10px; border-radius: 999px; background: var(--surface); font-size: 12px; font-weight: 600; color: var(--text-3); }
+.ob-chat-sys { align-self: center; max-width: 85%; margin: 6px 0; font-size: 12px; color: var(--text-3); text-align: center; }
+.ob-msg { display: flex; align-items: flex-end; gap: 8px; max-width: 86%; }
+.ob-msg.first { margin-top: 8px; }
+.ob-msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+.ob-bubble { min-width: 0; padding: 7px 11px 5px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border); }
+.ob-msg.first:not(.mine) .ob-bubble { border-top-left-radius: 6px; }
+.ob-msg.mine .ob-bubble { background: var(--accent); border-color: transparent; color: #fff; }
+.ob-msg.mine.first .ob-bubble { border-top-right-radius: 6px; }
+.ob-bubble .who { font-size: 12px; font-weight: 700; color: var(--accent-text); margin-bottom: 1px; }
+.ob-bubble .txt { font-size: 15px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ob-bubble .txt.dim { font-style: italic; color: var(--text-2); }
+.ob-msg.mine .ob-bubble .txt.dim { color: rgba(255, 255, 255, .8); }
+.ob-bubble .open { display: block; margin-top: 2px; font-size: 12px; font-style: normal; font-weight: 600; color: var(--accent-text); }
+.ob-bubble .at { margin-top: 2px; font-size: 10.5px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+.ob-msg.mine .ob-bubble .at { color: rgba(255, 255, 255, .7); }
+.ob-composer { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 8px 12px calc(var(--safe-bottom) + 8px); border-top: 1px solid var(--border); background: rgba(14, 14, 20, .96); }
+.ob-composer textarea { flex: 1; min-width: 0; min-height: 42px; max-height: 120px; padding: 10px 14px; border-radius: 21px; border: 1px solid var(--border-2); background: var(--surface); color: var(--text); font: inherit; font-size: 16px; line-height: 1.35; resize: none; outline: none; field-sizing: content; }
+.ob-composer textarea:focus { border-color: var(--accent); }
+.ob-composer textarea::placeholder { color: var(--text-3); }
+.ob-send { flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.ob-send:disabled { opacity: .4; cursor: default; }
+
 /* Game cards on the Games tab */
 .ob-game { --c: var(--gold); --c-soft: rgba(245, 196, 81, .14); --c-edge: rgba(245, 196, 81, .32); --c-ink: #1A1205;
   position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 20px; min-width: 0;

@@ -110,8 +110,11 @@ export default function Home() {
         </ul>
       </Section>
 
-      <Section title="Grow your network">
+      <Section title="Community">
         <ul className="ob-list">
+          <li>
+            <Row to="/chat" icon={<Ico.Users />} tone="green" title="Alkers chat" sub="Say hi to the community" />
+          </li>
           <li>
             <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Your biggest contribution to warming" />
           </li>
