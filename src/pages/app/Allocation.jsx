@@ -8,15 +8,17 @@ import { approxAlke, fmtC, shortC, toC } from "../../lib/genesis";
 const Dot = ({ style }) => <span style={{ width: 10, height: 10, borderRadius: "50%", boxSizing: "border-box", ...style }} />;
 
 export default function Allocation() {
-  const { allocation } = useMemberData({ allocation: true });
+  const { allocation, invites } = useMemberData({ allocation: true, invites: true });
   const a = allocation || {};
   const updated = a.updatedAt?.toDate?.();
 
+  const locked = Number(a.locked) || 0;
+  const warmed = Math.min(locked, Number(a.warmed) || 0);
   const rows = [
-    ["Pending", "Recorded, not yet verified", a.pending, { border: "1.5px dashed #A1A1AA" }],
-    ["Verified", "Joins the next batch", a.verified, { background: "var(--success)" }],
-    ["Locked", "Reserved for you", a.locked, { background: "var(--accent)" }],
-    ["Claimable", "Under the release policy", a.claimable, { border: "1.5px solid var(--gold)" }],
+    ["Cold (locked)", "Your share from daily sessions", locked, { background: "var(--accent)" }],
+    ["Warmed", "Converts to hot ALKE at release", warmed, { background: "var(--gold)" }],
+    ["Still cold", "Warms with your contributions", locked - warmed, { border: "1.5px dashed #A1A1AA" }],
+    ["Claimable", "Under the release policy", a.claimable, { border: "1.5px solid var(--success)" }],
     ["Claimed", "Sent to your wallet", a.claimed, { border: "1.5px solid #71717A" }],
   ];
 
@@ -63,7 +65,7 @@ export default function Allocation() {
         </ul>
       </Section>
 
-      <WarmingSection cold={toC(a.locked)} />
+      <WarmingSection cold={toC(a.locked)} invites={Number(invites?.active) || 0} serverRate={a.warmRate} />
       <ul className="ob-list">
         <li>
           <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Mining, warming and converting, step by step" />

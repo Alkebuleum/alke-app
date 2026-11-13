@@ -6,10 +6,12 @@
     // Uses the existing helpers isAuthed(), verifiedAin() (the `nid` claim set
     // by nuruAuth) and isVerifiedAs(id), and changed().
     //
-    // ALSO: add 'alke_members' to the exclusion list of the fallback
+    // ALSO: add 'alke_members', 'alke_days' and 'alke_settlements' to the
+    // exclusion list of the fallback
     // `match /{collection}/{document=**} { allow read: if !(collection in [...]) }`
     // (next to 'nuru_people'). Rules are OR-ed: without that, the fallback makes
-    // every member record publicly readable.
+    // member records and the server's per-day session logs publicly readable.
+    // 'alke_network' (public network figures) stays readable through it.
 
     function alkeUsername(name) {
       return name is string && name.matches('^[a-z0-9._]{3,20}$');
@@ -102,6 +104,21 @@
     }
     match /alke_members/{nuruId}/entries/{entryId} {
       allow read: if isVerifiedAs(nuruId);
+      allow write: if false;
+    }
+
+    // Written only by the server (functions/, codebase "alke"):
+    //   alke_days/{day}/sessions/{nuruId}   sessions per UTC day, for settlement
+    //   alke_settlements/{day}              one record per settled day
+    //   alke_network/{doc}                  genesis totals + live figures (public)
+    match /alke_days/{rest=**} {
+      allow read, write: if false;
+    }
+    match /alke_settlements/{day} {
+      allow read, write: if false;
+    }
+    match /alke_network/{doc} {
+      allow read: if true;
       allow write: if false;
     }
 

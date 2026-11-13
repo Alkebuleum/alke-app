@@ -224,6 +224,11 @@ export function watchSessions(nuruId, cb, onError, count = 60) {
 }
 
 /** Server-written ALKE totals ({ locked, verified, pending, claimable, claimed }), or null. */
+/** Invites credited by the server: { joined, active } (functions/core.js). */
+export function watchInvites(nuruId, cb, onError) {
+  return onSnapshot(doc(db, "alke_members", nuruId, "allocation", "invites"), (s) => cb(s.exists() ? s.data() : null), onError);
+}
+
 export function watchAllocation(nuruId, cb, onError) {
   return onSnapshot(doc(db, "alke_members", nuruId, "allocation", "summary"), (s) => cb(s.exists() ? s.data() : null), onError);
 }

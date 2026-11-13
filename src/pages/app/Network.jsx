@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { inviteLink } from "../../lib/member";
+import { useMemberData } from "../../lib/useMemberData";
 import { Button } from "../../ui/ob";
 import { AppBar, AppPage, Ico, Row } from "../../ui/shell";
 
@@ -9,6 +10,7 @@ import { AppBar, AppPage, Ico, Row } from "../../ui/shell";
    is in place. */
 export default function Network() {
   const { nuruId } = useAuth();
+  const { invites } = useMemberData({ invites: true });
   const [copied, setCopied] = useState(false);
   const link = nuruId ? inviteLink(nuruId) : "";
   const shown = link.replace(/^https:\/\//, "");
@@ -60,7 +62,18 @@ export default function Network() {
             <div className="big" style={{ fontSize: 18 }}>
               Invite friends
             </div>
-            <div className="lbl">Each verified invite warms 1% of your cold ALKE a day</div>
+            <div className="lbl">Each active invite warms 1% of your cold ALKE a day</div>
+          </div>
+        </div>
+
+        <div className="ob-stats two" style={{ gap: 8 }}>
+          <div className="ob-stat" style={{ background: "rgba(0,0,0,.25)" }}>
+            <span className="l">Joined with your link</span>
+            <span className="v">{invites?.joined || 0}</span>
+          </div>
+          <div className="ob-stat" style={{ background: "rgba(0,0,0,.25)" }}>
+            <span className="l">Active (warming)</span>
+            <span className="v">{invites?.active || 0}</span>
           </div>
         </div>
 

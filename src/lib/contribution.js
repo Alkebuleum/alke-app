@@ -9,7 +9,7 @@
 import { WARMING, gameWarmingToday } from "./games";
 
 export const CONTRIBUTIONS = [
-  { id: "invites", label: "Invites", rule: "1% a day per verified invite", per: 1, cap: null, live: false },
+  { id: "invites", label: "Invites", rule: "1% a day per active invite", per: 1, cap: null, live: true },
   { id: "lessons", label: "Lessons", rule: "0.1% per lesson, max 0.3% a day", per: 0.1, cap: 0.3, live: false },
   { id: "games", label: "Games", rule: `0.1% per ${WARMING.xpPerUnit} XP, max ${(WARMING.gameCap * 0.1).toFixed(1)}% a day`, per: 0.1, cap: WARMING.gameCap * 0.1, live: true },
   { id: "discussions", label: "Discussions", rule: "0.1% per approved post, max 0.2% a day", per: 0.1, cap: 0.2, live: false },

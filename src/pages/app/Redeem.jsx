@@ -81,11 +81,11 @@ export default function Redeem() {
             <b>Example:</b> with {EX.invites} verified invites plus full games and lessons, you warm {pct(exRate)} a day and your cALKE is fully warm in about{" "}
             {Math.ceil(100 / exRate)} days. With no invites, about {Math.ceil(100 / EX.other)} days.
           </p>
-          <p className="note">Unverified invites, practice runs and mining sessions warm nothing.</p>
+          <p className="note">An invite becomes active once the person you invited has completed 3 sessions. Practice runs and mining sessions warm nothing.</p>
         </Step>
 
         <Step n="3" title="Verify you're one real person">
-          <p>Complete the personhood check: one person, one account. Until then, your days stay pending. Nothing is lost.</p>
+          <p>Complete the personhood check (one person, one account) before you convert. Your cALKE keeps building and warming meanwhile. Nothing is lost.</p>
         </Step>
 
         <Step n="4" title="Convert to hot ALKE">

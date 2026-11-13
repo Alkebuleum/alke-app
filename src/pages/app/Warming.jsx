@@ -8,13 +8,14 @@ import { Ico, Row, Section, useNow } from "../../ui/shell";
 const ICONS = { invites: Ico.Users, lessons: Ico.Doc, games: Ico.Star, discussions: Ico.Mail };
 const LINKS = { invites: "/network", games: "/games" };
 
-export function WarmingSection({ cold = 0, invites = 0 }) {
+export function WarmingSection({ cold = 0, invites = 0, serverRate }) {
   useNow(30000);
   const w = warmingToday({ invites });
-  const days = w.total > 0 && cold > 0 ? Math.ceil(100 / w.total) : null;
+  const rate = serverRate != null ? Math.max(Number(serverRate) || 0, w.total) : w.total;
+  const days = rate > 0 && cold > 0 ? Math.ceil(100 / rate) : null;
 
   return (
-    <Section title="Contributions" action={<span className="num">Warming {pct(w.total)} a day</span>}>
+    <Section title="Contributions" action={<span className="num">Warming {pct(rate)} a day</span>}>
       <ul className="ob-list">
         {CONTRIBUTIONS.map((c) => {
           const Icon = ICONS[c.id];

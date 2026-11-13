@@ -14,9 +14,10 @@ const marker = rules.lastIndexOf("match /{collection}/{document=**}");
 if (marker < 0) throw new Error("fallback match not found in " + base);
 const lineStart = rules.lastIndexOf("\n", rules.lastIndexOf("//", marker) > rules.lastIndexOf("}", marker) ? rules.lastIndexOf("//", marker) : marker);
 let out = rules.slice(0, lineStart) + "\n" + alke + "\n" + rules.slice(lineStart);
-// The second console edit: keep member records out of the public-read fallback.
+// The second console edit: keep member records and the server's per-day
+// session logs out of the public-read fallback.
 const before = out;
-out = out.replace(/'nuru_people',(\s*)'nuru_logins'/, "'nuru_people', 'alke_members',$1'nuru_logins'");
-if (out === before) throw new Error("couldn't add alke_members to the fallback exclusion list");
+out = out.replace(/'nuru_people',(\s*)'nuru_logins'/, "'nuru_people', 'alke_members', 'alke_days', 'alke_settlements',$1'nuru_logins'");
+if (out === before) throw new Error("couldn't add the alke collections to the fallback exclusion list");
 fs.writeFileSync(path.join(here, "combined.rules"), out);
 console.log(`combined.rules from ${base}`);

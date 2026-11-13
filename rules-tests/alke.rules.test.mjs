@@ -158,3 +158,21 @@ test("profile name and avatar tint go on the shared Nuru person", async () => {
   await assertSucceeds(updateDoc(doc(as(AMA), "nuru_people", AMA), { name: "Ama Owusu", emojiColor: 3, updatedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(as(KOFI), "nuru_people", AMA), { name: "Not Ama" }));
 });
+
+test("server-only Genesis data: day logs and settlements are private, network figures public", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const f = ctx.firestore();
+    await setDoc(doc(f, "alke_days", "2026-11-12", "sessions", AMA), { n: 1 });
+    await setDoc(doc(f, "alke_settlements", "2026-11-12"), { total: 1 });
+    await setDoc(doc(f, "alke_network", "live"), { members: 1 });
+    await setDoc(doc(f, "alke_members", AMA, "allocation", "invites"), { joined: 1 });
+  });
+  await assertFails(getDoc(doc(as(KOFI), "alke_days", "2026-11-12", "sessions", AMA)));
+  await assertFails(getDoc(doc(as(AMA), "alke_days", "2026-11-12", "sessions", AMA)));
+  await assertFails(getDoc(doc(as(AMA), "alke_settlements", "2026-11-12")));
+  await assertFails(setDoc(doc(as(AMA), "alke_network", "live"), { members: 9 }));
+  await assertSucceeds(getDoc(doc(as(KOFI), "alke_network", "live")));
+  await assertSucceeds(getDoc(doc(as(AMA), "alke_members", AMA, "allocation", "invites")));
+  await assertFails(getDoc(doc(as(KOFI), "alke_members", AMA, "allocation", "invites")));
+  await assertFails(setDoc(doc(as(AMA), "alke_members", AMA, "allocation", "invites"), { joined: 99 }));
+});

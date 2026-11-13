@@ -1,0 +1,10 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "alke",
+      "ignore": ["node_modules", "test", "*.local"]
+    }
+  ],
+  "emulators": { "firestore": { "port": 8282 }, "ui": { "enabled": false } }
+}
