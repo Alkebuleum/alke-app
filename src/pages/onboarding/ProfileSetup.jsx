@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, Button, Field, Heading, Notice, Page } from "../../ui/ob";
 import { useAuth } from "../../auth/AuthProvider";
-import { AVATAR_COLORS, USERNAME_RE, createMember, initialsOf, normInvite, normUsername, usernameStatus } from "../../lib/member";
+import { AVATAR_COLORS, USERNAME_RE, createMember, initialsOf, inviterName, normInvite, normUsername, usernameStatus } from "../../lib/member";
 
 /* Step 2: username (unique across ALKÉ), display name and avatar colour
    (saved on the shared Nuru person), and an optional invite code. */
@@ -24,6 +24,24 @@ export default function ProfileSetup() {
     }
   });
   const [status, setStatus] = useState(null); // available | taken | mine | invalid | checking | null
+  const [inviter, setInviter] = useState(null); // { state: "checking" | "ok" | "bad" | "self", name }
+
+  // Who invited me (the code is their Nuru ID), debounced.
+  useEffect(() => {
+    const c = normInvite(invite);
+    if (!c) return setInviter(null);
+    if (c === nuruId) return setInviter({ state: "self" });
+    setInviter({ state: "checking" });
+    let live = true;
+    const t = setTimeout(async () => {
+      const name = await inviterName(c);
+      if (live) setInviter(name ? { state: "ok", name } : { state: "bad" });
+    }, 350);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [invite, nuruId]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
@@ -56,7 +74,8 @@ export default function ProfileSetup() {
   }, [username, nuruId]);
 
   const color = AVATAR_COLORS[colorIdx];
-  const canContinue = (status === "available" || status === "mine") && !busy;
+  const inviteOk = !inviter || inviter.state === "ok";
+  const canContinue = (status === "available" || status === "mine") && inviteOk && !busy;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -124,9 +143,9 @@ export default function ProfileSetup() {
           </div>
         </Field>
 
-        <Field id="ps-invite" label="Invite code" optional>
+        <Field id="ps-invite" label="Invite code" optional ok={inviter?.state === "ok" ? `Invited by ${inviter.name}` : null} error={inviter?.state === "bad" ? "No member has that invite code." : inviter?.state === "self" ? "That's your own code." : null} help={inviter?.state === "checking" ? "Checking…" : null}>
           <div className="ob-input mono">
-            <input id="ps-invite" placeholder="KOFI-3M8D" autoCapitalize="characters" value={invite} onChange={(e) => setInvite(normInvite(e.target.value))} />
+            <input id="ps-invite" placeholder="e.g. AA00000113" autoCapitalize="characters" value={invite} onChange={(e) => setInvite(normInvite(e.target.value))} />
           </div>
         </Field>
 

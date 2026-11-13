@@ -28,6 +28,23 @@ import {
 import { db } from "./firebase";
 
 export const RULES_VERSION = 1;
+
+/* Invites: a member's invite code is their Nuru ID, so their link is
+   app.alke.network/join/<Nuru ID> (the same ID Nuru uses for referrals).
+   The new member's record keeps it as invitedBy. */
+export const inviteLink = (nuruId) => `https://app.alke.network/join/${nuruId}`;
+
+/** The display name behind an invite code, or null if no such member. */
+export async function inviterName(code) {
+  const c = normInvite(code);
+  if (!c) return null;
+  try {
+    const s = await getDoc(doc(db, "nuru_people", c));
+    return s.exists() ? s.data().name || "an Alker" : null;
+  } catch {
+    return null;
+  }
+}
 export const SESSION_MS = 24 * 60 * 60 * 1000;
 /** A session that starts within this long of the previous one keeps the streak. */
 export const STREAK_MS = 48 * 60 * 60 * 1000;

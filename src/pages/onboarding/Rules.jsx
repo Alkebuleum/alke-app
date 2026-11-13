@@ -9,7 +9,7 @@ export const RULES = [
   ["Estimates aren't rewards", "Amounts become final only after verification, within the published daily budget and per-member limits."],
   ["Allocations stay locked", "Until published release conditions are met. No price, exchange listing or release date is promised."],
   ["Rewards depend on where you live", "Where rewards are off, sessions, contributions and games still work."],
-  ["Be constructive", "Discussions, circles and games follow the community guidelines."],
+  ["Be constructive", "Chat, discussions and games follow the community guidelines."],
 ];
 
 /* Step 3: Participation Rules v1. Acceptance is stamped with the server time. */

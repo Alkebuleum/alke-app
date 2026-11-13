@@ -301,6 +301,12 @@
 .ob-bar-track { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
 .ob-bar-track span { display: block; height: 100%; border-radius: 6px; background: var(--cyan); }
 
+/* Invite link box */
+.ob-invite { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 14px; border-radius: 12px; background: rgba(0, 0, 0, .28); border: 1px solid var(--border-2); }
+.ob-invite > span { flex: 1; min-width: 0; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ob-invite-copy { flex: none; height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.ob-invite-copy:active { transform: scale(.97); }
+
 /* Community chat */
 .ob-chat { display: flex; flex-direction: column; }
 .ob-chat-list { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px 12px; margin-top: auto; }

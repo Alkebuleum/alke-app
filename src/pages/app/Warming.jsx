@@ -6,7 +6,7 @@ import { Ico, Row, Section, useNow } from "../../ui/shell";
    Only games are live today; the others show "Soon". The real calculation runs
    on the server; this is the in-app estimate. */
 
-const ICONS = { invites: Ico.Users, circles: Ico.Users, lessons: Ico.Doc, games: Ico.Star, discussions: Ico.Mail };
+const ICONS = { invites: Ico.Users, lessons: Ico.Doc, games: Ico.Star, discussions: Ico.Mail };
 const LINKS = { invites: "/network", games: "/games" };
 
 export function WarmingSection({ cold = 0, invites = 0 }) {
