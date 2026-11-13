@@ -50,9 +50,8 @@ export function gameTotals() {
   return { hexXp, rushXp, total: hexXp + rushXp };
 }
 
-/* Warming: verified invites warm cold ALKE; games add a small, capped amount.
-   Invites weigh over 3× more than the most games can add in a day. The real
-   calculation belongs on the server; these figures are the in-app estimate. */
+/* Games are one kind of contribution that warms cold ALKE (see
+   lib/contribution.js for all of them and their weights). */
 export const WARMING = { perInvite: 10, gameCap: 3, xpPerUnit: 30 };
 
 /** Game XP earned today (won Hex rounds, banked scored Rush runs) and the

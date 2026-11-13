@@ -90,7 +90,7 @@ export default function Games() {
           <Row
             to="/mine/allocation"
             icon={<Ico.Lock />}
-            title="Warming from games"
+            title="Contribution from games"
             sub={w.nextAt ? `${w.nextAt - w.xp} XP to the next one today` : "Today's maximum reached"}
             end={
               <b className="num">
@@ -112,7 +112,7 @@ export default function Games() {
         </ul>
       </Section>
 
-      <p className="ob-small center">Game XP never becomes ALKE. It can warm up to 3 cold ALKE a day.</p>
+      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to 3 cold ALKE a day.</p>
     </AppPage>
   );
 }

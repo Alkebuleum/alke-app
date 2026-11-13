@@ -20,6 +20,8 @@ import Profile from "../pages/app/Profile";
 import Notifications from "../pages/app/Notifications";
 import Settings from "../pages/app/Settings";
 import Leaderboard from "../pages/app/Leaderboard";
+import { WarmingRules, WarmingSection } from "../pages/app/Warming";
+import { AppPage, SubBar } from "../ui/shell";
 import HexHub from "../screens/HexHub";
 import HexPlay from "../screens/HexPlay";
 import RushIntro from "../screens/RushIntro";
@@ -50,6 +52,12 @@ const SCREENS = {
   profile: Profile,
   notifications: Notifications,
   settings: Settings,
+  warming: () => (
+    <AppPage tab="mine" bar={<SubBar title="Allocation" back="/mine" />}>
+      <WarmingSection cold={120} />
+      <WarmingRules />
+    </AppPage>
+  ),
   hexhub: HexHub,
   hexplay: HexPlay,
   hexboard: () => <Leaderboard game="hex" boards={{ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }} />,

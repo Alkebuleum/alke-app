@@ -1,27 +1,45 @@
-import { WARMING, gameWarmingToday } from "../../lib/games";
+import { CONTRIBUTIONS, warmingToday } from "../../lib/contribution";
 import { I } from "../../ui/ob";
-import { Ico, Section, Stat, useNow } from "../../ui/shell";
+import { Ico, Row, Section, useNow } from "../../ui/shell";
 
-/* Warming: verified invites warm cold ALKE (10 a day each); games add a small,
-   capped amount (up to 3 a day). Invites outweigh games more than 3 to 1.
-   Invites aren't live yet, so the invite count is 0 for now. The real
-   calculation runs on the server; this is the in-app estimate. */
+/* Contributions warm cold ALKE, each kind at its own weight (lib/contribution.js).
+   Only games are live today; the others show "Soon". The real calculation runs
+   on the server; this is the in-app estimate. */
+
+const ICONS = { invites: Ico.Users, circles: Ico.Users, lessons: Ico.Doc, games: Ico.Star, discussions: Ico.Mail };
+const LINKS = { invites: "/network", games: "/games" };
 
 export function WarmingSection({ cold = 0, invites = 0 }) {
   useNow(30000);
-  const g = gameWarmingToday();
-  const rate = invites * WARMING.perInvite + g.warm;
-  const days = rate > 0 && cold > 0 ? Math.ceil(cold / rate) : null;
+  const w = warmingToday({ invites });
+  const days = w.total > 0 && cold > 0 ? Math.ceil(cold / w.total) : null;
 
   return (
-    <Section title="Warming" action={<span>Today's estimate</span>}>
-      <div className="ob-stats">
-        <Stat label="Invites" icon={<Ico.Users size={13} />} value={invites * WARMING.perInvite} unit={`${invites} × ${WARMING.perInvite}`} />
-        <Stat to="/games" label="Games" icon={<Ico.Star size={13} />} value={g.warm} unit={`of ${g.cap}`} />
-        <Stat label="Per day" value={rate} unit="ALKE" />
-      </div>
+    <Section title="Contributions" action={<span className="num">Warming {w.total} / day</span>}>
+      <ul className="ob-list">
+        {CONTRIBUTIONS.map((c) => {
+          const Icon = ICONS[c.id];
+          const v = w.values[c.id];
+          return (
+            <li key={c.id}>
+              <Row
+                to={c.live ? LINKS[c.id] : undefined}
+                icon={<Icon />}
+                tone={c.live ? undefined : "plain"}
+                title={c.label}
+                sub={c.rule}
+                end={c.live ? <b className="num">{c.cap ? `${v} / ${c.cap}` : v}</b> : <span className="ob-pill">Soon</span>}
+              />
+            </li>
+          );
+        })}
+      </ul>
       <p className="ob-small" style={{ padding: "0 4px" }}>
-        {days ? `At today's rate your cold ALKE fully warms in about ${days} days.` : g.nextAt ? `Earn ${g.nextAt - g.xp} more game XP today to warm ${g.warm ? "another" : "your first"} ALKE.` : "Invite people you know to warm faster."}
+        {days
+          ? `At today's rate your cold ALKE fully warms in about ${days} days.`
+          : w.games.nextAt
+            ? `Earn ${w.games.nextAt - w.games.xp} more game XP today to warm ${w.games.warm ? "another" : "your first"} ALKE.`
+            : "You've reached today's maximum from games."}
       </p>
     </Section>
   );
@@ -35,15 +53,15 @@ export function WarmingRules() {
         <I.Chevron />
       </summary>
       <div style={{ padding: "0 16px 16px", display: "flex", flexDirection: "column", gap: 10, fontSize: 14, color: "var(--text-2)", lineHeight: 1.5 }}>
-        <p style={{ margin: 0 }}>Your allocation is cold ALKE. Only warmed ALKE converts at listing.</p>
+        <p style={{ margin: 0 }}>Your allocation is cold ALKE. Contributions warm it, and only warmed ALKE converts at listing.</p>
         <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
-          <li>Each verified invite warms {WARMING.perInvite} a day.</li>
-          <li>Games add up to {WARMING.gameCap} a day: 1 for every {WARMING.xpPerUnit} game XP you earn that day.</li>
-          <li>Unverified invites, practice runs and mining sessions warm nothing.</li>
+          {CONTRIBUTIONS.map((c) => (
+            <li key={c.id}>
+              <b style={{ color: "var(--text)", fontWeight: 600 }}>{c.label}:</b> {c.rule}.
+            </li>
+          ))}
         </ul>
-        <p style={{ margin: 0, padding: "10px 12px", borderRadius: 10, background: "var(--surface-2)", color: "var(--text)", fontWeight: 600 }}>
-          Daily warming = invites × {WARMING.perInvite} + games (max {WARMING.gameCap})
-        </p>
+        <p style={{ margin: 0 }}>Invites count most. Unverified invites, practice runs and mining sessions warm nothing.</p>
       </div>
     </details>
   );

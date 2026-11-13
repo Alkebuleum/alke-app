@@ -113,7 +113,7 @@ export default function Home() {
       <Section title="Grow your network">
         <ul className="ob-list">
           <li>
-            <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Verified invites warm your cold ALKE" />
+            <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Your biggest contribution to warming" />
           </li>
         </ul>
       </Section>

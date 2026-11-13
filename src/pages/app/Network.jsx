@@ -15,7 +15,7 @@ export default function Network() {
             <div className="big" style={{ fontSize: 18 }}>
               Invite friends
             </div>
-            <div className="lbl">Each verified invite warms 10 cold ALKE a day</div>
+            <div className="lbl">Your biggest contribution: 10 cold ALKE warmed a day per verified invite</div>
           </div>
         </div>
         <div className="foot">

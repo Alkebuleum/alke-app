@@ -300,7 +300,7 @@ export default class RushIntro extends Logic {
           </li>
         </ul>
 
-        <p className="ob-small center">Game XP never becomes ALKE. It can warm up to 3 cold ALKE a day.</p>
+        <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to 3 cold ALKE a day.</p>
         {import.meta.env.DEV ? (
           <button type="button" className="ob-btn ghost" onClick={$.reset}>
             Reset progress (dev)
