@@ -1,9 +1,12 @@
 /* eslint-disable */
 // Generated from the ALKE Network App design (22_22_ALKE_Rush_banked_victory_.html). Edit the logic freely;
-// the markup mirrors the design board one-to-one.
-import { Fragment } from "react";
+// The layout is hand-built on the app shell (src/ui/shell.jsx).
 import { Link } from "react-router-dom";
 import { DCLogic } from "../dc";
+import { Bar, Button, Notice, Page } from "../ui/ob";
+import { AppPage, Ico, Row, Section, Stat, SubBar } from "../ui/shell";
+
+const tc = (s) => String(s).split(" · ").map((p) => p.charAt(0) + p.slice(1).toLowerCase()).join(" · ");
 
 class Logic extends DCLogic {
   load() {
@@ -114,6 +117,80 @@ class Logic extends DCLogic {
 export default class RushBanked extends Logic {
   render() {
     const $ = this.vals();
-    return (<>{" "}{" "}<div style={{ width: "100%", height: "100%", position: "relative", overflow: "hidden", backgroundColor: "#08070D", backgroundImage: "radial-gradient(90% 42% at 50% 6%,rgba(242,198,107,.22) 0%,rgba(242,198,107,0) 70%),radial-gradient(80% 40% at 50% 60%,rgba(110,72,255,.20) 0%,rgba(110,72,255,0) 72%)", color: "#F7F5F2", fontFamily: "Inter,system-ui,-apple-system,'Segoe UI',sans-serif" }}>{" "}<main style={{ position: "absolute", inset: "0", overflowY: "auto" }}>{" "}<div style={{ padding: "52px 20px 40px", display: "flex", flexDirection: "column", gap: "18px" }}>{" "}<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", margin: "0 -4px" }}>{" "}<Link to="/games/rush" aria-label="Close" style={{ width: "44px", height: "44px", borderRadius: "50%", background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.10)", display: "flex", alignItems: "center", justifyContent: "center", color: "#F7F5F2", textDecoration: "none", boxSizing: "border-box", flex: "none" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></Link>{" "}<span style={{ display: "inline-flex", alignItems: "center", gap: "7px", height: "34px", padding: "0 12px", borderRadius: "999px", background: "rgba(247,178,103,.12)", border: "1px solid rgba(247,178,103,.30)", color: "#F7B267", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap" }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M12 21c3.9 0 7-2.6 7-6.4 0-3.3-2.2-5.4-3.9-7.2.1 2.1-.9 3.5-2.1 4C13.4 8 11.7 5.1 9.2 3.5c.4 3.1-1.4 4.9-2.7 6.6C5.4 11.5 5 12.8 5 14.6 5 18.4 8.1 21 12 21z"></path></svg>{$.streakChip}</span>{" "}</div>{" "}<div aria-hidden="true" style={{ position: "relative", width: "180px", height: "180px", margin: "0 auto" }}>{" "}<span style={{ position: "absolute", inset: "-36px", borderRadius: "50%", background: "radial-gradient(circle,rgba(242,198,107,.36) 0%,rgba(242,198,107,.10) 45%,rgba(242,198,107,0) 68%)", animation: "rbGlow 3s ease-in-out infinite" }}></span>{" "}<svg width="180" height="180" viewBox="0 0 120 120" style={{ position: "absolute", inset: "0", overflow: "visible" }}><defs><linearGradient id="rbFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FBE2A2"></stop><stop offset=".5" stopColor="#E2A93B"></stop><stop offset="1" stopColor="#B9791A"></stop></linearGradient></defs><g style={{ transformOrigin: "60px 60px", animation: "rbOrbit 18s linear infinite" }}><circle cx="60" cy="60" r="56" fill="none" stroke="#F2C66B" strokeOpacity=".22" strokeWidth="1" strokeDasharray="2 7"></circle><circle cx="60" cy="4" r="2.5" fill="#FCE7B5"></circle></g><path d="M60 14 L99.8 37 L99.8 83 L60 106 L20.2 83 L20.2 37 Z" fill="rgba(242,198,107,.06)" stroke="#F2C66B" strokeOpacity=".55" strokeWidth="2" strokeLinejoin="round"></path><g style={{ transformOrigin: "60px 60px", animation: "rbSeal .6s .15s cubic-bezier(.2,1.4,.4,1) both" }}><path d="M60 24 L91.2 42 L91.2 78 L60 96 L28.8 78 L28.8 42 Z" fill="url(#rbFill)" stroke="#FCE7B5" strokeWidth="2" strokeLinejoin="round"></path><path d="M60 30 L86 45 L86 75 L60 90 L34 75 L34 45 Z" fill="none" stroke="#FFFFFF" strokeOpacity=".35" strokeWidth="1.2" strokeLinejoin="round"></path></g><path d="M45 61 L55 71 L76 49" fill="none" stroke="#2A1A03" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="60" style={{ animation: "rbTick .5s .55s ease-out both" }}></path></svg>{" "}<svg width="14" height="16" viewBox="0 0 100 112" style={{ position: "absolute", left: "83px", top: "82px", animation: "rbIn1 2.4s .2s ease-in infinite" }}><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="#F2C66B"></path></svg>{" "}<svg width="12" height="14" viewBox="0 0 100 112" style={{ position: "absolute", left: "84px", top: "83px", animation: "rbIn2 2.4s .8s ease-in infinite" }}><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="#5CE1E6"></path></svg>{" "}<svg width="12" height="14" viewBox="0 0 100 112" style={{ position: "absolute", left: "84px", top: "83px", animation: "rbIn3 2.4s 1.4s ease-in infinite" }}><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="#FCE7B5"></path></svg>{" "}<svg width="10" height="12" viewBox="0 0 100 112" style={{ position: "absolute", left: "85px", top: "84px", animation: "rbIn4 2.4s 2s ease-in infinite" }}><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="#C6B6FF"></path></svg>{" "}</div>{" "}<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" }}>{" "}<span style={{ fontFamily: "'JetBrains Mono',ui-monospace,Menlo,monospace", fontSize: "11px", letterSpacing: ".14em", color: "#F2C66B" }}>{$.tag}</span>{" "}<h1 style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "34px", lineHeight: "38px", fontWeight: "600", letterSpacing: "-.03em" }}>{$.title}</h1>{" "}<div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px", animation: "rbCount .5s .35s ease-out both" }}><span style={{ fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "64px", lineHeight: "1", fontWeight: "600", letterSpacing: "-.045em", color: "#F2C66B", fontVariantNumeric: "tabular-nums", textShadow: "0 0 30px rgba(242,198,107,.45)" }}>{$.bankedText}</span><span style={{ fontSize: "16px", fontWeight: "600", color: "#D8D5E2" }}>{$.bankedUnit}</span></div>{" "}<div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "6px", marginTop: "6px" }}>{" "}{($.chips || []).map((c, i0) => (<Fragment key={i0}><span style={{ display: "inline-flex", alignItems: "center", height: "28px", padding: "0 11px", borderRadius: "999px", background: c?.bg, color: c?.ink, fontSize: "12px", fontWeight: "600" }}>{c?.t}</span></Fragment>))}{" "}</div>{" "}</div>{" "}<dl style={{ margin: "0", display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: "8px" }}>{" "}<div style={{ display: "flex", flexDirection: "column-reverse", alignItems: "center", gap: "3px", padding: "14px 4px", borderRadius: "18px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)" }}><dt style={{ fontSize: "11px", color: "#8C8999" }}>{"Spins used"}</dt><dd style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "20px", fontWeight: "600" }}>{$.spinsValue}</dd></div>{" "}<div style={{ display: "flex", flexDirection: "column-reverse", alignItems: "center", gap: "3px", padding: "14px 4px", borderRadius: "18px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)" }}><dt style={{ fontSize: "11px", color: "#8C8999" }}>{"Hazards blocked"}</dt><dd style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "20px", fontWeight: "600", color: "#6EE7B7" }}>{$.blockedValue}</dd></div>{" "}<div style={{ display: "flex", flexDirection: "column-reverse", alignItems: "center", gap: "3px", padding: "14px 4px", borderRadius: "18px", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)" }}><dt style={{ fontSize: "11px", color: "#8C8999" }}>{"Best run"}</dt><dd style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "20px", fontWeight: "600", color: "#F2C66B" }}>{$.bestValue}</dd></div>{" "}</dl>{" "}<section aria-label="Your run" style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "18px 20px", borderRadius: "24px", background: "linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.02))", border: "1px solid rgba(255,255,255,.08)" }}>{" "}<div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "8px" }}><h2 style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "17px", fontWeight: "600" }}>{"Your run"}</h2><span style={{ fontSize: "12px", color: "#8C8999" }}>{$.howNote}</span></div>{" "}<ol style={{ listStyle: "none", margin: "0", padding: "0", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px" }}>{($.path || []).map((s, i1) => (<Fragment key={i1}><li style={{ display: "flex", alignItems: "center", gap: "6px" }}><span style={{ display: "inline-flex", alignItems: "center", gap: "5px", height: "30px", padding: "0 10px", borderRadius: "999px", background: s?.bg, border: `1px solid ${s?.edge ?? ''}`, color: s?.ink, fontSize: "12px", fontWeight: "700", whiteSpace: "nowrap" }}>{s?.t}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6E6A82" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: s?.arrow }}><path d="m9 6 6 6-6 6"></path></svg></li></Fragment>))}<li><span style={{ display: "inline-flex", alignItems: "center", height: "30px", padding: "0 12px", borderRadius: "999px", background: "linear-gradient(135deg,#F7D58A,#E2A93B)", color: "#1A1205", fontSize: "12px", fontWeight: "700", letterSpacing: ".06em" }}>{"BANKED"}</span></li></ol>{" "}</section>{" "}<section aria-label="Rush streak" style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "18px 20px", borderRadius: "24px", background: "linear-gradient(160deg,rgba(247,178,103,.12),rgba(255,255,255,.02) 70%)", border: "1px solid rgba(247,178,103,.26)" }}>{" "}<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}><h2 style={{ margin: "0", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "17px", fontWeight: "600" }}>{$.streakTitle}</h2><span style={{ fontSize: "12px", color: "#F7B267", fontWeight: "600" }}>{$.streakBonus}</span></div>{" "}<div role="img" aria-label={$.streakAria} style={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: "6px" }}>{" "}{($.week || []).map((d, i2) => (<Fragment key={i2}><span style={{ height: "8px", borderRadius: "8px", background: d?.bg, boxShadow: d?.glow }}></span></Fragment>))}{" "}</div>{" "}<p style={{ margin: "0", fontSize: "13px", lineHeight: "19px", color: "#D8D5E2" }}>{$.streakNote}</p>{" "}</section>{" "}{$.hasBadge ? (<>{" "}<section aria-label="New badge" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 18px", borderRadius: "24px", background: "linear-gradient(135deg,rgba(76,214,228,.14),rgba(255,255,255,.02))", border: "1px solid rgba(110,222,232,.32)" }}>{" "}<svg width="52" height="58" viewBox="0 0 100 112" aria-hidden="true" style={{ flex: "none" }}><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="rgba(76,214,228,.16)" stroke="#7FE9EE" strokeWidth="4" strokeLinejoin="round"></path><g transform="translate(50 56) scale(1.7) translate(-12 -12)" fill="none" stroke="#7FE9EE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={$.badgeIcon}></path></g></svg>{" "}<span style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: "0" }}><span style={{ fontFamily: "'JetBrains Mono',ui-monospace,Menlo,monospace", fontSize: "10.5px", letterSpacing: ".14em", color: "#7FE9EE" }}>{"NEW BADGE"}</span><span style={{ fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "18px", fontWeight: "600" }}>{$.badgeName}</span><span style={{ fontSize: "12px", color: "#A9A6B6" }}>{$.badgeHow}</span></span>{" "}</section>{" "}</>) : null}{" "}<Link to="/games/rush/leaderboards" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 18px", borderRadius: "24px", background: "linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.02))", border: "1px solid rgba(255,255,255,.08)", textDecoration: "none", color: "#F7F5F2" }}>{" "}<span style={{ flex: "none", width: "52px", height: "52px", borderRadius: "18px", background: "rgba(76,214,228,.12)", border: "1px solid rgba(110,222,232,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Space Grotesk',Inter,sans-serif", fontSize: "18px", fontWeight: "700", color: "#7FE9EE" }}>{$.rankValue}</span>{" "}<span style={{ flex: "1", minWidth: "0", display: "flex", flexDirection: "column", gap: "3px" }}><span style={{ fontSize: "15px", fontWeight: "600" }}>{$.rankTitle}</span><span style={{ fontSize: "12px", lineHeight: "17px", color: "#8C8999" }}>{$.rankNote}</span></span>{" "}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8C8999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg>{" "}</Link>{" "}<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "12px 16px", borderRadius: "18px", background: "rgba(255,255,255,.035)", border: "1px solid rgba(255,255,255,.07)" }}>{" "}<span style={{ fontFamily: "'JetBrains Mono',ui-monospace,Menlo,monospace", fontSize: "12px", color: "#D8D5E2" }}>{$.shareLine}</span>{" "}<button type="button" onClick={$.copy} style={{ flex: "none", height: "40px", padding: "0 14px", borderRadius: "999px", border: "1px solid rgba(255,255,255,.14)", background: "rgba(255,255,255,.06)", color: "#F7F5F2", fontSize: "13px", fontWeight: "600" }}>{$.copyLabel}</button>{" "}</div>{" "}<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>{" "}<Link to="/games/rush/play" style={{ height: "56px", borderRadius: "999px", background: "linear-gradient(135deg,#F7D58A 0%,#E2A93B 55%,#C98A1E 100%)", color: "#1A1205", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "16px", fontWeight: "700", textDecoration: "none", boxShadow: "0 16px 34px -14px rgba(226,169,59,.95),inset 0 1px 0 rgba(255,255,255,.45)" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4"></path></svg>{$.againLabel}</Link>{" "}<Link to="/games/rush/leaderboards" style={{ height: "52px", borderRadius: "999px", border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.05)", color: "#F7F5F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "600", textDecoration: "none", boxSizing: "border-box" }}>{"Challenges and leaderboards"}</Link>{" "}<Link to="/games/rush" style={{ height: "44px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "600", color: "#C6B6FF", textDecoration: "none" }}>{"Back to ALKE Rush"}</Link>{" "}</div>{" "}<p style={{ margin: "0", fontSize: "12px", lineHeight: "18px", color: "#8C8999", textAlign: "center" }}>{"Game XP only. Nothing was added to or taken from your ALKE, allocation or contribution score, and no cold ALKE was warmed. Game XP is never redeemable for ALKE."}</p>{" "}</div>{" "}</main>{" "}</div>{" "}</>);
+    return (
+      <Page
+        bar={<Bar back="/games/rush" />}
+        footer={
+          <>
+            <Button to="/games/rush/play">{$.againLabel}</Button>
+            <Button kind="ghost" to="/games/rush/leaderboards">
+              Challenges and leaderboards
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 8, paddingTop: 8 }}>
+          <span className="ob-tile" style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
+            <Ico.Check size={30} />
+          </span>
+          <p className="ob-eyebrow" style={{ margin: "8px 0 0", color: "var(--text-3)" }}>
+            {tc($.tag)}
+          </p>
+          <div className="num" style={{ fontSize: 48, fontWeight: 800, color: "var(--gold)", lineHeight: 1 }}>
+            {$.bankedText}
+          </div>
+          <div style={{ fontSize: 15, color: "var(--text-2)" }}>{$.bankedUnit}</div>
+          <h1 className="ob-title" style={{ fontSize: 22, marginTop: 6 }}>
+            {$.title}
+          </h1>
+          <div className="ob-chips" style={{ justifyContent: "center", marginTop: 4 }}>
+            {$.chips.map((c) => (
+              <span key={c.t} className="ob-pill" style={{ color: c.ink }}>
+                {c.t}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="ob-stats">
+          <Stat label="Spins" value={$.spinsValue} />
+          <Stat label="Blocked" value={$.blockedValue} />
+          <Stat label="Best run" value={$.bestValue} />
+        </div>
+
+        {$.path.length ? (
+          <Section title="Your run" action={<span>{$.howNote}</span>}>
+            <div className="ob-chips">
+              {$.path.map((p, i) => (
+                <span key={i} className="ob-pill" style={{ color: p.ink, height: 28 }}>
+                  {p.t}
+                </span>
+              ))}
+            </div>
+          </Section>
+        ) : null}
+
+        {$.hasBadge ? (
+          <ul className="ob-list">
+            <li>
+              <Row
+                icon={
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d={$.badgeIcon} />
+                  </svg>
+                }
+                tone="gold"
+                title={`New badge · ${$.badgeName}`}
+                sub={$.badgeHow}
+              />
+            </li>
+          </ul>
+        ) : null}
+
+        <p className="ob-small center">
+          <Ico.Flame size={13} /> {$.streakTitle}
+        </p>
+      </Page>
+    );
   }
 }

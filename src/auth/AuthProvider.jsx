@@ -4,7 +4,7 @@ import { auth } from "../lib/firebase";
 import { openNuruAccount, signOut as accountSignOut, tryNuruHandoff } from "../lib/account";
 import { initialsOf, watchMember, watchPerson } from "../lib/member";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 /* Where the person is in the first run. */
 export const STEPS = {

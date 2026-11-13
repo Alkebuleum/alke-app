@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import "./ui.css";
+import { Logo, Page } from "./ob";
 
 export function Screen({ glow, children }) {
   return <div className={glow ? "ui-screen glow" : "ui-screen"}>{children}</div>;
@@ -126,14 +127,14 @@ export const Icon = {
 
 export function Loading({ label = "Opening your account…" }) {
   return (
-    <Screen glow>
-      <div className="ui-center">
-        <Mark size={40} />
-        <span style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--muted)", fontSize: 14 }}>
-          <span className="ui-spin" aria-hidden="true" />
+    <Page center>
+      <div style={{ margin: "auto 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+        <Logo size={56} />
+        <span style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--text-2)", fontSize: 14 }}>
+          <span className="ob-spin" aria-hidden="true" />
           {label}
         </span>
       </div>
-    </Screen>
+    </Page>
   );
 }

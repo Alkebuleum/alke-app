@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Field, Icon, Screen } from "../../ui/kit";
+import { Bar, Button, Field, Heading, Notice, Page } from "../../ui/ob";
 import { useAuth } from "../../auth/AuthProvider";
 import { AVATAR_COLORS, USERNAME_RE, createMember, initialsOf, normInvite, normUsername, usernameStatus } from "../../lib/member";
 
@@ -77,63 +77,31 @@ export default function ProfileSetup() {
     }
   };
 
-  const userMsg =
-    status === "invalid"
-      ? { bad: true, text: "Use 3 to 20 letters, numbers, dots or underscores." }
-      : status === "taken"
-        ? { bad: true, text: "That username is taken. Try another." }
-        : status === "available" || status === "mine"
-          ? { ok: true, text: "Available" }
-          : null;
+  const userErr =
+    status === "invalid" ? "Use 3 to 20 letters, numbers, dots or underscores." : status === "taken" ? "That username is taken. Try another." : null;
+  const userOk = status === "available" || status === "mine" ? "Available" : null;
+  const userHelp = status === "checking" ? "Checking…" : null;
 
   return (
-    <Screen>
-      <div className="ui-top">
-        <button type="button" className="ui-round" aria-label="Sign out and go back" onClick={signOut}>
-          <Icon.Back />
-        </button>
-        <span className="ui-step">Step 2 of 3</span>
-        <span />
-      </div>
-      <div className="ui-progress" aria-hidden="true">
-        <span className="on" />
-        <span className="on" />
-        <span />
-      </div>
-      <form className="ui-body" onSubmit={submit} noValidate style={{ gap: 20 }}>
-        <h1 className="ui-h1" style={{ fontSize: 30, lineHeight: "34px" }}>
-          How should Alkers
-          <br />
-          know you?
-        </h1>
+    <Page bar={<Bar onBack={signOut} step={2} />}>
+      <Heading title="Set up your profile" />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <span role="img" aria-label="Avatar preview" style={{ width: 88, height: 88, flex: "none", borderRadius: "50%", padding: 3, boxSizing: "border-box", background: "linear-gradient(135deg,#FFFFFF,#5E3AFF)" }}>
-            <span style={{ width: "100%", height: "100%", borderRadius: "50%", background: color.hex, color: "#0A0A0F", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--display)", fontSize: 28, fontWeight: 700, border: "3px solid #08070D", boxSizing: "border-box" }}>
-              {initialsOf(name, normUsername(username))}
-            </span>
+      <form className="ob-stack loose" onSubmit={submit} noValidate>
+        <div className="ob-card" style={{ padding: "20px 12px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+          <span className="ob-avatar" role="img" aria-label="Avatar preview" style={{ width: 80, height: 80, background: color.hex, fontSize: 28 }}>
+            {initialsOf(name, normUsername(username))}
           </span>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-            <span className="ui-label">Avatar colour</span>
-            <div style={{ display: "flex", gap: 2, marginLeft: -5, flexWrap: "wrap" }}>
-              {AVATAR_COLORS.map((c, i) => (
-                <button
-                  key={c.tint}
-                  type="button"
-                  aria-label={`${c.label} avatar`}
-                  aria-pressed={i === colorIdx}
-                  onClick={() => setColorIdx(i)}
-                  style={{ width: 44, height: 44, border: 0, background: "transparent", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
-                >
-                  <span style={{ width: 30, height: 30, borderRadius: "50%", background: c.hex, boxShadow: i === colorIdx ? "0 0 0 3px #08070D, 0 0 0 5px #C6B6FF" : "none" }} />
-                </button>
-              ))}
-            </div>
+          <div className="ob-swatches" role="group" aria-label="Avatar colour">
+            {AVATAR_COLORS.map((c, i) => (
+              <button key={c.tint} type="button" className="ob-swatch" aria-label={`${c.label} avatar`} aria-pressed={i === colorIdx} onClick={() => setColorIdx(i)}>
+                <span style={{ background: c.hex }} />
+              </button>
+            ))}
           </div>
         </div>
 
-        <Field id="ps-user" label="Username">
-          <div className={userMsg?.bad ? "ui-input bad" : "ui-input"}>
+        <Field id="ps-user" label="Username" error={userErr} ok={userOk} help={userHelp}>
+          <div className={userErr ? "ob-input bad" : "ob-input"}>
             <span className="pre">@</span>
             <input
               id="ps-user"
@@ -145,44 +113,29 @@ export default function ProfileSetup() {
                 setTouched(true);
                 setUsername(e.target.value.toLowerCase().replace(/\s/g, ""));
               }}
+              aria-invalid={!!userErr}
             />
           </div>
-          {status === "checking" ? <span className="ui-hint">Checking…</span> : null}
-          {userMsg?.ok ? (
-            <span className="ui-ok">
-              <Icon.Check />
-              {userMsg.text}
-            </span>
-          ) : null}
-          {userMsg?.bad ? <span className="ui-err">{userMsg.text}</span> : null}
         </Field>
 
-        <Field id="ps-name" label="Display name" optional hint="Shown with your username. The same name appears in Nuru.">
-          <input id="ps-name" className="ui-input" autoComplete="name" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} />
-        </Field>
-
-        <Field id="ps-invite" label="Invite code" optional hint="Invites earn recognition, not ALKE.">
-          <input
-            id="ps-invite"
-            className="ui-input mono"
-            placeholder="e.g. KOFI-3M8D"
-            autoCapitalize="characters"
-            value={invite}
-            onChange={(e) => setInvite(normInvite(e.target.value))}
-          />
-        </Field>
-
-        {error ? (
-          <div className="ui-alert" role="alert">
-            {error}
+        <Field id="ps-name" label="Display name" optional>
+          <div className="ob-input">
+            <input id="ps-name" autoComplete="name" maxLength={60} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-        ) : null}
+        </Field>
 
-        <p className="ui-note">Your email stays private. Members see only your username, name and avatar.</p>
+        <Field id="ps-invite" label="Invite code" optional>
+          <div className="ob-input mono">
+            <input id="ps-invite" placeholder="KOFI-3M8D" autoCapitalize="characters" value={invite} onChange={(e) => setInvite(normInvite(e.target.value))} />
+          </div>
+        </Field>
+
+        {error ? <Notice kind="error">{error}</Notice> : null}
+
         <Button type="submit" busy={busy} disabled={!canContinue}>
           Continue
         </Button>
       </form>
-    </Screen>
+    </Page>
   );
 }

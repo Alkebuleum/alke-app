@@ -6,7 +6,7 @@ import { normInvite } from "./lib/member";
 import { ensureGameOwner, loadLeaderboards, personLook, postScores } from "./lib/games";
 import { useState } from "react";
 
-import Splash from "./screens/Splash";
+import Splash from "./pages/onboarding/Splash";
 
 // First run: real screens.
 const SignUp = lazy(() => import("./pages/onboarding/SignUp"));
@@ -16,34 +16,29 @@ const Rules = lazy(() => import("./pages/onboarding/Rules"));
 const FirstSession = lazy(() => import("./pages/onboarding/FirstSession"));
 const AccountProblem = lazy(() => import("./pages/onboarding/AccountProblem"));
 
-// Public explainer screens (from the design).
-const Welcome = lazy(() => import("./screens/Welcome"));
-const HowItWorks = lazy(() => import("./screens/HowItWorks"));
+// Public explainer screens.
+const Welcome = lazy(() => import("./pages/onboarding/Welcome"));
+const HowItWorks = lazy(() => import("./pages/onboarding/HowItWorks"));
 
 // Member screens (from the design; wired to live data next).
 const Home = lazy(() => import("./pages/app/Home"));
 const Mine = lazy(() => import("./pages/app/Mine"));
 const Allocation = lazy(() => import("./pages/app/Allocation"));
 const History = lazy(() => import("./pages/app/History"));
-const GamesHub = lazy(() => import("./screens/GamesHub"));
+const GamesHub = lazy(() => import("./pages/app/Games"));
 const HexHub = lazy(() => import("./screens/HexHub"));
 const HexPlay = lazy(() => import("./screens/HexPlay"));
-const HexVictory = lazy(() => import("./screens/HexVictory"));
-const HexDefeat = lazy(() => import("./screens/HexDefeat"));
-const HexLeaderboard = lazy(() => import("./screens/HexLeaderboard"));
+const Leaderboard = lazy(() => import("./pages/app/Leaderboard"));
 const RushIntro = lazy(() => import("./screens/RushIntro"));
 const RushPlay = lazy(() => import("./screens/RushPlay"));
 const RushHazard = lazy(() => import("./screens/RushHazard"));
 const RushBanked = lazy(() => import("./screens/RushBanked"));
-const RushLeaderboard = lazy(() => import("./screens/RushLeaderboard"));
-const Network = lazy(() => import("./screens/Network"));
-const Profile = lazy(() => import("./screens/Profile"));
-const Notifications = lazy(() => import("./screens/Notifications"));
-const Settings = lazy(() => import("./screens/Settings"));
-const StateVerify = lazy(() => import("./screens/StateVerify"));
-const StateInactive = lazy(() => import("./screens/StateInactive"));
-const HomeLight = lazy(() => import("./screens/HomeLight"));
-const MineActiveLight = lazy(() => import("./screens/MineActiveLight"));
+const Network = lazy(() => import("./pages/app/Network"));
+const Profile = lazy(() => import("./pages/app/Profile"));
+const Notifications = lazy(() => import("./pages/app/Notifications"));
+const Settings = lazy(() => import("./pages/app/Settings"));
+const Verify = lazy(() => import("./pages/app/Verify"));
+const Preview = import.meta.env.DEV ? lazy(() => import("./dev/Preview")) : null;
 
 /* ── Guards ─────────────────────────────────────────────────────────────── */
 
@@ -165,27 +160,21 @@ const ROUTES = [
   ["/games", member(<GamesHub />)],
   ["/games/hex", member(<HexHub />)],
   ["/games/hex/play", member(<HexPlay />)],
-  ["/games/hex/victory", member(<HexVictory />)],
-  ["/games/hex/defeat", member(<HexDefeat />)],
-  ["/games/hex/leaderboards", member(<Boards><HexLeaderboard /></Boards>)],
+  ["/games/hex/leaderboards", member(<Boards><Leaderboard game="hex" /></Boards>)],
   ["/games/rush", member(<RushIntro />)],
   ["/games/rush/play", member(<RushPlay />)],
   ["/games/rush/lost", member(<RushHazard />)],
   ["/games/rush/banked", member(<RushBanked />)],
-  ["/games/rush/leaderboards", member(<RushLeaderboard />)],
+  ["/games/rush/leaderboards", member(<Boards><Leaderboard game="rush" /></Boards>)],
   ["/network", member(<Network />)],
   ["/profile", member(<Profile />)],
   ["/notifications", member(<Notifications />)],
   ["/settings", member(<Settings />)],
-  ["/verify", member(<StateVerify />)],
-  ["/status/inactive", member(<StateInactive />)],
-  ["/light/home", member(<HomeLight />)],
-  ["/light/mine/session", member(<MineActiveLight />)],
+  ["/verify", member(<Verify />)],
 ];
 
 function Shell() {
   const { pathname, search } = useLocation();
-  const light = pathname.startsWith("/light/");
 
   // Game XP → leaderboards, whenever the member moves between screens.
   const auth = useAuth();
@@ -200,13 +189,14 @@ function Shell() {
   }, [search]);
 
   return (
-    <div className="stage" data-theme={light ? "light" : "dark"}>
+    <div className="stage">
       <div className="device">
         <Suspense fallback={<div className="screen" />}>
           <Routes>
             {ROUTES.map(([path, el]) => (
               <Route key={path} path={path} element={<div className="screen" key={path}>{el}</div>} />
             ))}
+            {Preview ? <Route path="/__preview/:name" element={<div className="screen"><Preview /></div>} /> : null}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

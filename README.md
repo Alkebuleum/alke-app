@@ -14,20 +14,28 @@ npm run build    # production build in dist/
 
 ## How the screens are made
 
-`src/screens/*.jsx` are generated one-to-one from the design export
-(`../ALKE Network App.html`). Each design board's markup becomes JSX and its
-logic class (state, timers, game rules) becomes the component's base class,
-built on the tiny `DCLogic` adapter in `src/dc.js`.
+Onboarding (`src/pages/onboarding/`: splash, welcome, how it works, sign up /
+sign in, verify email, profile, rules, first session) is hand-built on the
+onboarding kit in `src/ui/ob.jsx` + `ob.css`: every screen is a fixed top
+bar, a scrolling content area and a pinned footer, so nothing overlaps on
+short phones. In dev, `/__preview/<screen>` (welcome, how, signup, signin,
+verify, profile, rules, first, first?started=1, problem, splash, loading)
+shows any of them with a stand-in account.
 
-To regenerate after a new design export, unpack the export's screens to a
-folder of `.html` templates and run:
+The member screens (`src/pages/app/`: home, mine, allocation, history, games,
+network, profile, notifications, settings) use the shell in `src/ui/shell.jsx`
+(app bar, tab bar, stat tiles, list rows) on the same tokens. They preview at
+`/__preview/home` etc.; add `?started=1` for a running session. The game
+screens in `src/screens/` (Hex and Rush) are still generated from the design.
 
-```
-npm run convert -- <templatesDir> src/screens tools/map.json
-```
 
-`tools/map.json` names each board and maps the design's links
-(`Home.dc.html`, `MineActive.dc.html`, ...) to app routes.
+The game screens in `src/screens/` (ALKE Hex and ALKE Rush: hubs, play,
+results) started as the design export: each keeps its game logic class, with
+the hub and result layouts now built on the shell and the play screens laid
+out as a top-to-bottom stack (the board scales down on short phones; see
+`.gp-board` in `src/index.css`). Leaderboards for both games are
+`src/pages/app/Leaderboard.jsx`. They preview at `/__preview/hexhub`,
+`hexplay`, `rushhub`, `rushplay`, `rushbanked`, `rushlost`, `rushboard`.
 
 ## Accounts and data
 

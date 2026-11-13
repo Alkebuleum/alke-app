@@ -23,9 +23,12 @@ a:hover { color: #F7F5F2; }
 [data-theme="light"] a:hover { color: #0E0C1A; }
 :focus-visible { outline: 2px solid #C6B6FF; outline-offset: 2px; }
 
-/* The app fills the phone. On larger screens it sits in a phone-sized frame. */
-.stage { height: 100%; }
-.device { position: relative; width: 100%; height: 100%; overflow: hidden; }
+/* The app fills the phone. On larger screens it sits in a phone-sized frame.
+   dvh follows the browser's toolbars as they show and hide, so the footer
+   never ends up hidden behind them. */
+:root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+.stage { height: 100%; height: 100dvh; }
+.device { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; }
 .screen { position: absolute; inset: 0; }
 
 @media (min-width: 560px) and (min-height: 700px) {
@@ -45,6 +48,9 @@ a:hover { color: #F7F5F2; }
     width: 390px;
     height: min(844px, calc(100vh - 48px));
     border-radius: 44px;
+    /* Stand-in for a phone's status bar and home indicator inside the frame. */
+    --safe-top: 40px;
+    --safe-bottom: 14px;
     box-shadow: 0 0 0 10px #15121F, 0 0 0 11px rgba(255, 255, 255, .08), 0 50px 120px -30px rgba(94, 58, 255, .55);
   }
 }
@@ -52,3 +58,11 @@ a:hover { color: #F7F5F2; }
 /* Phone-style scrolling: no desktop scrollbars inside the screens. */
 .screen * { scrollbar-width: none; }
 .screen *::-webkit-scrollbar { display: none; }
+
+/* Game boards scale down on shorter or narrower phones instead of
+   overlapping the controls (.device is the size container). */
+@container (max-width: 370px) { .gp-board { zoom: .9; } }
+@container (max-height: 790px) { .gp-board { zoom: .9; } }
+@container (max-height: 730px) { .gp-board { zoom: .8; } }
+@container (max-height: 670px) { .gp-board { zoom: .7; } }
+@container (max-height: 610px) { .gp-board { zoom: .6; } }

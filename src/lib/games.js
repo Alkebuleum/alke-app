@@ -50,6 +50,61 @@ export function gameTotals() {
   return { hexXp, rushXp, total: hexXp + rushXp };
 }
 
+/* Warming: verified invites warm cold ALKE; games add a small, capped amount.
+   Invites weigh over 3× more than the most games can add in a day. The real
+   calculation belongs on the server; these figures are the in-app estimate. */
+export const WARMING = { perInvite: 10, gameCap: 3, xpPerUnit: 30 };
+
+/** Game XP earned today (won Hex rounds, banked scored Rush runs) and the
+    warming it adds, capped. Estimate only: applied once verified server-side. */
+export function gameWarmingToday(now = new Date()) {
+  const today = dayKey(now);
+  const onToday = (t) => t && dayKey(new Date(t)) === today;
+  const hex = read("alke.hex.v1") || {};
+  const rush = read("alke.rush.v1") || {};
+  let xp = 0;
+  for (const h of hex.history || []) if (onToday(h.t) && h.result === "won") xp += int(h.xp);
+  for (const h of rush.history || []) if (onToday(h.t) && h.result === "banked" && !h.practice) xp += int(h.xp) + int(h.bonus);
+  const warm = Math.min(WARMING.gameCap, Math.floor(xp / WARMING.xpPerUnit));
+  return { xp, warm, cap: WARMING.gameCap, nextAt: warm < WARMING.gameCap ? (warm + 1) * WARMING.xpPerUnit : null };
+}
+
+/** Today's state of both games, for the Home and Games screens. */
+export function gameStatus(now = new Date()) {
+  const hex = read("alke.hex.v1") || {};
+  const rush = read("alke.rush.v1") || {};
+  const today = dayKey(now);
+
+  const hd = hex.daily && hex.daily.date === today ? hex.daily : null;
+  let hexStatus = "Daily board ready";
+  let hexTone = "idle";
+  if (hd && hd.result === "won") [hexStatus, hexTone] = [`Won today · +${int(hd.xp)} XP`, "done"];
+  else if (hd && hd.result === "lost") [hexStatus, hexTone] = ["Lost today · back tomorrow", "lost"];
+  else if (hd) [hexStatus, hexTone] = ["Started · practice open", "live"];
+
+  const rd = rush.day === today;
+  const runs = rd ? rush.runsToday || 0 : 0;
+  const chal = rd && rush.chal ? rush.chal : { best: 0, done: false };
+  let rushStatus = `${Math.max(0, 5 - runs)} of 5 scored runs left`;
+  let rushTone = "idle";
+  if (chal.done) [rushStatus, rushTone] = ["Challenge done · +50 XP", "done"];
+  else if (chal.best) [rushStatus, rushTone] = [`Best today ${int(chal.best)} of 250`, "live"];
+
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return {
+    hexXp: int(hex.xp),
+    rushXp: int(rush.xp),
+    total: int(hex.xp) + int(rush.xp),
+    hexLevel: Math.max(1, Math.min(20, hex.unlocked || 1)),
+    rushBest: int(rush.best),
+    hexStatus,
+    hexTone,
+    rushStatus,
+    rushTone,
+    resetMs: midnight - now,
+  };
+}
+
 /** The leaderboard row for the saved progress. */
 function scoreRow(username) {
   const hex = read("alke.hex.v1") || {};

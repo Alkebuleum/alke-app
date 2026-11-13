@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Icon, Screen, StepHeader } from "../../ui/kit";
+import { Bar, Button, Heading, I, Notice, Page } from "../../ui/ob";
 import { checkVerified, resendVerification } from "../../lib/account";
 import { useAuth } from "../../auth/AuthProvider";
 
@@ -16,7 +16,7 @@ export default function VerifyEmail() {
     if (!quiet) setBusy("check");
     try {
       if (await checkVerified()) await refresh();
-      else if (!quiet) setMsg({ bad: true, text: "Not verified yet. Open the link in the email, then try again." });
+      else if (!quiet) setMsg({ bad: true, text: "Not confirmed yet. Open the link in the email, then try again." });
     } catch {
       if (!quiet) setMsg({ bad: true, text: "Couldn't check right now. Try again." });
     } finally {
@@ -47,7 +47,7 @@ export default function VerifyEmail() {
     setMsg(null);
     try {
       await resendVerification();
-      setMsg({ text: "Sent. Check your inbox and spam folder." });
+      setMsg({ text: "Sent. Check your spam folder too." });
       setCooldown(30);
     } catch (e) {
       setMsg({ bad: true, text: e.message });
@@ -57,35 +57,34 @@ export default function VerifyEmail() {
   };
 
   return (
-    <Screen>
-      <StepHeader step={1} />
-      <div className="ui-body">
-        <span style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(139,109,255,.16)", color: "var(--lilac)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon.Mail />
-        </span>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <h1 className="ui-h1">Check your email</h1>
-          <p className="ui-lede">
-            We sent a link to <b style={{ color: "var(--text)" }}>{user?.email}</b>. Open it to confirm it's you, then come back here.
-          </p>
-        </div>
-        {msg ? (
-          <div className={msg.bad ? "ui-alert" : "ui-info"} role="status">
-            {msg.text}
-          </div>
-        ) : null}
-      </div>
-      <div className="ui-foot">
-        <Button busy={busy === "check"} disabled={!!busy} onClick={() => check(false)}>
-          I've confirmed my email
-        </Button>
-        <Button kind="secondary" busy={busy === "resend"} disabled={!!busy || cooldown > 0} onClick={resend}>
-          {cooldown ? `Resend in ${cooldown}s` : "Resend the email"}
-        </Button>
-        <Button kind="ghost" onClick={signOut}>
-          Use a different account
-        </Button>
-      </div>
-    </Screen>
+    <Page
+      bar={<Bar step={1} />}
+      footer={
+        <>
+          <Button busy={busy === "check"} disabled={!!busy} onClick={() => check(false)}>
+            I've confirmed my email
+          </Button>
+          <Button kind="secondary" busy={busy === "resend"} disabled={!!busy || cooldown > 0} onClick={resend}>
+            {cooldown ? `Resend in ${cooldown}s` : "Resend email"}
+          </Button>
+          <Button kind="ghost" onClick={signOut}>
+            Use a different account
+          </Button>
+        </>
+      }
+    >
+      <span className="ob-tile" style={{ marginTop: 8 }}>
+        <I.Mail />
+      </span>
+      <Heading
+        title="Check your email"
+        sub={
+          <>
+            We sent a link to <b>{user?.email || "your inbox"}</b>. Tap it to continue.
+          </>
+        }
+      />
+      {msg ? <Notice kind={msg.bad ? "error" : "success"}>{msg.text}</Notice> : null}
+    </Page>
   );
 }
