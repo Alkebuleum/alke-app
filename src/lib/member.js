@@ -3,6 +3,10 @@
  *   nuru_people/{nuruId}     shared Nuru person: name, emojiColor (avatar tint)
  *   alke_members/{nuruId}    ALKÉ record: username, invitedBy, rules, sessions
  *   alke_usernames/{name}    { nuruId } — one username per member, unique
+ *   alke_members/{id}/sessions/{n}         one record per session (history)
+ *   alke_members/{id}/allocation/summary   server-written ALKE totals
+ *   alke_members/{id}/entries/{id}         server-written ledger lines
+ *   alke_scores/{nuruId}     game XP for the leaderboards
  *
  * Times that matter (rules accepted, sessions) are written as serverTimestamp()
  * and the Firestore rules require them to equal request.time, so the server's
@@ -10,10 +14,13 @@
  * Rules for the two alke_ collections: firestore.alke.rules.
  */
 import {
+  collection,
   doc,
   getDoc,
-  increment,
+  limit,
   onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   updateDoc,
   writeBatch,
@@ -22,6 +29,8 @@ import { db } from "./firebase";
 
 export const RULES_VERSION = 1;
 export const SESSION_MS = 24 * 60 * 60 * 1000;
+/** A session that starts within this long of the previous one keeps the streak. */
+export const STREAK_MS = 48 * 60 * 60 * 1000;
 
 /* Avatar colours offered at sign-up, as indexes into Nuru's tint palette
    (NuruColors.tints) so the person looks the same in Nuru. */
@@ -96,20 +105,78 @@ export async function acceptRules(nuruId) {
   });
 }
 
+/** The streak a session started at [now] gets (the rules check the same). */
+export function nextStreak(member, now = Date.now()) {
+  const last = member?.lastSessionAt?.toMillis?.();
+  if (!last) return 1;
+  return now <= last + STREAK_MS ? (member.streak || 1) + 1 : 1;
+}
+
+/** The current streak as of [now]: 0 once the window to continue it has passed. */
+export function liveStreak(member, now = Date.now()) {
+  const last = member?.lastSessionAt?.toMillis?.();
+  if (!last) return 0;
+  return now <= last + STREAK_MS ? member.streak || 1 : 0;
+}
+
+/* A session start: member fields + sessions/{n}, in one write. The server's
+   clock decides the streak; if ours disagrees right at the 48-hour edge the
+   write is refused, so the other value is tried once. */
+async function writeSession(nuruId, member, extra = {}) {
+  const n = (member?.sessionCount || 0) + 1;
+  const guess = nextStreak(member);
+  const attempt = (streak) => {
+    const b = writeBatch(db);
+    b.update(doc(db, "alke_members", nuruId), {
+      lastSessionAt: serverTimestamp(),
+      sessionCount: n,
+      streak,
+      bestStreak: Math.max(member?.bestStreak || 0, streak),
+      updatedAt: serverTimestamp(),
+      ...extra,
+    });
+    b.set(doc(db, "alke_members", nuruId, "sessions", String(n)), { n, startedAt: serverTimestamp() });
+    return b.commit();
+  };
+  try {
+    await attempt(guess);
+  } catch (e) {
+    if (e?.code !== "permission-denied" || !member?.lastSessionAt) throw e;
+    await attempt(guess === 1 ? (member.streak || 1) + 1 : 1);
+  }
+}
+
 /** Ends onboarding; with startSession, also records the first session. */
-export async function finishOnboarding(nuruId, { startSession }) {
-  const data = { onboardedAt: serverTimestamp(), updatedAt: serverTimestamp() };
-  if (startSession) Object.assign(data, { lastSessionAt: serverTimestamp(), sessionCount: increment(1) });
-  await updateDoc(doc(db, "alke_members", nuruId), data);
+export async function finishOnboarding(nuruId, member, { startSession }) {
+  if (startSession) return writeSession(nuruId, member, { onboardedAt: serverTimestamp() });
+  await updateDoc(doc(db, "alke_members", nuruId), { onboardedAt: serverTimestamp(), updatedAt: serverTimestamp() });
 }
 
 /** Starts a 24-hour session. The rules refuse it while one is still running. */
-export async function startSession(nuruId) {
-  await updateDoc(doc(db, "alke_members", nuruId), {
-    lastSessionAt: serverTimestamp(),
-    sessionCount: increment(1),
-    updatedAt: serverTimestamp(),
-  });
+export async function startSession(nuruId, member) {
+  if (sessionRemaining(member) > 0) throw new Error("Your session is still running.");
+  try {
+    await writeSession(nuruId, member);
+  } catch (e) {
+    throw new Error(e?.code === "permission-denied" ? "Your next session isn't open yet." : e?.message || "Couldn't start the session. Try again.");
+  }
+}
+
+/** The latest sessions, newest first. */
+export function watchSessions(nuruId, cb, onError, count = 60) {
+  const q = query(collection(db, "alke_members", nuruId, "sessions"), orderBy("n", "desc"), limit(count));
+  return onSnapshot(q, (s) => cb(s.docs.map((d) => d.data({ serverTimestamps: "estimate" }))), onError);
+}
+
+/** Server-written ALKE totals ({ locked, verified, pending, claimable, claimed }), or null. */
+export function watchAllocation(nuruId, cb, onError) {
+  return onSnapshot(doc(db, "alke_members", nuruId, "allocation", "summary"), (s) => cb(s.exists() ? s.data() : null), onError);
+}
+
+/** Server-written ledger lines, newest first. */
+export function watchEntries(nuruId, cb, onError, count = 60) {
+  const q = query(collection(db, "alke_members", nuruId, "entries"), orderBy("at", "desc"), limit(count));
+  return onSnapshot(q, (s) => cb(s.docs.map((d) => ({ id: d.id, ...d.data() }))), onError);
 }
 
 /** Milliseconds left in the current session, or 0. */

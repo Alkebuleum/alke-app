@@ -3,6 +3,8 @@ import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "re
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { Loading } from "./ui/kit";
 import { normInvite } from "./lib/member";
+import { ensureGameOwner, loadLeaderboards, personLook, postScores } from "./lib/games";
+import { useState } from "react";
 
 import Splash from "./screens/Splash";
 
@@ -19,11 +21,10 @@ const Welcome = lazy(() => import("./screens/Welcome"));
 const HowItWorks = lazy(() => import("./screens/HowItWorks"));
 
 // Member screens (from the design; wired to live data next).
-const Home = lazy(() => import("./screens/Home"));
-const MineIdle = lazy(() => import("./screens/MineIdle"));
-const MineActive = lazy(() => import("./screens/MineActive"));
-const Rewards = lazy(() => import("./screens/Rewards"));
-const History = lazy(() => import("./screens/History"));
+const Home = lazy(() => import("./pages/app/Home"));
+const Mine = lazy(() => import("./pages/app/Mine"));
+const Allocation = lazy(() => import("./pages/app/Allocation"));
+const History = lazy(() => import("./pages/app/History"));
 const GamesHub = lazy(() => import("./screens/GamesHub"));
 const HexHub = lazy(() => import("./screens/HexHub"));
 const HexPlay = lazy(() => import("./screens/HexPlay"));
@@ -80,6 +81,7 @@ function Member({ children }) {
   const a = useAuth();
   if (!a.ready || a.step === null) return <Loading />;
   if (a.step !== "done") return <Navigate to={a.stepPath} replace />;
+  ensureGameOwner(a.nuruId);
   const since = a.member?.createdAt?.toDate?.();
   return cloneElement(children, {
     memberName: a.displayName,
@@ -97,6 +99,15 @@ function Member({ children }) {
     personhood: "Not yet",
     signOut: a.signOut,
   });
+}
+
+/** Loads the real leaderboards for a leaderboard screen. */
+function Boards({ children, ...props }) {
+  const [boards, setBoards] = useState(null);
+  useEffect(() => {
+    loadLeaderboards().then(setBoards).catch(() => setBoards({ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }));
+  }, []);
+  return cloneElement(children, { ...props, boards, look: personLook });
 }
 
 /** The brand moment, then wherever the person belongs. */
@@ -147,16 +158,16 @@ const ROUTES = [
   ["/first-session", step("firstSession", <FirstSession />)],
   ["/account-problem", step("error", <AccountProblem />)],
   ["/home", member(<Home />)],
-  ["/mine", member(<MineIdle />)],
-  ["/mine/session", member(<MineActive />)],
-  ["/mine/allocation", member(<Rewards />)],
+  ["/mine", member(<Mine />)],
+  ["/mine/session", member(<Mine />)],
+  ["/mine/allocation", member(<Allocation />)],
   ["/mine/history", member(<History />)],
   ["/games", member(<GamesHub />)],
   ["/games/hex", member(<HexHub />)],
   ["/games/hex/play", member(<HexPlay />)],
   ["/games/hex/victory", member(<HexVictory />)],
   ["/games/hex/defeat", member(<HexDefeat />)],
-  ["/games/hex/leaderboards", member(<HexLeaderboard />)],
+  ["/games/hex/leaderboards", member(<Boards><HexLeaderboard /></Boards>)],
   ["/games/rush", member(<RushIntro />)],
   ["/games/rush/play", member(<RushPlay />)],
   ["/games/rush/lost", member(<RushHazard />)],
@@ -175,6 +186,12 @@ const ROUTES = [
 function Shell() {
   const { pathname, search } = useLocation();
   const light = pathname.startsWith("/light/");
+
+  // Game XP → leaderboards, whenever the member moves between screens.
+  const auth = useAuth();
+  useEffect(() => {
+    if (auth.step === "done") postScores(auth.nuruId, auth.member?.username).catch(() => {});
+  }, [pathname, auth.step, auth.nuruId, auth.member?.username]);
 
   // ?invite=CODE on any link is kept for the profile step.
   useEffect(() => {

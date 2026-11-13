@@ -31,9 +31,9 @@ class Logic extends DCLogic {
     const today = this.dayKey(now);
     const hex = this.read('alke.hex.v1') || {};
     const rush = this.read('alke.rush.v1') || {};
-    const hexXP = hex.xp != null ? hex.xp : 120;
-    const rushXP = rush.xp != null ? rush.xp : 180;
-    const unlocked = Math.max(1, Math.min(20, hex.unlocked || 4));
+    const hexXP = hex.xp != null ? hex.xp : 0;
+    const rushXP = rush.xp != null ? rush.xp : 0;
+    const unlocked = Math.max(1, Math.min(20, hex.unlocked || 1));
 
     const hd = hex.daily && hex.daily.date === today ? hex.daily : null;
     let hexStatus = 'Not played yet · one scored try';
@@ -57,7 +57,7 @@ class Logic extends DCLogic {
       xpTotal: String(hexXP + rushXP),
       hexXP: String(hexXP),
       rushXP: String(rushXP),
-      rushBest: String(rush.best != null ? rush.best : 120),
+      rushBest: String(rush.best != null ? rush.best : 0),
       hexMeta: 'Level ' + unlocked + ' next · a daily board · three lives a round',
       rushMeta: left ? left + ' of 5 scored runs left today.' : 'Scored runs are done for today; practice is open.',
       hexStatus: hexStatus,

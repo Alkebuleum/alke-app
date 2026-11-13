@@ -58,7 +58,7 @@ class Logic extends DCLogic {
       ]
     };
     const last = p && p.last && p.last.result && p.last.result !== 'banked' ? p.last : sample;
-    const xp = p && p.xp != null ? p.xp : 180;
+    const xp = p && p.xp != null ? p.xp : 0;
     const words = {
       glitch: ['NETWORK GLITCH · RUN OVER', 'Glitched out', 'The signal hit a network glitch. Everything you hadn’t banked went with it, and the run ended.'],
       trap: ['TRAP · RUN OVER', 'Trapped', 'A trap took your unbanked XP, and the run ran out of spins before you could build it back.'],

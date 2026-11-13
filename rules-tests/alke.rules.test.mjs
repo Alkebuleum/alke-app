@@ -25,6 +25,16 @@ beforeEach(async () => {
 const as = (nid) => env.authenticatedContext(`uid_${nid}`, { nid }).firestore();
 const plain = () => env.authenticatedContext("anon").firestore();
 
+/** A session start the way the app writes it: member fields + sessions/{n}. */
+function session(db, nid, { n, streak, best, extra = {} }) {
+  const b = writeBatch(db);
+  b.update(doc(db, "alke_members", nid), { lastSessionAt: serverTimestamp(), sessionCount: n, streak, bestStreak: best, updatedAt: serverTimestamp(), ...extra });
+  b.set(doc(db, "alke_members", nid, "sessions", String(n)), { n, startedAt: serverTimestamp() });
+  return b.commit();
+}
+const hoursAgo = (h) => Timestamp.fromMillis(Date.now() - h * 3600e3);
+const setMember = (nid, data) => env.withSecurityRulesDisabled((ctx) => updateDoc(doc(ctx.firestore(), "alke_members", nid), data));
+
 function join(db, nid, username, extra = {}) {
   const b = writeBatch(db);
   b.set(doc(db, "alke_usernames", username), { nuruId: nid, createdAt: serverTimestamp() });
@@ -75,21 +85,66 @@ test("rules acceptance must carry the server time", async () => {
 test("first session: onboarding + session 1, then no second session within 24h", async () => {
   const db = as(AMA);
   await join(db, AMA, "ama.builds");
-  const ref = doc(db, "alke_members", AMA);
-  await assertSucceeds(updateDoc(ref, { onboardedAt: serverTimestamp(), lastSessionAt: serverTimestamp(), sessionCount: increment(1), updatedAt: serverTimestamp() }));
-  await assertFails(updateDoc(ref, { lastSessionAt: serverTimestamp(), sessionCount: increment(1), updatedAt: serverTimestamp() }));
-  await assertFails(updateDoc(ref, { onboardedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+  await assertSucceeds(session(db, AMA, { n: 1, streak: 1, best: 1, extra: { onboardedAt: serverTimestamp() } }));
+  await assertSucceeds(getDoc(doc(db, "alke_members", AMA, "sessions", "1")));
+  await assertFails(session(db, AMA, { n: 2, streak: 2, best: 2 }));
+  await assertFails(updateDoc(doc(db, "alke_members", AMA), { onboardedAt: serverTimestamp(), updatedAt: serverTimestamp() }));
 });
 
-test("a session after 24 hours is allowed; counts can't be forged", async () => {
+test("a session needs its record; counts can't be forged", async () => {
   const db = as(AMA);
   await join(db, AMA, "ama.builds");
-  await env.withSecurityRulesDisabled((ctx) =>
-    updateDoc(doc(ctx.firestore(), "alke_members", AMA), { lastSessionAt: Timestamp.fromMillis(Date.now() - 25 * 3600e3), sessionCount: 3 }),
-  );
+  await setMember(AMA, { lastSessionAt: hoursAgo(30), sessionCount: 3, streak: 3, bestStreak: 5 });
   const ref = doc(db, "alke_members", AMA);
-  await assertFails(updateDoc(ref, { lastSessionAt: serverTimestamp(), sessionCount: 10, updatedAt: serverTimestamp() }));
-  await assertSucceeds(updateDoc(ref, { lastSessionAt: serverTimestamp(), sessionCount: increment(1), updatedAt: serverTimestamp() }));
+  // member fields alone, no sessions/{n}
+  await assertFails(updateDoc(ref, { lastSessionAt: serverTimestamp(), sessionCount: 4, streak: 4, bestStreak: 5, updatedAt: serverTimestamp() }));
+  await assertFails(session(db, AMA, { n: 10, streak: 4, best: 5 }));
+  await assertSucceeds(session(db, AMA, { n: 4, streak: 4, best: 5 }));
+});
+
+test("streak: continues within 48h, resets after; best streak is kept", async () => {
+  const db = as(AMA);
+  await join(db, AMA, "ama.builds");
+  await setMember(AMA, { lastSessionAt: hoursAgo(30), sessionCount: 3, streak: 5, bestStreak: 5 });
+  await assertFails(session(db, AMA, { n: 4, streak: 9, best: 9 }));
+  await assertFails(session(db, AMA, { n: 4, streak: 6, best: 5 }));
+  await assertSucceeds(session(db, AMA, { n: 4, streak: 6, best: 6 }));
+
+  await setMember(AMA, { lastSessionAt: hoursAgo(50) });
+  await assertFails(session(db, AMA, { n: 5, streak: 7, best: 7 }));
+  await assertSucceeds(session(db, AMA, { n: 5, streak: 1, best: 6 }));
+});
+
+test("session records: only by their owner, only with a real session", async () => {
+  const db = as(AMA);
+  await join(db, AMA, "ama.builds");
+  await assertFails(setDoc(doc(db, "alke_members", AMA, "sessions", "1"), { n: 1, startedAt: serverTimestamp() }));
+  await session(db, AMA, { n: 1, streak: 1, best: 1 });
+  await assertFails(getDoc(doc(as(KOFI), "alke_members", AMA, "sessions", "1")));
+  await assertFails(getDoc(doc(plain(), "alke_members", AMA, "sessions", "1")));
+});
+
+test("allocation and entries: read by the member, written only by the server", async () => {
+  await env.withSecurityRulesDisabled((ctx) =>
+    setDoc(doc(ctx.firestore(), "alke_members", AMA, "allocation", "summary"), { locked: 31.2, verified: 2.4, pending: 0.2 }),
+  );
+  await assertSucceeds(getDoc(doc(as(AMA), "alke_members", AMA, "allocation", "summary")));
+  await assertFails(getDoc(doc(as(KOFI), "alke_members", AMA, "allocation", "summary")));
+  await assertFails(getDoc(doc(plain(), "alke_members", AMA, "allocation", "summary")));
+  await assertFails(setDoc(doc(as(AMA), "alke_members", AMA, "allocation", "summary"), { locked: 1e6 }));
+  await assertFails(setDoc(doc(as(AMA), "alke_members", AMA, "entries", "x"), { amount: 5 }));
+});
+
+test("game scores: own row, own username, sane values", async () => {
+  const db = as(AMA);
+  await join(db, AMA, "ama.builds");
+  const row = (o = {}) => ({ username: "ama.builds", hexXp: 120, rushXp: 180, rushBest: 120, rushDay: "2026-11-12", hexDaily: 0, hexDailyTime: 0, hexDay: "", updatedAt: serverTimestamp(), ...o });
+  await assertSucceeds(setDoc(doc(db, "alke_scores", AMA), row()));
+  await assertSucceeds(getDoc(doc(as(KOFI), "alke_scores", AMA)));
+  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ username: "someone.else" })));
+  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ hexXp: -5 })));
+  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ ain: "AA00000001" })));
+  await assertFails(setDoc(doc(as(KOFI), "alke_scores", AMA), row()));
 });
 
 test("username can't be changed or released", async () => {

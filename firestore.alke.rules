@@ -14,6 +14,21 @@
     function alkeUsername(name) {
       return name is string && name.matches('^[a-z0-9._]{3,20}$');
     }
+    function alkeMember(nuruId) {
+      return /databases/$(database)/documents/alke_members/$(nuruId);
+    }
+    // The streak a session started now gets: one more if it starts within
+    // 48 hours of the last one (i.e. within a day of that session ending),
+    // else a fresh 1. Server time decides.
+    function alkeNextStreak() {
+      return resource.data.get('lastSessionAt', null) != null
+          && request.time <= resource.data.lastSessionAt + duration.value(48, 'h')
+        ? resource.data.get('streak', 1) + 1
+        : 1;
+    }
+    function alkeBest(streak) {
+      return streak > resource.data.get('bestStreak', 0) ? streak : resource.data.get('bestStreak', 0);
+    }
 
     // alke_usernames/{name} → { nuruId, createdAt }: one username per member.
     match /alke_usernames/{name} {
@@ -42,7 +57,8 @@
         && request.resource.data.updatedAt == request.time;
 
       allow update: if isVerifiedAs(nuruId)
-        && changed().hasOnly(['rulesVersion', 'rulesAcceptedAt', 'onboardedAt', 'lastSessionAt', 'sessionCount', 'updatedAt'])
+        && changed().hasOnly(['rulesVersion', 'rulesAcceptedAt', 'onboardedAt', 'lastSessionAt', 'sessionCount',
+                              'streak', 'bestStreak', 'updatedAt'])
         && request.resource.data.updatedAt == request.time
         // rules: stamped with the server time
         && (!changed().hasAny(['rulesVersion', 'rulesAcceptedAt'])
@@ -50,12 +66,64 @@
         // first run finishes once
         && (!changed().hasAny(['onboardedAt'])
             || (resource.data.get('onboardedAt', null) == null && request.resource.data.onboardedAt == request.time))
-        // a session: server time, one at a time, at most one per 24 hours
-        && (!changed().hasAny(['lastSessionAt', 'sessionCount'])
+        // a session: server time, at most one per 24 hours, counted, with
+        // its streak, and recorded in sessions/{n} in the same write
+        && (!changed().hasAny(['lastSessionAt', 'sessionCount', 'streak', 'bestStreak'])
             || (request.resource.data.lastSessionAt == request.time
                 && request.resource.data.sessionCount == resource.data.get('sessionCount', 0) + 1
                 && (resource.data.get('lastSessionAt', null) == null
-                    || request.time > resource.data.lastSessionAt + duration.value(24, 'h'))));
+                    || request.time > resource.data.lastSessionAt + duration.value(24, 'h'))
+                && request.resource.data.streak == alkeNextStreak()
+                && request.resource.data.bestStreak == alkeBest(alkeNextStreak())
+                && existsAfter(/databases/$(database)/documents/alke_members/$(nuruId)/sessions/$(string(request.resource.data.sessionCount)))));
 
       allow delete: if false;
     }
+
+    // alke_members/{nuruId}/sessions/{n}: one record per session (history).
+    match /alke_members/{nuruId}/sessions/{n} {
+      allow read: if isVerifiedAs(nuruId);
+      allow create: if isVerifiedAs(nuruId)
+        && request.resource.data.keys().hasOnly(['n', 'startedAt'])
+        && request.resource.data.n is int
+        && n == string(request.resource.data.n)
+        && request.resource.data.startedAt == request.time
+        && getAfter(alkeMember(nuruId)).data.sessionCount == request.resource.data.n
+        && getAfter(alkeMember(nuruId)).data.lastSessionAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Written only by the server (the verification / payout process):
+    //   alke_members/{nuruId}/allocation/summary  { locked, verified, pending, claimable, claimed, updatedAt }
+    //   alke_members/{nuruId}/entries/{id}        { kind, label, amount, status, at, batch, breakdown }
+    match /alke_members/{nuruId}/allocation/{doc} {
+      allow read: if isVerifiedAs(nuruId);
+      allow write: if false;
+    }
+    match /alke_members/{nuruId}/entries/{entryId} {
+      allow read: if isVerifiedAs(nuruId);
+      allow write: if false;
+    }
+
+    // alke_scores/{nuruId}: game XP for the leaderboards. Game XP is play-only
+    // (never ALKE), so members post their own, within sane bounds.
+    function alkeXp(v) {
+      return v is int && v >= 0 && v <= 10000000;
+    }
+    match /alke_scores/{nuruId} {
+      allow read: if verifiedAin() != null;
+      allow create, update: if isVerifiedAs(nuruId)
+        && request.resource.data.keys().hasOnly(['username', 'hexXp', 'rushXp', 'rushBest', 'rushDay',
+                                                 'hexDaily', 'hexDailyTime', 'hexDay', 'updatedAt'])
+        && request.resource.data.username == get(alkeMember(nuruId)).data.username
+        && alkeXp(request.resource.data.hexXp)
+        && alkeXp(request.resource.data.rushXp)
+        && alkeXp(request.resource.data.rushBest)
+        && alkeXp(request.resource.data.hexDaily)
+        && alkeXp(request.resource.data.hexDailyTime)
+        && request.resource.data.rushDay is string && request.resource.data.rushDay.size() <= 10
+        && request.resource.data.hexDay is string && request.resource.data.hexDay.size() <= 10
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+

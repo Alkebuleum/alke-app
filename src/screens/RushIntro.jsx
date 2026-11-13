@@ -16,18 +16,13 @@ class Logic extends DCLogic {
   dayKey(d) { return d.getFullYear() + '-' + this.pad(d.getMonth() + 1) + '-' + this.pad(d.getDate()); }
   shift(days) { const d = new Date(); d.setDate(d.getDate() + days); return d; }
   defaultProg() {
-    const y = this.shift(-1), y2 = this.shift(-2);
-    const at = (d, h, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m).getTime();
+    // A new player: no XP, no runs, no history.
     return {
-      v: 1, xp: 180, best: 120, streak: 2, lastBank: this.dayKey(y),
+      v: 1, xp: 0, best: 0, streak: 0, lastBank: null,
       day: null, runsToday: 0, chal: { best: 0, done: false, block: false },
-      stats: { runs: 3, banks: 2, blocked: 1, hazards: 1 },
-      badges: { first: true },
-      history: [
-        { t: at(y, 19, 40), result: 'banked', xp: 120, bonus: 0, spins: 4, practice: false },
-        { t: at(y, 19, 34), result: 'lost', xp: 0, lost: 70, hazard: 'trap', spins: 3, practice: false },
-        { t: at(y2, 21, 10), result: 'banked', xp: 60, bonus: 0, spins: 3, practice: false }
-      ],
+      stats: { runs: 0, banks: 0, blocked: 0, hazards: 0 },
+      badges: {},
+      history: [],
       last: null
     };
   }

@@ -41,27 +41,14 @@ class Logic extends DCLogic {
     const p = s.prog || null;
     const no = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(now.getFullYear(), 0, 1)) / 86400000) + 1;
 
-    const people = {
-      kd: { u: 'kwame.dev', ini: 'KD', grad: 'linear-gradient(135deg,#8FB2FF,#4A86F7)' },
-      no: { u: 'nia.o', ini: 'NO', grad: 'linear-gradient(135deg,#F7D58A,#D99A2B)' },
-      zm: { u: 'zola_m', ini: 'ZM', grad: 'linear-gradient(135deg,#8DF0C9,#2BA37A)' },
-      ta: { u: 'tunde_a', ini: 'TA', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)' },
-      ak: { u: 'amara.k', ini: 'AK', grad: 'linear-gradient(135deg,#FF8A9A,#C2354B)' },
-      eb: { u: 'efua.b', ini: 'EB', grad: 'linear-gradient(135deg,#A9C4FF,#3B74E6)' },
-      sd: { u: 'sefa_d', ini: 'SD', grad: 'linear-gradient(135deg,#FBE2A2,#C08417)' },
-      ok: { u: 'obi.k', ini: 'OK', grad: 'linear-gradient(135deg,#B3F5DA,#1F8F68)' },
-      lw: { u: 'lindiwe', ini: 'LW', grad: 'linear-gradient(135deg,#E4DBFF,#6A45F5)' },
-      yp: { u: 'yaw.p', ini: 'YP', grad: 'linear-gradient(135deg,#FFC2CC,#E5677B)' },
-      km: { u: 'Kofi Mensah', ini: 'KM', grad: 'linear-gradient(135deg,#8DF0C9,#2BA37A)' }
-    };
-    const mk = (k, xp, time, meta) => Object.assign({ xp: xp, time: time || 0, meta: meta }, people[k]);
+    // Real players (alke_scores, loaded by the leaderboard route → this.props.boards).
+    const boards = (this.props && this.props.boards) || null;
+    const look = (this.props && this.props.look) || ((u) => ({ ini: String(u || '?').slice(0, 2).toUpperCase(), grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)' }));
+    const myId = this.props && this.props.memberId;
+    const myIni = (this.props && this.props.initials) || 'ME';
+    const row = (r, xp, time, meta) => Object.assign({ u: r.username, xp: xp, time: time || 0, meta: meta, me: r.id === myId }, look(r.username));
 
     const d = p && p.daily && p.daily.date === this.dayKey(now) ? p.daily : null;
-    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
-    const weekXP = ((p || {}).history || [
-      { t: new Date(2026, 10, 9, 18, 20).getTime(), result: 'won', xp: 45 },
-      { t: new Date(2026, 10, 9, 18, 8).getTime(), result: 'won', xp: 30 }
-    ]).filter((h) => h.result === 'won' && h.t >= monday.getTime()).reduce((a, h) => a + (h.xp || 0), 0);
 
     let list = [];
     let me = null;
@@ -69,35 +56,24 @@ class Logic extends DCLogic {
     let context = '';
     let unit = ' XP';
     if (tab === 'today') {
-      kicker = 'DAILY #' + no + ' · 1,284 BUILDERS';
+      const today = boards ? boards.hexToday : [];
+      kicker = 'DAILY #' + no + ' · ' + today.length + (today.length === 1 ? ' BUILDER' : ' BUILDERS');
       const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       const left = Math.max(0, Math.floor((midnight - now) / 1000));
       context = 'The same board for everyone · resets in ' + this.pad(Math.floor(left / 3600)) + ':' + this.pad(Math.floor((left % 3600) / 60)) + ':' + this.pad(left % 60);
-      list = [mk('kd', 150, 102), mk('no', 150, 118), mk('zm', 135, 91), mk('ta', 120, 97), mk('ak', 100, 140), mk('eb', 100, 151), mk('sd', 90, 115), mk('ok', 85, 125), mk('lw', 80, 132), mk('yp', 75, 160)];
+      list = today.filter((r) => r.id !== myId).map((r) => row(r, r.hexDaily, r.hexDailyTime));
       list.forEach((x) => { x.meta = this.mmss(x.time) + (x.xp >= 150 ? ' · no lives lost' : ''); });
-      if (d && d.result === 'won') me = { u: 'You', ini: 'AO', xp: d.xp, time: d.time || 0, meta: this.mmss(d.time) + ' · today\'s board', me: true };
+      if (d && d.result === 'won') me = { u: 'You', ini: myIni, xp: d.xp, time: d.time || 0, meta: this.mmss(d.time) + " · today's board", me: true };
     } else if (tab === 'week') {
-      kicker = 'THIS WEEK · MONDAY TO SUNDAY';
-      context = 'Total game XP banked this week across levels and daily boards';
-      list = [mk('kd', 840, 0, '9 rounds won'), mk('no', 790, 0, '8 rounds won'), mk('zm', 720, 0, '8 rounds won'), mk('ak', 655, 0, '7 rounds won'), mk('ta', 610, 0, '7 rounds won'), mk('eb', 540, 0, '6 rounds won'), mk('sd', 505, 0, '6 rounds won'), mk('ok', 470, 0, '5 rounds won'), mk('lw', 430, 0, '5 rounds won'), mk('yp', 395, 0, '4 rounds won')];
-      me = { u: 'You', ini: 'AO', xp: weekXP, time: 0, meta: 'This week so far', me: true };
-    } else if (tab === 'friends') {
-      kicker = 'FRIENDS · THIS WEEK';
-      context = 'People in your circles and people who joined with your invite';
-      list = [mk('kd', 840, 0, 'Accra Builders'), mk('no', 790, 0, 'Diaspora Learners'), mk('ta', 610, 0, 'Diaspora Learners'), mk('km', 210, 0, 'Joined with your invite')];
-      me = { u: 'You', ini: 'AO', xp: weekXP, time: 0, meta: 'This week so far', me: true };
+      kicker = 'ALL TIME · TOP PLAYERS';
+      context = 'Total ALKE Hex game XP across levels and daily boards';
+      list = (boards ? boards.hexAll : []).filter((r) => r.id !== myId).map((r) => row(r, r.hexXp, 0, ''));
+      me = { u: 'You', ini: myIni, xp: Math.max(0, (p && p.xp) || 0), time: 0, meta: 'Your total', me: true };
     } else {
-      kicker = 'CIRCLE CUP · ENDS SUNDAY 23:59';
-      context = 'Average game XP per playing member, so small circles can win too';
-      unit = ' avg';
-      list = [
-        { u: 'Diaspora Learners', ini: 'DL', grad: 'linear-gradient(135deg,#F7D58A,#D99A2B)', xp: 212, meta: '41 playing this week' },
-        { u: 'Accra Builders', ini: 'AB', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)', xp: 198, meta: '17 playing · your circle', mine: true },
-        { u: 'Lagos Ledger Club', ini: 'LL', grad: 'linear-gradient(135deg,#8DF0C9,#2BA37A)', xp: 176, meta: '29 playing' },
-        { u: 'Nairobi Nodes', ini: 'NN', grad: 'linear-gradient(135deg,#8FB2FF,#4A86F7)', xp: 160, meta: '22 playing' },
-        { u: 'Kumasi Coders', ini: 'KC', grad: 'linear-gradient(135deg,#FF8A9A,#C2354B)', xp: 148, meta: '12 playing' },
-        { u: 'Dakar Devs', ini: 'DD', grad: 'linear-gradient(135deg,#A9C4FF,#3B74E6)', xp: 131, meta: '15 playing' }
-      ];
+      kicker = tab === 'friends' ? 'FRIENDS' : 'CIRCLE CUP';
+      context = tab === 'friends' ? 'Friends boards arrive with circles and invites in Network.' : 'Circle boards arrive with circles in Network.';
+      list = [];
+      me = null;
     }
 
     const all = list.concat(me && tab !== 'today' ? [me] : []).concat(me && tab === 'today' ? [me] : []);
@@ -152,18 +128,15 @@ class Logic extends DCLogic {
         youMeta = d ? (d.result === 'lost' ? 'No rank today: your scored try was lost' : 'Your scored try today was not finished') : 'Play today\'s board to get a rank';
         youCta = !d;
       }
-    } else if (tab === 'circles') {
-      youRank = '#2';
-      youName = 'Accra Builders';
-      youMeta = 'You added ' + weekXP + ' XP this week';
-      youValue = '198 avg';
+    } else if (tab === 'week') {
+      youRank = me && me.xp > 0 ? '#' + (myIdx + 1) : '–';
+      youMeta = me && me.xp > 0 ? (myIdx > 0 ? (all[myIdx - 1].xp - me.xp) + ' XP behind ' + all[myIdx - 1].u : 'Top of the board') : 'Win a round to get on the board';
+      youValue = me ? me.xp + ' XP' : '';
     } else {
-      youRank = '#' + (myIdx + 1);
-      youMeta = tab === 'friends' && myIdx > 0 ? (all[myIdx - 1].xp - weekXP) + ' XP behind ' + all[myIdx - 1].u : 'Banked this week';
-      youValue = weekXP + ' XP';
+      youMeta = 'Coming with circles and invites in Network';
     }
 
-    const defs = [['today', 'Today'], ['week', 'Week'], ['friends', 'Friends'], ['circles', 'Circles']];
+    const defs = [['today', 'Today'], ['week', 'All time'], ['friends', 'Friends'], ['circles', 'Circles']];
     return {
       tabs: defs.map((t) => ({
         label: t[1],
@@ -189,7 +162,7 @@ class Logic extends DCLogic {
         this._c = setTimeout(() => this.setState({ copied: false }), 1600);
       },
       youRank: youRank,
-      youIni: tab === 'circles' ? 'AB' : 'AO',
+      youIni: myIni,
       youName: youName,
       youMeta: youMeta,
       youValue: youValue,

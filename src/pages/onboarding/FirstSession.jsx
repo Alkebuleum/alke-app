@@ -39,7 +39,7 @@ export default function FirstSession() {
     setError(null);
     try {
       sessionStorage.setItem("alke.firstSession", "1");
-      await finishOnboarding(nuruId, { startSession: true });
+      await finishOnboarding(nuruId, member, { startSession: true });
       setStarted(true);
       setNow(Date.now());
     } catch (e) {
@@ -53,7 +53,7 @@ export default function FirstSession() {
   const skip = async () => {
     setBusy("skip");
     try {
-      await finishOnboarding(nuruId, { startSession: false });
+      await finishOnboarding(nuruId, member, { startSession: false });
     } catch (e) {
       setError(e.message || "Couldn't save that. Try again.");
       setBusy(null);

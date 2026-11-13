@@ -62,21 +62,17 @@ class Logic extends DCLogic {
   defaultProg() {
     return {
       v: 1,
-      unlocked: 4,
-      xp: 120,
-      stars: { 1: 3, 2: 2, 3: 3 },
+      // A new player: level 1, no XP, no history.
+      unlocked: 1,
+      xp: 0,
+      stars: {},
       daily: null,
       dailyStreak: 0,
       lastDailyWin: null,
       pending: null,
-      badges: { first: true, flawless: true },
-      stats: { wins: 3, losses: 1, perfects: 2, blocked: 1 },
-      history: [
-        { t: new Date(2026, 10, 9, 18, 20).getTime(), kind: 'level', level: 3, result: 'won', xp: 45 },
-        { t: new Date(2026, 10, 9, 18, 8).getTime(), kind: 'level', level: 2, result: 'won', xp: 30 },
-        { t: new Date(2026, 10, 8, 21, 40).getTime(), kind: 'level', level: 2, result: 'lost', xp: -20 },
-        { t: new Date(2026, 10, 8, 21, 31).getTime(), kind: 'level', level: 1, result: 'won', xp: 45 }
-      ]
+      badges: {},
+      stats: { wins: 0, losses: 0, perfects: 0, blocked: 0 },
+      history: []
     };
   }
   prog() {
