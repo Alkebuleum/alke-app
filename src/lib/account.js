@@ -136,7 +136,16 @@ export async function signInWithSocial(kind) {
   }
 }
 
+const NO_HANDOFF = "alke.noNuruHandoff";
+const storage = {
+  get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* private mode */ } },
+};
+
 export async function signOut() {
+  // Signing out inside Nuru is respected: no silent sign-in on the next load
+  // (the sign-in screen offers "Continue with Nuru" instead).
+  if (isInsideNuru()) storage.set(NO_HANDOFF, "1");
   await fbSignOut(auth);
 }
 
@@ -191,9 +200,10 @@ function takeTokenFromUrl() {
 async function askNuruForToken() {
   if (!isInsideNuru()) return null;
   try {
+    // Nuru may first open its own session (a network round trip or two).
     const res = await Promise.race([
       window.ethereum.request({ method: "nuru_appSession", params: [{ app: "alke" }] }),
-      new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
+      new Promise((resolve) => setTimeout(() => resolve(null), 15000)),
     ]);
     const token = res && (res.token || (typeof res === "string" ? res : null));
     return token || null;
@@ -202,15 +212,40 @@ async function askNuruForToken() {
   }
 }
 
-/** Signs in with Nuru's session when one is handed over. True if it did. */
+async function signInWithNuruToken(token) {
+  await auth.authStateReady();
+  await signInWithCustomToken(auth, token);
+  storage.set(NO_HANDOFF, null);
+}
+
+/** On load: signs in with Nuru's session when one is handed over (unless the
+    person signed out here on purpose). True if it did. */
 export async function tryNuruHandoff() {
-  const token = takeTokenFromUrl() || (auth.currentUser ? null : await askNuruForToken());
-  if (!token) return false;
+  const fromUrl = takeTokenFromUrl();
   try {
-    await signInWithCustomToken(auth, token);
+    if (fromUrl) {
+      await signInWithNuruToken(fromUrl);
+      return true;
+    }
+    await auth.authStateReady();
+    if (auth.currentUser || storage.get(NO_HANDOFF) === "1") return false;
+    const token = await askNuruForToken();
+    if (!token) return false;
+    await signInWithNuruToken(token);
     return true;
   } catch (e) {
     console.warn("[account] Nuru hand-off failed", e?.code || e);
     return false;
+  }
+}
+
+/** "Continue with Nuru" on the sign-in screen (inside Nuru only). */
+export async function signInWithNuru() {
+  const token = await askNuruForToken();
+  if (!token) throw new AccountError("Nuru couldn't share your sign-in. Make sure you're signed in to Nuru, then try again.");
+  try {
+    await signInWithNuruToken(token);
+  } catch (e) {
+    throw friendly(e);
   }
 }

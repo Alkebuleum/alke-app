@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Field, Icon, Screen, StepHeader } from "../../ui/kit";
-import { isInsideNuru, resetPassword, signInWithEmail, signInWithSocial, signUpWithEmail } from "../../lib/account";
+import { isInsideNuru, resetPassword, signInWithEmail, signInWithNuru, signInWithSocial, signUpWithEmail } from "../../lib/account";
 
 /* Step 1: create an account (or sign in). Email + password, Google or Apple.
    What happens next is decided by the account state (AuthProvider), so this
@@ -11,7 +11,8 @@ export default function SignUp({ mode = "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState(null); // "email" | "google" | "apple" | "reset"
+  const [busy, setBusy] = useState(null); // "email" | "google" | "apple" | "reset" | "nuru"
+  const inNuru = isInsideNuru();
   const [error, setError] = useState(null); // { message, field }
   const [notice, setNotice] = useState(null);
 
@@ -53,7 +54,14 @@ export default function SignUp({ mode = "signup" }) {
           <p className="ui-lede">{signingUp ? "About a minute. No wallet or purchase needed." : "Sign in to pick up where you left off."}</p>
         </div>
 
-        {isInsideNuru() ? <div className="ui-info">Opened from Nuru? Use the same Google, Apple or email login you use in Nuru — it's one account.</div> : null}
+        {inNuru ? (
+          <>
+            <Button busy={busy === "nuru"} disabled={!!busy} onClick={() => run("nuru", signInWithNuru)}>
+              Continue with Nuru
+            </Button>
+            <div className="ui-or">or another account</div>
+          </>
+        ) : null}
 
         <div className="ui-row2">
           <Button kind="secondary" busy={busy === "google"} disabled={!!busy} onClick={() => run("google", () => signInWithSocial("google"))}>
