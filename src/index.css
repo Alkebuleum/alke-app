@@ -48,9 +48,9 @@ a:hover { color: #F7F5F2; }
     width: 390px;
     height: min(844px, calc(100vh - 48px));
     border-radius: 44px;
-    /* Stand-in for a phone's status bar and home indicator inside the frame. */
-    --safe-top: 40px;
-    --safe-bottom: 14px;
+    /* Just enough room for the frame's rounded corners. */
+    --safe-top: 12px;
+    --safe-bottom: 8px;
     box-shadow: 0 0 0 10px #15121F, 0 0 0 11px rgba(255, 255, 255, .08), 0 50px 120px -30px rgba(94, 58, 255, .55);
   }
 }
