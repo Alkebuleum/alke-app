@@ -27,6 +27,8 @@ a:hover { color: #F7F5F2; }
    dvh follows the browser's toolbars as they show and hide, so the footer
    never ends up hidden behind them. */
 :root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+/* Inside Nuru, Nuru's own bar already clears the status bar (see main.jsx). */
+:root.in-nuru { --safe-top: 0px; }
 .stage { height: 100%; height: 100dvh; }
 .device { position: relative; width: 100%; height: 100%; overflow: hidden; container-type: size; }
 .screen { position: absolute; inset: 0; }
