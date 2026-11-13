@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="22" fill="#0E071C"/>
-  <g transform="translate(14 10) scale(.72)" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M50 6 L93.3 31 L93.3 81 L50 106 L6.7 81 L6.7 31 Z" stroke="#F5B84D" stroke-width="9"/>
-    <g stroke="#F7F2E8" stroke-width="8">
-      <line x1="50" y1="27" x2="50" y2="85"/>
-      <path d="M29 44 L42 56 L29 68"/>
-      <path d="M71 44 L58 56 L71 68"/>
-    </g>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2=".55" y2="1"><stop offset="0" stop-color="#8A6CFF"/><stop offset="1" stop-color="#6243F0"/></linearGradient></defs><rect width="100" height="100" rx="24" fill="url(#g)"/><g transform="translate(25 22) scale(.5)" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z"/><line x1="50" y1="27" x2="50" y2="85"/><path d="M20 45 L32 56 L20 67"/><path d="M30 45 L42 56 L30 67"/><path d="M80 45 L68 56 L80 67"/><path d="M70 45 L58 56 L70 67"/></g></svg>
