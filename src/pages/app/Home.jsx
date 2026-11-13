@@ -59,9 +59,9 @@ export default function Home() {
       }
     >
       {/* Today's session */}
-      <section className="ob-hero" aria-label="Today's session">
+      <section className="ob-hero vivid" aria-label="Today's session">
         <div className="top">
-          <Ring size={60} fraction={running ? remaining / SESSION_MS : 0} active={running} />
+          <Ring size={60} fraction={running ? remaining / SESSION_MS : 0} active={running} color="#FFFFFF" track="rgba(255,255,255,.22)" mark="#FFFFFF" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="lbl">{running ? "Session active" : "Today's session"}</div>
             <div className="big num">{running ? clock(remaining) : "Ready to start"}</div>

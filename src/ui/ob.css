@@ -434,6 +434,18 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-hero .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
 .ob-btn.sm { height: 40px; width: auto; padding: 0 16px; font-size: 14px; border-radius: 12px; flex: none; }
 
+/* Home's session card: the original blue-violet */
+.ob-hero.vivid { background: radial-gradient(130% 110% at 0% 0%, #6A4BF0 0%, #4B2DE0 35%, #2A1690 68%, #170D4A 100%); border-color: rgba(214, 202, 255, .25); box-shadow: 0 24px 48px -28px rgba(94, 58, 255, .7); }
+.ob-hero.vivid .lbl { color: #E4DCFF; }
+.ob-hero.vivid .foot { border-top-color: rgba(255, 255, 255, .16); }
+.ob-hero.vivid .ob-btn.primary { background: #FFFFFF; color: #2A1690; }
+.ob-hero.vivid .ob-btn.primary:hover { background: #F1EDFF; color: #2A1690; }
+.ob-hero.vivid .ob-btn.secondary { background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .3); color: #FFFFFF; }
+.ob-hero.vivid .ob-week span { color: rgba(228, 220, 255, .75); }
+.ob-hero.vivid .ob-week i { background: rgba(255, 255, 255, .16); }
+.ob-hero.vivid .ob-week i.on { background: #FFFFFF; color: #2A1690; }
+.ob-hero.vivid .ob-week i.today:not(.on) { box-shadow: inset 0 0 0 1.5px #FFFFFF; }
+
 /* Ring (session progress) */
 .ob-ring { position: relative; flex: none; }
 .ob-ring > svg { display: block; width: 100%; height: 100%; }

@@ -169,21 +169,21 @@ export function Row({ to, onClick, icon, tone, title, sub, end, chevron = !!to, 
 }
 
 /** Session ring: progress arc + the ALKÉ mark (or children) in the middle. */
-export function Ring({ size = 64, fraction = 0, stroke = 5, active, children }) {
+export function Ring({ size = 64, fraction = 0, stroke = 5, active, color = "#7C5CFF", track = "rgba(255,255,255,.08)", mark, children }) {
   const r = 50 - stroke / 2 - 1;
   const c = 2 * Math.PI * r;
   return (
     <span className="ob-ring" style={{ width: size, height: size }}>
       <svg viewBox="0 0 100 100" aria-hidden="true">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,.08)" strokeWidth={stroke} />
+        <circle cx="50" cy="50" r={r} fill="none" stroke={track} strokeWidth={stroke} />
         {fraction > 0 ? (
-          <circle cx="50" cy="50" r={r} fill="none" stroke="#7C5CFF" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${(fraction * c).toFixed(2)} ${c.toFixed(2)}`} transform="rotate(-90 50 50)" style={{ transition: "stroke-dasharray .6s ease" }} />
+          <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeDasharray={`${(fraction * c).toFixed(2)} ${c.toFixed(2)}`} transform="rotate(-90 50 50)" style={{ transition: "stroke-dasharray .6s ease" }} />
         ) : null}
       </svg>
       <span className="mid">
         {children || (
           <svg viewBox="0 0 100 112" aria-hidden="true" style={{ width: "36%", height: "auto" }}>
-            <MarkPaths stroke={active ? "#B4A2FF" : "#71717A"} width={7} />
+            <MarkPaths stroke={mark || (active ? "#B4A2FF" : "#71717A")} width={7} />
           </svg>
         )}
       </span>
