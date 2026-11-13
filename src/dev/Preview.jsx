@@ -75,6 +75,18 @@ const SCREENS = {
   },
   redeem: Redeem,
   live: Live,
+  // Mine, with a burst of taps on the core shortly before the screenshot.
+  tap: () => {
+    setTimeout(() => {
+      const el = document.querySelector(".ob-core.on");
+      if (!el) return;
+      const b = el.getBoundingClientRect();
+      for (let i = 0; i < 7; i++) {
+        setTimeout(() => el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: b.left + b.width * (0.4 + Math.random() * 0.2), clientY: b.top + b.height * (0.45 + Math.random() * 0.15) })), i * 90);
+      }
+    }, 4300);
+    return <Mine />;
+  },
   hexhub: HexHub,
   hexplay: HexPlay,
   hexboard: () => <Leaderboard game="hex" boards={{ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }} />,

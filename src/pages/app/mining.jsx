@@ -122,22 +122,48 @@ export function Burst({ k }) {
 
 /** The mining core: ring + mark, with tap sparks and a combo count (just for fun; it never changes cALKE). */
 export function Core({ fraction, running, onIdleTap, size = "min(230px, 34cqh)" }) {
-  const [sparks, setSparks] = useState([]);
+  const [coins, setCoins] = useState([]);
   const [combo, setCombo] = useState(0);
   const timer = useRef(null);
   const id = useRef(0);
 
+  // A set of ALKE coins rising from (x, y) inside the core, then fading away.
+  const rise = (x, y, count) => {
+    const set = Array.from({ length: count }, (_, i) => ({
+      n: ++id.current,
+      x: x + (Math.random() - 0.5) * 36,
+      y: y + (Math.random() - 0.5) * 16,
+      dx: (Math.random() - 0.5) * 110,
+      dy: 150 + Math.random() * 90,
+      r: (Math.random() - 0.5) * 70,
+      s: 0.75 + Math.random() * 0.5,
+      d: i * 70,
+    }));
+    setCoins((c) => [...c.slice(-24), ...set]);
+    const ids = new Set(set.map((c) => c.n));
+    setTimeout(() => setCoins((c) => c.filter((k) => !ids.has(k.n))), 1700);
+  };
+
+  // While mining, an occasional coin drifts up by itself.
+  useEffect(() => {
+    if (!running || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      const el = document.querySelector(".ob-core.on");
+      if (!el || document.hidden) return;
+      const w = el.clientWidth;
+      rise(w / 2 + (Math.random() - 0.5) * w * 0.3, w * 0.42, 1);
+    }, 2600);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running]);
+
   const tap = (e) => {
     if (!running) return onIdleTap?.();
     const box = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - box.left;
-    const y = e.clientY - box.top;
-    const n = ++id.current;
-    setSparks((s) => [...s.slice(-10), { n, x, y }]);
-    setTimeout(() => setSparks((s) => s.filter((p) => p.n !== n)), 700);
+    rise(e.clientX - box.left, e.clientY - box.top, 3 + Math.floor(Math.random() * 3));
     setCombo((c) => c + 1);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setCombo(0), 1200);
+    timer.current = setTimeout(() => setCombo(0), 1400);
     buzz(8);
   };
 
@@ -153,6 +179,11 @@ export function Core({ fraction, running, onIdleTap, size = "min(230px, 34cqh)" 
             <stop offset=".5" stopColor="#9B7DFF" />
             <stop offset="1" stopColor="#5E3AFF" />
           </linearGradient>
+          <linearGradient id="coinFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#FFF0C2" />
+            <stop offset=".45" stopColor="#F5C451" />
+            <stop offset="1" stopColor="#D08A12" />
+          </linearGradient>
           <radialGradient id="coreOrb" cx=".36" cy=".3" r=".85">
             <stop offset="0" stopColor={running ? "#8F72FF" : "#3A3160"} />
             <stop offset=".5" stopColor={running ? "#4B2DE0" : "#1B1533"} />
@@ -167,12 +198,25 @@ export function Core({ fraction, running, onIdleTap, size = "min(230px, 34cqh)" 
           <MarkPaths stroke={running ? "#FFFFFF" : "#B4A2FF"} width={6} />
         </g>
       </svg>
-      {sparks.map((p) => (
-        <span key={p.n} className="spark" style={{ left: p.x, top: p.y }} aria-hidden="true" />
+      {coins.map((k) => (
+        <span
+          key={k.n}
+          className="coin"
+          style={{ left: k.x, top: k.y, "--dx": `${k.dx}px`, "--dy": `${-k.dy}px`, "--r": `${k.r}deg`, "--s": k.s, animationDelay: `${k.d}ms` }}
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 100 112" width="34" height="38">
+            <path d="M50 2 L96 28 L96 84 L50 110 L4 84 L4 28 Z" fill="url(#coinFill)" stroke="#FFF7DE" strokeWidth="5" strokeLinejoin="round" />
+            <g transform="translate(50 56) scale(.55) translate(-50 -56)">
+              <MarkPaths stroke="#4B2DE0" width={11} />
+            </g>
+          </svg>
+        </span>
       ))}
-      {combo > 2 ? (
-        <span className="combo" key={combo} aria-hidden="true">
-          Combo {combo}
+      {combo > 1 ? (
+        <span className="combo" aria-hidden="true">
+          <b key={combo}>{combo}</b>
+          <small>combo</small>
         </span>
       ) : null}
     </button>

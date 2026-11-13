@@ -320,10 +320,19 @@
 .ob-core:active .ring { transform: scale(.97); transition: transform .08s ease; }
 @keyframes obHalo { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.06); } }
 @keyframes obPulseMark { 50% { opacity: .75; } }
-.ob-core .spark { position: absolute; z-index: 2; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 12px 4px rgba(180, 162, 255, .9); pointer-events: none; animation: obSpark .7s ease-out forwards; }
-@keyframes obSpark { from { transform: scale(.4); opacity: 1; } to { transform: scale(2.6) translateY(-24px); opacity: 0; } }
-.ob-core .combo { position: absolute; z-index: 3; top: 6%; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 999px; background: rgba(0, 0, 0, .55); color: #FFFFFF; font-size: 13px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; pointer-events: none; animation: obCombo .35s ease-out; }
-@keyframes obCombo { from { transform: translate(-50%, 6px) scale(.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+.ob-core .coin { position: absolute; z-index: 2; width: 34px; height: 38px; margin: -19px 0 0 -17px; pointer-events: none; filter: drop-shadow(0 0 10px rgba(245, 196, 81, .75)); opacity: 0; animation: obCoin 1.4s cubic-bezier(.2, .7, .3, 1) forwards; }
+.ob-core .coin svg { display: block; }
+@keyframes obCoin {
+  0% { transform: translate(0, 0) scale(calc(var(--s) * .4)) rotate(0); opacity: 0; }
+  12% { opacity: 1; transform: translate(calc(var(--dx) * .15), calc(var(--dy) * .12)) scale(var(--s)) rotate(calc(var(--r) * .2)); }
+  70% { opacity: .9; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(calc(var(--s) * .7)) rotate(var(--r)); opacity: 0; filter: blur(1px) drop-shadow(0 0 10px rgba(245, 196, 81, .5)); }
+}
+.ob-core .combo { position: absolute; z-index: 3; top: -2%; left: -4%; display: flex; flex-direction: column; align-items: center; min-width: 64px; padding: 6px 10px 5px; border-radius: 16px; background: linear-gradient(160deg, #F5C451, #E09A1F); color: #1A1205; box-shadow: 0 10px 24px -10px rgba(245, 196, 81, .8); pointer-events: none; transform: rotate(-8deg); animation: obComboIn .25s ease-out; }
+.ob-core .combo b { font-size: 30px; line-height: 1; font-weight: 900; letter-spacing: -.03em; font-variant-numeric: tabular-nums; animation: obComboPop .28s cubic-bezier(.3, 1.6, .5, 1); }
+.ob-core .combo small { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+@keyframes obComboIn { from { transform: rotate(-8deg) scale(.6); opacity: 0; } to { transform: rotate(-8deg) scale(1); opacity: 1; } }
+@keyframes obComboPop { from { transform: scale(1.5); } to { transform: scale(1); } }
 
 .ob-burst { position: absolute; left: 50%; top: 50%; z-index: 3; width: 0; height: 0; pointer-events: none; }
 .ob-burst i { position: absolute; width: 14px; height: 16px; margin: -8px 0 0 -7px; background: linear-gradient(160deg, #FFF3D1, #F5C451); clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); animation: obBurst 1.1s cubic-bezier(.15, .7, .3, 1) forwards; }
