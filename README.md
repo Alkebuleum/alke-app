@@ -61,8 +61,31 @@ ALKÉ members are Nuru people: the app uses Nuru's Firebase project
   `cd rules-tests && npm install && npm test` (needs Java; builds Nuru's rules
   + ours and runs them in the emulator).
 
-Home, Mine and the games still show the design's sample figures; game progress
-is saved on the device.
+Home, Mine, History, Allocation, Network and Profile show the member's live
+data. Game results and progress go to the server (`alkeGameSync`), which
+checks each result and writes the leaderboards; progress follows the member
+to any device.
+
+## Server features (functions/, codebase "alke")
+
+- **Games** (`games.js`): `alkeGameSync` checks finished results (no repeats,
+  in-range XP, 5 scored Rush runs a day) and writes `alke_scores`.
+- **Notifications** (`notify.js`): feed in `alke_members/{id}/notifications`,
+  pushed to the web app (FCM, needs `VITE_FCM_VAPID_KEY`) and to the Nuru
+  app's tokens. `alkeReminders` (every 15 min: next session ready) and
+  `alkeGameAlerts` (17:00 UTC, opt-in).
+- **Personhood check** (`verification.js`): Stripe Identity (ID + live selfie
+  + ID number) for the countries in `STRIPE_COUNTRIES` (override in
+  `alke_config/verification.stripeCountries`); elsewhere photos to private
+  Storage for a manual review by the team (`/team/reviews`, members listed
+  in `alke_admins/{nuruId}`). Stripe webhook: `alkeStripeIdentity`.
+- **Account** (`account.js`): `alkeDeleteAccount` deletes the ALKE
+  membership (the Nuru account stays).
+
+Secrets (`firebase functions:secrets:set NAME`): `STRIPE_SECRET_KEY`,
+`STRIPE_IDENTITY_WEBHOOK_SECRET`, `ALKE_ID_HASH_SECRET`.
+Rules: `firestore.alke.rules` and `storage.alke.rules` are pasted into the
+live rulesets by hand (the project is shared).
 
 ## Local testing with emulators
 
