@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "re
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { Loading } from "./ui/kit";
 import { normInvite } from "./lib/member";
-import { ensureGameOwner, loadLeaderboards, personLook, postScores } from "./lib/games";
+import { ensureGameOwner, loadLeaderboards, personLook, syncGames } from "./lib/games";
 import { useState } from "react";
 
 import Splash from "./pages/onboarding/Splash";
@@ -100,11 +100,12 @@ function Member({ children }) {
 
 /** Loads the real leaderboards for a leaderboard screen. */
 function Boards({ children, ...props }) {
+  const { nuruId, member } = useAuth();
   const [boards, setBoards] = useState(null);
   useEffect(() => {
     loadLeaderboards().then(setBoards).catch(() => setBoards({ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }));
   }, []);
-  return cloneElement(children, { ...props, boards, look: personLook });
+  return cloneElement(children, { ...props, boards, look: personLook, me: { id: nuruId, username: member?.username } });
 }
 
 /** The brand moment, then wherever the person belongs. */
@@ -160,13 +161,13 @@ const ROUTES = [
   ["/mine/allocation", member(<Allocation />)],
   ["/mine/history", member(<History />)],
   ["/games", member(<GamesHub />)],
-  ["/games/hex", member(<HexHub />)],
-  ["/games/hex/play", member(<HexPlay />)],
+  ["/games/hex", member(<Boards><HexHub /></Boards>)],
+  ["/games/hex/play", member(<Boards><HexPlay /></Boards>)],
   ["/games/hex/leaderboards", member(<Boards><Leaderboard game="hex" /></Boards>)],
-  ["/games/rush", member(<RushIntro />)],
+  ["/games/rush", member(<Boards><RushIntro /></Boards>)],
   ["/games/rush/play", member(<RushPlay />)],
   ["/games/rush/lost", member(<RushHazard />)],
-  ["/games/rush/banked", member(<RushBanked />)],
+  ["/games/rush/banked", member(<Boards><RushBanked /></Boards>)],
   ["/games/rush/leaderboards", member(<Boards><Leaderboard game="rush" /></Boards>)],
   ["/network", member(<Network />)],
   ["/chat", member(<Chat />)],
@@ -181,11 +182,11 @@ const ROUTES = [
 function Shell() {
   const { pathname, search } = useLocation();
 
-  // Game XP → leaderboards, whenever the member moves between screens.
+  // Game results and progress → server, whenever the member moves between screens.
   const auth = useAuth();
   useEffect(() => {
-    if (auth.step === "done") postScores(auth.nuruId, auth.member?.username).catch(() => {});
-  }, [pathname, auth.step, auth.nuruId, auth.member?.username]);
+    if (auth.step === "done") syncGames(auth.nuruId).catch(() => {});
+  }, [pathname, auth.step, auth.nuruId]);
 
   // ?invite=CODE on any link is kept for the profile step.
   useEffect(() => {

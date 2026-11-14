@@ -122,25 +122,18 @@
       allow write: if false;
     }
 
-    // alke_scores/{nuruId}: game XP for the leaderboards. Game XP is play-only
-    // (never ALKE), so members post their own, within sane bounds.
-    function alkeXp(v) {
-      return v is int && v >= 0 && v <= 10000000;
-    }
+    // alke_scores/{nuruId}: game XP for the leaderboards. Written only by the
+    // server (functions/games.js, callable alkeGameSync), which checks each
+    // finished game result first. Members read the boards.
     match /alke_scores/{nuruId} {
       allow read: if verifiedAin() != null;
-      allow create, update: if isVerifiedAs(nuruId)
-        && request.resource.data.keys().hasOnly(['username', 'hexXp', 'rushXp', 'rushBest', 'rushDay',
-                                                 'hexDaily', 'hexDailyTime', 'hexDay', 'updatedAt'])
-        && request.resource.data.username == get(alkeMember(nuruId)).data.username
-        && alkeXp(request.resource.data.hexXp)
-        && alkeXp(request.resource.data.rushXp)
-        && alkeXp(request.resource.data.rushBest)
-        && alkeXp(request.resource.data.hexDaily)
-        && alkeXp(request.resource.data.hexDailyTime)
-        && request.resource.data.rushDay is string && request.resource.data.rushDay.size() <= 10
-        && request.resource.data.hexDay is string && request.resource.data.hexDay.size() <= 10
-        && request.resource.data.updatedAt == request.time;
-      allow delete: if false;
+      allow write: if false;
+    }
+
+    // alke_members/{nuruId}/games/state: saved game progress and result
+    // counters, written only by the server (alkeGameSync returns it).
+    match /alke_members/{nuruId}/games/{doc} {
+      allow read: if isVerifiedAs(nuruId);
+      allow write: if false;
     }
 

@@ -478,7 +478,7 @@ class Logic extends DCLogic {
         p.lastDailyWin = key;
         p.badges.daily = true;
       }
-      p.history = [{ t: now.getTime(), kind: g.cfg.mode, level: g.cfg.level, day: this.dailyNo(now), result: 'won', xp: total }].concat(p.history || []).slice(0, 30);
+      p.history = [{ t: now.getTime(), kind: g.cfg.mode, level: g.cfg.level, day: this.dailyNo(now), result: 'won', xp: total, time: g.elapsed, practice: !!g.practice }].concat(p.history || []).slice(0, 30);
       this.save(p);
     }
     this.say('Mark rebuilt', 'gold');
@@ -716,9 +716,9 @@ class Logic extends DCLogic {
     const title = mode === 'daily' ? "Today's board" : M.title[cfg.shape];
     const res = g.result || {};
 
-    const sample = [
-      { xp: 150, time: 102 }, { xp: 150, time: 118 }, { xp: 135, time: 91 }, { xp: 120, time: 97 }, { xp: 100, time: 140 }
-    ];
+    const PB = this.props || {};
+    const boardLoaded = !!PB.boards;
+    const sample = ((PB.boards && PB.boards.hexToday) || []).filter((r) => r.id !== (PB.me || {}).id).map((r) => ({ xp: r.hexDaily || 0, time: r.hexDailyTime || 0 }));
     let rank = 1;
     sample.forEach((x) => {
       if (x.xp > (res.total || 0) || (x.xp === (res.total || 0) && x.time < g.elapsed)) rank += 1;
@@ -836,7 +836,7 @@ class Logic extends DCLogic {
       breakdown: g.practice ? [{ t: 'Practice' }] : [{ t: 'Pieces +' + (res.base || 0) }].concat(res.bonus ? [{ t: 'No lives lost +' + res.bonus }] : []).concat(res.mult > 1 ? [{ t: '×' + res.mult + ' on later pieces' }] : []),
       vicStats: this.mmss(g.elapsed) + ' · ' + g.moves + ' moves to spare · ' + g.lives + (g.lives === 1 ? ' life left' : ' lives left'),
       isDailyWin: mode === 'daily' && !g.practice,
-      rankText: 'Ranked #' + rank + ' on today\'s board',
+      rankText: boardLoaded ? 'Ranked #' + rank + ' on today\'s board' : 'Checking today\'s board…',
       nextIsLevel: mode === 'level' && cfg.level < 20,
       nextLabel: 'Next · Level ' + Math.min(20, cfg.level + 1),
       goNext: () => this.setup('level', Math.min(20, cfg.level + 1)),

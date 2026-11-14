@@ -1,12 +1,13 @@
-/* ALKE Hex and ALKE Rush: game XP (play only, never ALKE).
+/* ALKE Hex and ALKE Rush: game XP. Daily game XP warms cold ALKE (capped).
  *
  * The games keep their progress on the device (localStorage 'alke.hex.v1' /
  * 'alke.rush.v1'). Progress belongs to the signed-in member: switching
- * accounts on a device swaps it (ensureGameOwner). Totals are posted to
- * alke_scores/{nuruId} for the leaderboards (postScores).
+ * accounts on a device swaps it (ensureGameOwner). Results and progress
+ * are synced to the server (syncGames), which keeps the leaderboards.
  */
-import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, where } from "firebase/firestore";
-import { db } from "./firebase";
+import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "./firebase";
 
 const KEYS = ["alke.hex.v1", "alke.rush.v1"];
 const OWNER = "alke.games.owner";
@@ -107,35 +108,55 @@ export function gameStatus(now = new Date()) {
   };
 }
 
-/** The leaderboard row for the saved progress. */
-function scoreRow(username) {
+/* ── Server sync ──────────────────────────────────────────────────────
+   Finished results go to the server (functions/games.js), which checks them
+   and keeps the leaderboard row; members can't write scores themselves.
+   The saved progress goes with them, so it follows the member to any device. */
+
+const SYNC = (id) => `alke.games.synced@${id}`;
+let syncing = null;
+
+function results() {
   const hex = read("alke.hex.v1") || {};
   const rush = read("alke.rush.v1") || {};
-  const today = dayKey();
-  const daily = hex.daily && hex.daily.result === "won" ? hex.daily : null;
-  const rushToday = rush.day === today && rush.chal ? rush.chal.best : 0;
-  return {
-    username,
-    hexXp: int(hex.xp),
-    hexDaily: daily ? int(daily.xp) : 0,
-    hexDailyTime: daily ? int(daily.time) : 0,
-    hexDay: daily ? String(daily.date || "").slice(0, 10) : "",
-    rushXp: int(rush.xp),
-    rushBest: int(rushToday),
-    rushDay: rushToday ? today : "",
-  };
+  const pick = (h) => ({ t: h.t, result: h.result, kind: h.kind, xp: h.xp, bonus: h.bonus, time: h.time, practice: h.practice });
+  return { hex: (hex.history || []).map(pick), rush: (rush.history || []).map(pick) };
 }
 
-/** Posts the member's scores when they've changed since the last post. */
-export async function postScores(nuruId, username) {
-  if (!nuruId || !username) return;
-  const row = scoreRow(username);
-  const sig = JSON.stringify(row);
-  const key = `alke.scores.posted@${nuruId}`;
-  if (ls.get(key) === sig) return;
-  if (!row.hexXp && !row.rushXp && !ls.get(key)) return; // nothing played yet
-  await setDoc(doc(db, "alke_scores", nuruId), { ...row, updatedAt: serverTimestamp() });
-  ls.set(key, sig);
+/** Sends new results and changed progress; restores progress saved on another device. */
+export function syncGames(nuruId) {
+  if (!nuruId) return Promise.resolve(null);
+  return (syncing ??= doSync(nuruId).finally(() => (syncing = null)));
+}
+
+async function doSync(nuruId) {
+  const local = { hex: ls.get("alke.hex.v1"), rush: ls.get("alke.rush.v1") };
+  let meta = {};
+  try {
+    meta = JSON.parse(ls.get(SYNC(nuruId)) || "{}");
+  } catch {
+    /* start fresh */
+  }
+  const changed = local.hex !== (meta.hex ?? null) || local.rush !== (meta.rush ?? null);
+  const res = await httpsCallable(functions, "alkeGameSync")({
+    tz: new Date().getTimezoneOffset(),
+    ...results(),
+    progress: changed ? { hex: local.hex, rush: local.rush } : null,
+  });
+  const data = res.data || {};
+  if (!data.ok) return data;
+
+  // Another device saved newer progress and this one hasn't changed: take it.
+  const server = data.progress || {};
+  let mine = local;
+  const empty = !local.hex && !local.rush;
+  if ((empty || (!changed && server.savedAt && server.savedAt > (meta.at || 0))) && (server.hex || server.rush)) {
+    if (server.hex) ls.set("alke.hex.v1", server.hex);
+    if (server.rush) ls.set("alke.rush.v1", server.rush);
+    mine = { hex: server.hex ?? local.hex, rush: server.rush ?? local.rush };
+  }
+  ls.set(SYNC(nuruId), JSON.stringify({ hex: mine.hex, rush: mine.rush, at: server.savedAt || Date.now() }));
+  return data;
 }
 
 /* ── Leaderboards ─────────────────────────────────────────────────────── */

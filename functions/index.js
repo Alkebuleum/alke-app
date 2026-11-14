@@ -10,9 +10,11 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 import { memberCreated, memberUpdated, recordSession, settleDay, updateLive, warmDay } from "./core.js";
 import { dayKey } from "./genesis.js";
+import { syncGames } from "./games.js";
 
 initializeApp();
 const db = getFirestore();
@@ -42,4 +44,16 @@ export const alkeDaily = onSchedule({ schedule: "10 0 * * *", timeZone: "UTC", t
 /** Every 10 minutes: the live figures the Mine screen shows. */
 export const alkeLive = onSchedule({ schedule: "every 10 minutes", timeoutSeconds: 120 }, async () => {
   await updateLive(db);
+});
+
+/** The signed-in member's Nuru ID (the `nid` claim nuruAuth puts on the session). */
+export function memberId(req) {
+  const id = req.auth?.token?.nid;
+  if (!id || typeof id !== "string") throw new HttpsError("unauthenticated", "Sign in to ALKE first.");
+  return id;
+}
+
+/** Game results and progress from the app: checked, recorded, returned. */
+export const alkeGameSync = onCall({ enforceAppCheck: false }, async (req) => {
+  return syncGames(db, memberId(req), req.data || {});
 });

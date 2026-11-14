@@ -184,15 +184,13 @@ class Logic extends DCLogic {
       };
     });
 
-    const sample = [
-      { u: 'kwame.dev', ini: 'KD', grad: 'linear-gradient(135deg,#8FB2FF,#4A86F7)', xp: 150, time: 102 },
-      { u: 'nia.o', ini: 'NO', grad: 'linear-gradient(135deg,#F7D58A,#D99A2B)', xp: 150, time: 118 },
-      { u: 'zola_m', ini: 'ZM', grad: 'linear-gradient(135deg,#8DF0C9,#2BA37A)', xp: 135, time: 91 },
-      { u: 'tunde_a', ini: 'TA', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)', xp: 120, time: 97 },
-      { u: 'amara.k', ini: 'AK', grad: 'linear-gradient(135deg,#FF8A9A,#C2354B)', xp: 100, time: 140 }
-    ];
-    const mine = d && d.result === 'won' ? { u: 'You', ini: 'AO', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)', xp: d.xp, time: d.time || 0, me: true } : null;
-    const list = sample.concat(mine ? [mine] : []).sort((a, b) => b.xp - a.xp || a.time - b.time);
+    // Today's real board (alke_scores via the Boards wrapper), without my own row.
+    const PB = this.props || {};
+    const me = PB.me || {};
+    const look = PB.look || (() => ({ ini: '?', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)' }));
+    const others = ((PB.boards && PB.boards.hexToday) || []).filter((r) => r.id !== me.id).map((r) => Object.assign({ u: r.username || 'Alker', xp: r.hexDaily || 0, time: r.hexDailyTime || 0 }, look(r.username)));
+    const mine = d && d.result === 'won' ? Object.assign({ u: 'You', xp: d.xp, time: d.time || 0, me: true }, look(me.username)) : null;
+    const list = others.concat(mine ? [mine] : []).sort((a, b) => b.xp - a.xp || a.time - b.time);
     const top = list.slice(0, 3).map((p, i) => ({
       rank: String(i + 1),
       name: p.u,

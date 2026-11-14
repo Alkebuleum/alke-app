@@ -73,7 +73,8 @@ class Logic extends DCLogic {
     };
     const bd = last.badge && B[last.badge] ? B[last.badge] : null;
 
-    const sampleBoard = [420, 380, 350, 300, 260, 240, 210, 190];
+    const PB = this.props || {};
+    const sampleBoard = ((PB.boards && PB.boards.rushToday) || []).filter((r) => r.id !== (PB.me || {}).id).map((r) => r.rushBest || 0).sort((a, b) => b - a);
     const bestToday = Math.max(last.chalBest || 0, practice ? 0 : banked);
     const rank = bestToday > 0 ? 1 + sampleBoard.filter((v) => v > bestToday).length : 0;
     const gap = rank > 1 ? sampleBoard[rank - 2] - bestToday : 0;

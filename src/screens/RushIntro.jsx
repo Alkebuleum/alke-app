@@ -162,7 +162,8 @@ class Logic extends DCLogic {
     });
     if (!runsList.length) runsList.push({ title: 'No runs yet', meta: 'Start a run to see it here', value: '', ink: '#8C8999', dot: 'transparent', dotEdge: '2px solid #6E6A82', line: '0' });
 
-    const sample = [420, 380, 350, 300, 260, 240, 210, 190];
+    const PB = this.props || {};
+    const sample = ((PB.boards && PB.boards.rushToday) || []).filter((r) => r.id !== (PB.me || {}).id).map((r) => r.rushBest || 0);
     const best = chal.best || 0;
     const rank = best > 0 ? 1 + sample.filter((v) => v > best).length : 0;
     const left = Math.max(0, 5 - runs);
