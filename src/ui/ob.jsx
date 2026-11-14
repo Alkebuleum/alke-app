@@ -130,7 +130,7 @@ export function MarkPaths({ stroke = "#fff", width = 8 }) {
   );
 }
 
-/** The app icon (the gold 3D ALKE hexagon, public/favicon.svg). */
+/** The app icon (white ALKE hexagon on violet, public/favicon.svg). */
 export function Logo({ size = 40 }) {
   return <img src="/favicon.svg" width={size} height={size} alt="" aria-hidden="true" style={{ display: "block", flex: "none", borderRadius: size * 0.22, boxShadow: size > 60 ? "0 18px 40px -18px rgba(94,58,255,.8)" : "none" }} />;
 }
