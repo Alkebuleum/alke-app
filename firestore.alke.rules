@@ -137,3 +137,58 @@
       allow write: if false;
     }
 
+
+    // ── Notifications, preferences, devices, verification ───────────────
+    // ALSO add 'alke_verifications', 'alke_admins' and 'alke_config' to the
+    // fallback's exclusion list: alke_verifications holds identity details
+    // and must never be readable.
+
+    // alke_members/{nuruId}/notifications/{n}: written by the server; the
+    // member reads them, marks them read, and can clear them.
+    match /alke_members/{nuruId}/notifications/{n} {
+      allow read, delete: if isVerifiedAs(nuruId);
+      allow update: if isVerifiedAs(nuruId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+        && request.resource.data.read == true;
+      allow create: if false;
+    }
+
+    // alke_members/{nuruId}/settings/prefs: alert switches (member-written).
+    // Other docs in settings/ are the server's (e.g. reminded).
+    match /alke_members/{nuruId}/settings/{doc} {
+      allow read: if isVerifiedAs(nuruId);
+      allow create, update: if isVerifiedAs(nuruId) && doc == 'prefs'
+        && request.resource.data.keys().hasOnly(['reminders', 'games', 'updatedAt'])
+        && request.resource.data.get('reminders', true) is bool
+        && request.resource.data.get('games', false) is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // alke_members/{nuruId}/devices/{key}: web push tokens of the member's browsers.
+    match /alke_members/{nuruId}/devices/{key} {
+      allow read, delete: if isVerifiedAs(nuruId);
+      allow create, update: if isVerifiedAs(nuruId)
+        && request.resource.data.keys().hasOnly(['token', 'kind', 'updatedAt'])
+        && request.resource.data.token is string && request.resource.data.token.size() <= 4096
+        && request.resource.data.kind == 'web'
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // alke_members/{nuruId}/verification/status: the member's personhood
+    // status, written only by the server (functions/verification.js).
+    match /alke_members/{nuruId}/verification/{doc} {
+      allow read: if isVerifiedAs(nuruId);
+      allow write: if false;
+    }
+
+    // Server only: identity records, the team list, configuration.
+    match /alke_verifications/{id} {
+      allow read, write: if false;
+    }
+    match /alke_admins/{id} {
+      allow read, write: if false;
+    }
+    match /alke_config/{id} {
+      allow read, write: if false;
+    }

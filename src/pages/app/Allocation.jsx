@@ -1,5 +1,6 @@
 import { useMemberData } from "../../lib/useMemberData";
 import { WarmingSection } from "./Warming";
+import { useVerification, verificationLabel } from "../../lib/verification";
 import { AppPage, Ico, Row, Section, SubBar } from "../../ui/shell";
 import { approxAlke, fmtC, shortC, toC } from "../../lib/genesis";
 
@@ -8,6 +9,7 @@ import { approxAlke, fmtC, shortC, toC } from "../../lib/genesis";
 const Dot = ({ style }) => <span style={{ width: 10, height: 10, borderRadius: "50%", boxSizing: "border-box", ...style }} />;
 
 export default function Allocation() {
+  const verification = useVerification();
   const { allocation, invites } = useMemberData({ allocation: true, invites: true });
   const a = allocation || {};
   const updated = a.updatedAt?.toDate?.();
@@ -19,7 +21,7 @@ export default function Allocation() {
     ["Warmed", "Converts to hot ALKE at release", warmed, { background: "var(--gold)" }],
     ["Still cold", "Warms with your contributions", locked - warmed, { border: "1.5px dashed #A1A1AA" }],
     ["Claimable", "Under the release policy", a.claimable, { border: "1.5px solid var(--success)" }],
-    ["Claimed", "Sent to your wallet", a.claimed, { border: "1.5px solid #71717A" }],
+    ["Claimed", "Moved to Nuru", a.claimed, { border: "1.5px solid #71717A" }],
   ];
 
   return (
@@ -54,13 +56,13 @@ export default function Allocation() {
       <Section title="Release conditions">
         <ul className="ob-list">
           <li>
-            <Row icon={<Ico.Doc />} tone="plain" title="Release policy published" end="Not yet" />
+            <Row to="/release-policy" icon={<Ico.Doc />} tone="plain" title="Release policy" end={<span className="ob-pill">Draft</span>} />
           </li>
           <li>
-            <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Account verified" end="Not yet" />
+            <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Account verified" end={verificationLabel(verification)} />
           </li>
           <li>
-            <Row icon={<Ico.Wallet />} tone="plain" title="Wallet connected" end="Later" />
+            <Row icon={<Ico.Users />} tone="plain" title="Claim in the Nuru app" end="When claiming opens" />
           </li>
         </ul>
       </Section>

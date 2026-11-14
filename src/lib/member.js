@@ -245,3 +245,10 @@ export function sessionRemaining(member, now = Date.now()) {
   if (!t) return 0;
   return Math.max(0, t + SESSION_MS - now);
 }
+
+/** Updates the display name and avatar colour on the shared Nuru person. */
+export async function saveProfile(nuruId, { displayName, tint }) {
+  const name = String(displayName || "").trim().slice(0, 60);
+  if (!name) throw new Error("Enter the name other members will see.");
+  await updateDoc(doc(db, "nuru_people", nuruId), { name, emojiColor: tint, updatedAt: serverTimestamp() });
+}

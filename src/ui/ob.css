@@ -565,3 +565,12 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-badge .b { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-2); color: var(--text-3); }
 .ob-badge.on { color: var(--text); }
 .ob-badge.on .b { background: var(--gold-soft); color: var(--gold); }
+
+/* Select inside .ob-input; photo upload button; danger button */
+.ob-select { flex: 1; min-width: 0; height: 100%; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; font-size: 16px; outline: none; appearance: none; -webkit-appearance: none; }
+.ob-select option { background: var(--surface-2); color: var(--text); }
+.ob-upload { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; border: 1.5px dashed var(--border); border-radius: 14px; color: var(--text-2); cursor: pointer; font-size: 15px; }
+.ob-upload:hover, .ob-upload:focus-within { border-color: var(--accent); color: var(--text); }
+.ob-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ob-btn.danger { background: var(--danger); color: #fff; }
+.ob-btn.danger:hover { filter: brightness(1.08); color: #fff; }

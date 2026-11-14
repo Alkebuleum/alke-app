@@ -52,6 +52,12 @@ export default function Profile() {
         </div>
       </section>
 
+      <ul className="ob-list">
+        <li>
+          <Row to="/profile/edit" icon={<Ico.Users />} title="Edit profile" sub="Name and avatar colour" />
+        </li>
+      </ul>
+
       <div className="ob-stats">
         <Stat label="Streak" value={liveStreak(member)} unit="days" />
         <Stat label="Sessions" value={sessions} />

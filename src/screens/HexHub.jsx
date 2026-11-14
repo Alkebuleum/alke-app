@@ -188,8 +188,8 @@ class Logic extends DCLogic {
     const PB = this.props || {};
     const me = PB.me || {};
     const look = PB.look || (() => ({ ini: '?', grad: 'linear-gradient(135deg,#C6B6FF,#7A55FA)' }));
-    const others = ((PB.boards && PB.boards.hexToday) || []).filter((r) => r.id !== me.id).map((r) => Object.assign({ u: r.username || 'Alker', xp: r.hexDaily || 0, time: r.hexDailyTime || 0 }, look(r.username)));
-    const mine = d && d.result === 'won' ? Object.assign({ u: 'You', xp: d.xp, time: d.time || 0, me: true }, look(me.username)) : null;
+    const others = ((PB.boards && PB.boards.hexToday) || []).filter((r) => r.id !== me.id).map((r) => Object.assign({ u: r.name || 'Alker', xp: r.hexDaily || 0, time: r.hexDailyTime || 0 }, look(r.name || r.id)));
+    const mine = d && d.result === 'won' ? Object.assign({ u: 'You', xp: d.xp, time: d.time || 0, me: true }, look(me.name || me.id)) : null;
     const list = others.concat(mine ? [mine] : []).sort((a, b) => b.xp - a.xp || a.time - b.time);
     const top = list.slice(0, 3).map((p, i) => ({
       rank: String(i + 1),

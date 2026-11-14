@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { I } from "../../ui/ob";
 import { AppPage, Ico, Row, Section, SubBar } from "../../ui/shell";
 import { RULES } from "../onboarding/Rules";
+import { enablePush, pushState, usePrefs } from "../../lib/notifications";
+import { amIAdmin, useVerification, verificationLabel } from "../../lib/verification";
 
 function maskEmail(e) {
   if (!e || !e.includes("@")) return "";
@@ -10,36 +12,44 @@ function maskEmail(e) {
   return `${u[0]}•••@${d}`;
 }
 
-/* Preferences are per device for now (no server setting exists yet). */
-function usePref(key, dflt) {
-  const k = `alke.pref.${key}`;
-  const [v, setV] = useState(() => {
-    try {
-      const s = localStorage.getItem(k);
-      return s == null ? dflt : s === "1";
-    } catch {
-      return dflt;
-    }
-  });
-  const set = (next) => {
-    setV(next);
-    try {
-      localStorage.setItem(k, next ? "1" : "0");
-    } catch {
-      /* private mode */
-    }
-  };
-  return [v, set];
-}
-
 function Toggle({ on, onChange, label }) {
   return <button type="button" role="switch" aria-checked={on} aria-label={label} className="ob-toggle" onClick={() => onChange(!on)} />;
 }
 
+const PUSH_TEXT = {
+  nuru: ["Delivered by Nuru", "Alerts arrive as Nuru notifications"],
+  unsupported: ["Not on this browser", "Add ALKE to your home screen, or use it in Nuru"],
+  denied: ["Blocked", "Allow notifications for app.alke.network in your browser settings"],
+  granted: ["On", "This device gets alerts"],
+  default: ["Turn on", "Get alerts on this device"],
+};
+
 export default function Settings() {
-  const { user, signOut } = useAuth();
-  const [reminders, setReminders] = usePref("reminders", true);
-  const [games, setGames] = usePref("games", false);
+  const { user, nuruId, signOut } = useAuth();
+  const [prefs, setPref] = usePrefs();
+  const verification = useVerification();
+  const [push, setPush] = useState(pushState);
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    amIAdmin()
+      .then((a) => live && setAdmin(a))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const turnOnPush = async () => {
+    if (push !== "default") return;
+    try {
+      setPush(await enablePush(nuruId));
+    } catch {
+      setPush(pushState());
+    }
+  };
+  const [pushEnd, pushSub] = PUSH_TEXT[push] || PUSH_TEXT.default;
 
   return (
     <AppPage tab="profile" bar={<SubBar title="Settings" back="/profile" />}>
@@ -49,7 +59,10 @@ export default function Settings() {
             <Row icon={<Ico.Mail />} tone="plain" title="Email" end={maskEmail(user?.email)} />
           </li>
           <li>
-            <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Personhood check" end="Not yet" />
+            <Row to="/profile/edit" icon={<Ico.Users />} tone="plain" title="Name and avatar" />
+          </li>
+          <li>
+            <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Personhood check" end={verificationLabel(verification)} />
           </li>
         </ul>
       </Section>
@@ -57,10 +70,32 @@ export default function Settings() {
       <Section title="Alerts">
         <ul className="ob-list">
           <li>
-            <Row icon={<Ico.Bell size={18} />} tone="plain" title="Session reminders" end={<Toggle on={reminders} onChange={setReminders} label="Session reminders" />} />
+            <Row
+              onClick={push === "default" ? turnOnPush : undefined}
+              icon={<Ico.Bell size={18} />}
+              tone="plain"
+              title="Notifications on this device"
+              sub={pushSub}
+              end={<span className={push === "granted" || push === "nuru" ? "ob-pill accent" : "ob-pill"}>{pushEnd}</span>}
+            />
           </li>
           <li>
-            <Row icon={<Ico.Trophy />} tone="plain" title="Game challenges" end={<Toggle on={games} onChange={setGames} label="Game challenge alerts" />} />
+            <Row
+              icon={<Ico.Bell size={18} />}
+              tone="plain"
+              title="Session reminders"
+              sub="When your next session is ready"
+              end={<Toggle on={!!prefs.reminders} onChange={(v) => setPref("reminders", v)} label="Session reminders" />}
+            />
+          </li>
+          <li>
+            <Row
+              icon={<Ico.Trophy />}
+              tone="plain"
+              title="Game challenges"
+              sub="Once a day, when new games are ready"
+              end={<Toggle on={!!prefs.games} onChange={(v) => setPref("games", v)} label="Game challenge alerts" />}
+            />
           </li>
         </ul>
       </Section>
@@ -85,18 +120,31 @@ export default function Settings() {
         </details>
         <ul className="ob-list">
           <li>
-            <Row icon={<Ico.Doc />} tone="plain" title="Release policy" end={<span className="ob-pill">Draft</span>} />
+            <Row to="/release-policy" icon={<Ico.Doc />} tone="plain" title="Release policy" end={<span className="ob-pill">Draft</span>} />
           </li>
         </ul>
       </Section>
+
+      {admin ? (
+        <Section title="ALKE team">
+          <ul className="ob-list">
+            <li>
+              <Row to="/team/reviews" icon={<Ico.Shield />} title="ID reviews" sub="Manual personhood checks waiting" />
+            </li>
+          </ul>
+        </Section>
+      ) : null}
 
       <ul className="ob-list">
         <li>
           <Row onClick={signOut} icon={<Ico.LogOut />} tone="plain" title={<span style={{ color: "var(--danger)" }}>Sign out</span>} />
         </li>
+        <li>
+          <Row to="/settings/delete" icon={<Ico.Lock size={16} />} tone="plain" title={<span style={{ color: "var(--danger)" }}>Delete ALKE account</span>} />
+        </li>
       </ul>
 
-      <p className="ob-small center">ALKE v0.1 · Alkebuleum Technology LLC</p>
+      <p className="ob-small center">ALKE v0.2 · Alkebuleum Technology LLC</p>
     </AppPage>
   );
 }

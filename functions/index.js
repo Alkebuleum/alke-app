@@ -10,11 +10,24 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
+import Stripe from "stripe";
 import { logger } from "firebase-functions/v2";
 import { memberCreated, memberUpdated, recordSession, settleDay, updateLive, warmDay } from "./core.js";
-import { dayKey } from "./genesis.js";
+import { ACTIVE_AFTER, dayKey } from "./genesis.js";
 import { syncGames } from "./games.js";
+import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
+import { decideReview, handleStripeEvent, isAdmin, listReviews, startVerification, submitManual } from "./verification.js";
+import { deleteMembership } from "./account.js";
+
+/* Secrets (firebase functions:secrets:set NAME):
+ *   STRIPE_SECRET_KEY               Stripe secret key (Identity enabled)
+ *   STRIPE_IDENTITY_WEBHOOK_SECRET  signing secret of the alkeStripeIdentity webhook
+ *   ALKE_ID_HASH_SECRET             any long random string; keys the ID-number hash */
+const STRIPE_KEY = defineSecret("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK = defineSecret("STRIPE_IDENTITY_WEBHOOK_SECRET");
+const ID_HASH = defineSecret("ALKE_ID_HASH_SECRET");
 
 initializeApp();
 const db = getFirestore();
@@ -26,12 +39,32 @@ export const alkeOnSession = onDocumentCreated("alke_members/{id}/sessions/{n}",
 
 /** A member joined: credit the inviter. */
 export const alkeOnMemberCreated = onDocumentCreated("alke_members/{id}", async (e) => {
-  if (e.data) await memberCreated(db, e.params.id, e.data.data());
+  if (!e.data) return;
+  const m = e.data.data();
+  await memberCreated(db, e.params.id, m);
+  if (m.invitedBy && m.invitedBy !== e.params.id) {
+    await notify(db, m.invitedBy, {
+      kind: "invite",
+      title: "Someone joined with your invite",
+      body: `${m.username || "A new member"} joined ALKE. Their invite becomes active after 3 sessions.`,
+      link: "/network",
+    });
+  }
 });
 
 /** A member's sessions grew: an invite becomes active after a few sessions. */
 export const alkeOnMemberUpdated = onDocumentUpdated("alke_members/{id}", async (e) => {
-  await memberUpdated(db, e.params.id, e.data.before.data() || {}, e.data.after.data() || {});
+  const before = e.data.before.data() || {};
+  const after = e.data.after.data() || {};
+  await memberUpdated(db, e.params.id, before, after);
+  if (after.invitedBy && after.invitedBy !== e.params.id && (before.sessionCount || 0) < ACTIVE_AFTER && (after.sessionCount || 0) >= ACTIVE_AFTER) {
+    await notify(db, after.invitedBy, {
+      kind: "invite",
+      title: "An invite is now active",
+      body: `${after.username || "Your invite"} finished 3 sessions. It now warms 1% of your cALKE a day.`,
+      link: "/network",
+    });
+  }
 });
 
 /** 00:10 UTC: settle yesterday's pool, then warm everyone's cold ALKE. */
@@ -47,7 +80,7 @@ export const alkeLive = onSchedule({ schedule: "every 10 minutes", timeoutSecond
 });
 
 /** The signed-in member's Nuru ID (the `nid` claim nuruAuth puts on the session). */
-export function memberId(req) {
+function memberId(req) {
   const id = req.auth?.token?.nid;
   if (!id || typeof id !== "string") throw new HttpsError("unauthenticated", "Sign in to ALKE first.");
   return id;
@@ -56,4 +89,63 @@ export function memberId(req) {
 /** Game results and progress from the app: checked, recorded, returned. */
 export const alkeGameSync = onCall({ enforceAppCheck: false }, async (req) => {
   return syncGames(db, memberId(req), req.data || {});
+});
+
+/** Every 15 minutes: "your next session is ready" for sessions that just ended. */
+export const alkeReminders = onSchedule({ schedule: "every 15 minutes", timeoutSeconds: 300 }, async () => {
+  logger.info("reminders", await sendSessionReminders(db));
+});
+
+/** 17:00 UTC: today's games, for members who turned game alerts on. */
+export const alkeGameAlerts = onSchedule({ schedule: "0 17 * * *", timeZone: "UTC", timeoutSeconds: 300 }, async () => {
+  logger.info("game alerts", await sendGameAlerts(db));
+});
+
+/* ── Personhood check ─────────────────────────────────────────────────── */
+
+export const alkeVerifyStart = onCall({ secrets: [STRIPE_KEY] }, async (req) => {
+  return startVerification(db, STRIPE_KEY.value(), memberId(req), req.data || {});
+});
+
+export const alkeVerifySubmit = onCall({ secrets: [ID_HASH] }, async (req) => {
+  return submitManual(db, ID_HASH.value(), memberId(req), req.data || {});
+});
+
+/** Stripe → here: Identity session events (verified, needs input, canceled). */
+export const alkeStripeIdentity = onRequest({ secrets: [STRIPE_KEY, STRIPE_WEBHOOK, ID_HASH] }, async (req, res) => {
+  let event;
+  try {
+    event = new Stripe(STRIPE_KEY.value()).webhooks.constructEvent(req.rawBody, req.get("stripe-signature"), STRIPE_WEBHOOK.value());
+  } catch (e) {
+    logger.warn("stripe signature", String(e?.message || e));
+    res.status(400).send("bad signature");
+    return;
+  }
+  try {
+    logger.info("stripe identity", await handleStripeEvent(db, STRIPE_KEY.value(), ID_HASH.value(), event));
+    res.json({ received: true });
+  } catch (e) {
+    logger.error("stripe identity failed", String(e?.message || e));
+    res.status(500).send("error");
+  }
+});
+
+/* The ALKE team (alke_admins/{nuruId} exists) reviews manual submissions. */
+async function adminId(req) {
+  const id = memberId(req);
+  if (!(await isAdmin(db, id))) throw new HttpsError("permission-denied", "Only the ALKE team can do this.");
+  return id;
+}
+
+export const alkeIsAdmin = onCall(async (req) => ({ admin: await isAdmin(db, memberId(req)) }));
+export const alkeReviewList = onCall(async (req) => {
+  await adminId(req);
+  return { reviews: await listReviews(db) };
+});
+export const alkeReviewDecide = onCall(async (req) => decideReview(db, await adminId(req), req.data || {}));
+
+/* ── Account ──────────────────────────────────────────────────────────── */
+
+export const alkeDeleteAccount = onCall({ secrets: [STRIPE_KEY], timeoutSeconds: 300 }, async (req) => {
+  return deleteMembership(db, STRIPE_KEY.value(), memberId(req), req.data || {});
 });

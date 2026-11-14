@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import { SESSION_MS, liveStreak, sessionRemaining, startSession, tintHex } from "../../lib/member";
 import { lastDays, useMemberData } from "../../lib/useMemberData";
+import { useNotifications } from "../../lib/notifications";
 import { gameStatus } from "../../lib/games";
 import { Button, Notice } from "../../ui/ob";
 import { shortC, toC } from "../../lib/genesis";
@@ -16,6 +17,7 @@ function greeting(d = new Date()) {
 export default function Home() {
   const { nuruId, member, person, displayName, initials } = useAuth();
   const { sessions, allocation } = useMemberData({ sessions: true, allocation: true });
+  const { unread } = useNotifications(20);
   const navigate = useNavigate();
   const now = useNow(1000);
   const [busy, setBusy] = useState(false);
@@ -52,7 +54,7 @@ export default function Home() {
             </span>
           </Link>
           <div className="acts">
-            <IconLink to="/notifications" label="Notifications">
+            <IconLink to="/notifications" label={unread ? `Notifications, ${unread} new` : "Notifications"} badge={unread > 0}>
               <Ico.Bell />
             </IconLink>
           </div>

@@ -1,6 +1,7 @@
 import { CONTRIBUTIONS, pct } from "../../lib/contribution";
 import { C_PER_ALKE, GENESIS_POOL, PHASES, STREAK_BOOSTS, fmtC } from "../../lib/genesis";
 import { AppPage, Ico, Row, SubBar } from "../../ui/shell";
+import { useVerification, verificationLabel } from "../../lib/verification";
 
 /* How to redeem ALKE: the whole journey in one place. Figures come from
    lib/genesis.js (unit, phases, boosts) and lib/contribution.js (warming). */
@@ -21,10 +22,11 @@ function Step({ n, title, children }) {
 }
 
 export default function Redeem() {
+  const verification = useVerification();
   return (
     <AppPage tab="mine" bar={<SubBar title="How to redeem ALKE" back="/mine" />}>
       <p className="ob-sub" style={{ margin: "0 4px" }}>
-        From your daily session to ALKE in your wallet, in five steps.
+        From your daily session to ALKE in Nuru, in five steps. The ALKE app never holds crypto.
       </p>
 
       <ol className="ob-guide">
@@ -88,26 +90,27 @@ export default function Redeem() {
           <p>Complete the personhood check (one person, one account) before you convert. Your cALKE keeps building and warming meanwhile. Nothing is lost.</p>
         </Step>
 
-        <Step n="4" title="Convert to hot ALKE">
+        <Step n="4" title="Claim it in Nuru">
           <p>
-            Warmed cALKE converts at {fmtC(C_PER_ALKE)} cALKE = 1 ALKE, under the published release policy. Cold cALKE that isn't warmed yet stays cold until it is.
+            When claiming opens, open the Nuru app, where you have a wallet, and claim your warm cALKE. It becomes real ALKE at {fmtC(C_PER_ALKE)} cALKE = 1 ALKE. Cold
+            cALKE that isn't warmed yet stays cold until it is.
           </p>
           <ul className="ob-list">
             <li>
-              <Row icon={<Ico.Doc />} tone="plain" title="Release policy published" end="Not yet" />
+              <Row to="/release-policy" icon={<Ico.Doc />} tone="plain" title="Release policy" end={<span className="ob-pill">Draft</span>} />
             </li>
             <li>
-              <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Your account verified" end="Not yet" />
+              <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Your account verified" end={verificationLabel(verification)} />
             </li>
             <li>
-              <Row icon={<Ico.Wallet />} tone="plain" title="Rewards available where you live" end="By region" />
+              <Row icon={<Ico.Users />} tone="plain" title="Claiming where you live" end="By region" />
             </li>
           </ul>
-          <p className="note">An exchange listing may be one factor the release policy considers. No listing, release date or price is promised.</p>
         </Step>
 
-        <Step n="5" title="Claim to your wallet">
-          <p>When ALKE becomes claimable, connect a wallet (Nuru or another) and claim it. A wallet is only needed then.</p>
+        <Step n="5" title="Locked, then released">
+          <p>Claimed ALKE starts locked in your Nuru wallet and is released over time, like vesting. The release terms aren't set yet; they're published before claiming opens.</p>
+          <p className="note">No listing, release date or price is promised.</p>
         </Step>
       </ol>
 

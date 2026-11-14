@@ -2,7 +2,8 @@ import { cloneElement, lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { Loading } from "./ui/kit";
-import { normInvite } from "./lib/member";
+import { namesOf, normInvite } from "./lib/member";
+import { refreshPush } from "./lib/notifications";
 import { ensureGameOwner, loadLeaderboards, personLook, syncGames } from "./lib/games";
 import { useState } from "react";
 
@@ -39,6 +40,10 @@ const Notifications = lazy(() => import("./pages/app/Notifications"));
 const Settings = lazy(() => import("./pages/app/Settings"));
 const Chat = lazy(() => import("./pages/app/Chat"));
 const Redeem = lazy(() => import("./pages/app/Redeem"));
+const ReleasePolicy = lazy(() => import("./pages/app/ReleasePolicy"));
+const ProfileEdit = lazy(() => import("./pages/app/ProfileEdit"));
+const DeleteAccount = lazy(() => import("./pages/app/DeleteAccount"));
+const Reviews = lazy(() => import("./pages/app/Reviews"));
 const Live = lazy(() => import("./pages/app/Live"));
 const Verify = lazy(() => import("./pages/app/Verify"));
 const Preview = import.meta.env.DEV ? lazy(() => import("./dev/Preview")) : null;
@@ -100,12 +105,19 @@ function Member({ children }) {
 
 /** Loads the real leaderboards for a leaderboard screen. */
 function Boards({ children, ...props }) {
-  const { nuruId, member } = useAuth();
+  const { nuruId, displayName } = useAuth();
   const [boards, setBoards] = useState(null);
   useEffect(() => {
-    loadLeaderboards().then(setBoards).catch(() => setBoards({ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }));
+    loadLeaderboards()
+      .then(async (b) => {
+        const ids = [...b.hexToday.slice(0, 10), ...b.rushToday.slice(0, 10)].map((r) => r.id);
+        const names = await namesOf(ids).catch(() => ({}));
+        const named = (rows) => rows.map((r) => ({ ...r, name: names[r.id] || "" }));
+        setBoards({ ...b, hexToday: named(b.hexToday), rushToday: named(b.rushToday) });
+      })
+      .catch(() => setBoards({ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }));
   }, []);
-  return cloneElement(children, { ...props, boards, look: personLook, me: { id: nuruId, username: member?.username } });
+  return cloneElement(children, { ...props, boards, look: personLook, me: { id: nuruId, name: displayName } });
 }
 
 /** The brand moment, then wherever the person belongs. */
@@ -172,8 +184,12 @@ const ROUTES = [
   ["/network", member(<Network />)],
   ["/chat", member(<Chat />)],
   ["/how-to-redeem", member(<Redeem />)],
+  ["/release-policy", member(<ReleasePolicy />)],
   ["/mine/live", member(<Live />)],
   ["/profile", member(<Profile />)],
+  ["/profile/edit", member(<ProfileEdit />)],
+  ["/settings/delete", member(<DeleteAccount />)],
+  ["/team/reviews", member(<Reviews />)],
   ["/notifications", member(<Notifications />)],
   ["/settings", member(<Settings />)],
   ["/verify", member(<Verify />)],
@@ -187,6 +203,9 @@ function Shell() {
   useEffect(() => {
     if (auth.step === "done") syncGames(auth.nuruId).catch(() => {});
   }, [pathname, auth.step, auth.nuruId]);
+  useEffect(() => {
+    if (auth.step === "done") refreshPush(auth.nuruId);
+  }, [auth.step, auth.nuruId]);
 
   // ?invite=CODE on any link is kept for the profile step.
   useEffect(() => {

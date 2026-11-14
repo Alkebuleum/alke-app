@@ -148,7 +148,7 @@ export default function Mine() {
           <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" sub="Pending, verified and locked" />
         </li>
         <li>
-          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cALKE to your wallet" />
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cALKE to ALKE in Nuru" />
         </li>
       </ul>
 
