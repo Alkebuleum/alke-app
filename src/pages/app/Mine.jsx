@@ -4,7 +4,7 @@ import { STREAK_MS, startSession } from "../../lib/member";
 import { approxAlke, fmtC, shortC } from "../../lib/genesis";
 import { Button, Notice } from "../../ui/ob";
 import { AppBar, AppPage, Ico, IconLink, Row, Stat, clock, hhmm } from "../../ui/shell";
-import { Burst, Core, Counter, buzz, useMilestones, useMining } from "./mining";
+import { Burst, Core, Counter, buzz, useMilestones, useMining, usePortal, Treasure } from "./mining";
 import { shareCard } from "./shareCard";
 
 /* Community mining: one tap starts a 24-hour session; today's estimated
@@ -24,6 +24,8 @@ export default function Mine() {
     buzz([20, 40, 20]);
   }, []);
   useMilestones(m.todayC, onMilestone);
+
+  const portal = usePortal(m);
 
   const start = async () => {
     if (m.running || busy) return;
@@ -67,10 +69,15 @@ export default function Mine() {
               <Ico.Flame size={12} />×{m.boost.toFixed(2)} streak boost
             </span>
           ) : null}
+          {m.running ? (
+            <span className={m.tapCount ? "ob-pill gold ob-boost" : "ob-pill"}>
+              ×{m.tapMult.toFixed(1)} tap boost · {m.tapCount}/{m.tapMax}
+            </span>
+          ) : null}
         </div>
 
         <div className="ob-mine-core">
-          <Core fraction={m.fraction} running={m.running} onIdleTap={start} />
+          <Core fraction={m.fraction} running={m.running} onIdleTap={start} onPortal={portal.open} locked={!!portal.treasure} />
           <Burst k={burst} />
           {toast ? <span className="ob-toast">{toast}</span> : null}
         </div>
@@ -87,6 +94,9 @@ export default function Mine() {
             </span>
             <span className="sub">
               cALKE · {approxAlke(m.todayC)} · {clock(m.remaining)} left
+            </span>
+            <span className="ob-small">
+              {m.tapCount >= m.tapMax ? `Max tap boost ×${m.tapMult.toFixed(1)} for today` : `Tap the core to a steady beat: full energy opens a hidden treasury (${m.tapCount}/${m.tapMax} today)`}
             </span>
           </div>
         ) : (
@@ -153,6 +163,7 @@ export default function Mine() {
       </ul>
 
       <p className="ob-small center">Today's figure is an estimate; the amount is set when the day is verified. Sessions never create new ALKE.</p>
+      <Treasure treasure={portal.treasure} onDone={portal.close} />
     </AppPage>
   );
 }

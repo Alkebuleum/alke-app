@@ -14,7 +14,7 @@ import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import Stripe from "stripe";
 import { logger } from "firebase-functions/v2";
-import { memberCreated, memberUpdated, recordSession, settleDay, updateLive, warmDay } from "./core.js";
+import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, updateLive, warmDay } from "./core.js";
 import { ACTIVE_AFTER, dayKey } from "./genesis.js";
 import { syncGames } from "./games.js";
 import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
@@ -89,6 +89,11 @@ function memberId(req) {
 /** Game results and progress from the app: checked, recorded, returned. */
 export const alkeGameSync = onCall({ enforceAppCheck: false }, async (req) => {
   return syncGames(db, memberId(req), req.data || {});
+});
+
+/** A 25-tap combo on the mining core: one tap boost for today, capped per day. */
+export const alkeBoost = onCall(async (req) => {
+  return recordBoost(db, memberId(req));
 });
 
 /** Every 15 minutes: "your next session is ready" for sessions that just ended. */

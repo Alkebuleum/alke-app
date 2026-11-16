@@ -6,7 +6,7 @@ import { approxAlke, shortC } from "../../lib/genesis";
 import { inviteLink } from "../../lib/member";
 import { Button } from "../../ui/ob";
 import { Ico, clock } from "../../ui/shell";
-import { Burst, Core, Counter, buzz, useMilestones, useMining } from "./mining";
+import { Burst, Core, Counter, buzz, useMilestones, useMining, usePortal, Treasure } from "./mining";
 
 /* Stream mode: a full-screen mining view for going live on social. Real
    figures only (today's estimate is labelled as one), plus the member's
@@ -53,6 +53,8 @@ export default function Live() {
   }, []);
   useMilestones(m.todayC, onMilestone);
 
+  const portal = usePortal(m);
+
   return (
     <div className="ob ob-live">
       <header className="ob-live-top">
@@ -73,12 +75,13 @@ export default function Live() {
         <span>
           Phase {m.phase.n} · {m.phase.name}
           {m.boost > 1 ? ` · ×${m.boost.toFixed(2)} streak boost` : ""}
+          {m.tapCount ? ` · ×${m.tapMult.toFixed(1)} tap boost` : ""}
           {m.streak ? ` · ${m.streak}-day streak` : ""}
         </span>
       </div>
 
       <div className="ob-live-core">
-        <Core fraction={m.fraction} running={m.running} size="min(300px, 40cqh, 78cqw)" />
+        <Core fraction={m.fraction} running={m.running} size="min(300px, 40cqh, 78cqw)" onPortal={portal.open} locked={!!portal.treasure} />
         <Burst k={burst} />
         {toast ? <span className="ob-toast">{toast}</span> : null}
       </div>
@@ -115,6 +118,7 @@ export default function Live() {
           <small>Scan to sign up with my invite</small>
         </div>
       </div>
+      <Treasure treasure={portal.treasure} onDone={portal.close} />
     </div>
   );
 }

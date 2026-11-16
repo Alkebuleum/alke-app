@@ -45,3 +45,11 @@ export const shortC = (c) => {
   if (v >= 1e4) return `${Math.floor(v / 1e3)}K`;
   return fmtC(v);
 };
+
+/* Tap boost: every TAP_BOOST.combo-tap combo while mining earns one boost;
+   each adds `step` to today's (UTC) share, up to `perDay` boosts a day
+   (×3 at most). The server records them (alkeBoost) and applies them when
+   the day settles. Keep in step with functions/genesis.js. */
+export const TAP_BOOST = { combo: 25, step: 0.2, perDay: 10 };
+export const tapBoost = (count) => Math.round((1 + TAP_BOOST.step * Math.min(Math.max(0, count || 0), TAP_BOOST.perDay)) * 100) / 100;
+export const utcDay = (d = Date.now()) => new Date(d).toISOString().slice(0, 10);

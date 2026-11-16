@@ -11,7 +11,7 @@
  * Amounts are ALKE (the app shows cALKE = ALKE × 1,000,000).
  */
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { ACTIVE_AFTER, WARMING, currentPhase, dayKey, roundAlke, streakBoost } from "./genesis.js";
+import { ACTIVE_AFTER, SESSION_MS, TAP_BOOST, WARMING, currentPhase, dayKey, roundAlke, streakBoost, tapBoost } from "./genesis.js";
 
 const ms = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : Number(t) || 0);
 const summaryRef = (db, id) => db.doc(`alke_members/${id}/allocation/summary`);
@@ -56,6 +56,30 @@ export async function recordSession(db, nuruId, session) {
   await b.commit();
 }
 
+/* ── Tap boost (callable alkeBoost) ───────────────────────────────────── */
+
+/** One combo boost for today (UTC), while a session runs, capped per day.
+ *  Kept on allocation/boost (the app reads it) and alke_days/{day}/boosts
+ *  (settlement reads it). */
+export async function recordBoost(db, nuruId, now = Date.now()) {
+  const day = dayKey(now);
+  const memberRef = db.doc(`alke_members/${nuruId}`);
+  const boostRef = db.doc(`alke_members/${nuruId}/allocation/boost`);
+  return db.runTransaction(async (t) => {
+    const [m, b] = await Promise.all([t.get(memberRef), t.get(boostRef)]);
+    const cur = b.exists && b.data().day === day ? b.data() : { day, count: 0 };
+    const out = (ok, reason, count = cur.count) => ({ ok, reason, day, count, mult: tapBoost(count), perDay: TAP_BOOST.perDay });
+    const started = ms(m.data()?.lastSessionAt);
+    if (!started || now - started >= SESSION_MS) return out(false, "no-session");
+    if (cur.count >= TAP_BOOST.perDay) return out(false, "cap");
+    if (cur.at && now - ms(cur.at) < TAP_BOOST.minGapMs) return out(false, "too-fast");
+    const count = cur.count + 1;
+    t.set(boostRef, { day, count, at: Timestamp.fromMillis(now), updatedAt: FieldValue.serverTimestamp() });
+    t.set(db.doc(`alke_days/${day}/boosts/${nuruId}`), { count, at: Timestamp.fromMillis(now) });
+    return out(true, null, count);
+  });
+}
+
 /* ── Invites (triggers on alke_members/{id}) ──────────────────────────── */
 
 export async function memberCreated(db, nuruId, member) {
@@ -92,7 +116,12 @@ export async function settleDay(db, day) {
   const phase = currentPhase(members, distributed);
 
   const sessions = await allDocs(db.collection(`alke_days/${day}/sessions`));
-  const rows = sessions.map((d) => ({ id: d.id, ...d.data(), w: streakBoost(d.data().streak || 1) }));
+  const boosts = Object.fromEntries((await allDocs(db.collection(`alke_days/${day}/boosts`))).map((d) => [d.id, d.data().count || 0]));
+  const rows = sessions.map((d) => {
+    const sb = streakBoost(d.data().streak || 1);
+    const tb = tapBoost(boosts[d.id]);
+    return { id: d.id, ...d.data(), sb, tb, taps: Math.min(boosts[d.id] || 0, TAP_BOOST.perDay), w: Math.round(sb * tb * 1000) / 1000 };
+  });
   const W = rows.reduce((a, r) => a + r.w, 0);
 
   let pool = 0;
@@ -117,7 +146,8 @@ export async function settleDay(db, day) {
           breakdown: [
             { label: "Day's pool", value: `${pool.toLocaleString("en-US")} ALKE`, note: phase ? `Phase ${phase.n} · ${phase.name}` : "Genesis complete" },
             { label: "Sessions that day", value: rows.length.toLocaleString("en-US") },
-            { label: "Your streak boost", value: `×${r.w}` },
+            { label: "Your streak boost", value: `×${r.sb}` },
+            { label: "Your tap boost", value: `×${r.tb}`, note: `${r.taps} of ${TAP_BOOST.perDay} boosts` },
             { label: "Your share", value: `${Math.round(share * 1e6).toLocaleString("en-US")} cALKE`, note: phase ? `max ${(phase.maxPerMember * r.w * 1e6).toLocaleString("en-US")} cALKE` : "" },
           ],
         },

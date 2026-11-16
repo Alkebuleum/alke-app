@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { initializeApp } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
-import { memberCreated, memberUpdated, recordSession, settleDay, shares, updateLive, warmDay } from "../core.js";
+import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, shares, updateLive, warmDay } from "../core.js";
 
 initializeApp({ projectId: "demo-alke-fn" });
 const db = getFirestore();
@@ -39,7 +39,7 @@ test("settlement shares the pool by streak, locks it, and runs once", async () =
   const e3 = await get("alke_members/AA3/entries/s30");
   assert.equal(e3.status, "locked");
   assert.equal(e3.amount, 1.25);
-  assert.equal(e3.breakdown.length, 4);
+  assert.equal(e3.breakdown.length, 5); // pool, sessions, streak, tap boost, share
   assert.equal((await get("alke_members/AA1/allocation/summary")).locked, 1);
   assert.equal((await get("alke_network/genesis")).distributed["1"], 3.35);
 
@@ -79,4 +79,28 @@ test("live figures: members, mining now, today's estimate", async () => {
   assert.equal(live.phase, 1);
   assert.equal(live.estPerSession, 1); // 30,000 / 3 → capped at 1 ALKE
   assert.ok(live.poolToday <= 30000);
+});
+
+test("tap boost: needs a session, capped per day, multiplies that day's share", async () => {
+  const D2 = "2026-11-13";
+  const t = (h, m = 0) => Date.parse(`${D2}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00Z`);
+  await db.doc("alke_members/BB1").set({ username: "bb1", streak: 1, sessionCount: 1 });
+  assert.equal((await recordBoost(db, "BB1", t(8))).reason, "no-session");
+
+  await db.doc("alke_members/BB1").update({ lastSessionAt: Timestamp.fromMillis(t(8)) });
+  await recordSession(db, "BB1", { n: 1, startedAt: Timestamp.fromMillis(t(8)) });
+  assert.equal((await recordBoost(db, "BB1", t(9))).count, 1);
+  assert.equal((await recordBoost(db, "BB1", t(9) + 500)).reason, "too-fast");
+  let last;
+  for (let i = 1; i <= 12; i++) last = await recordBoost(db, "BB1", t(9) + i * 3000);
+  assert.equal(last.reason, "cap");
+  assert.equal(last.count, 10);
+  assert.equal(last.mult, 3);
+
+  const r = await settleDay(db, D2);
+  assert.equal(r.sessions, 1);
+  assert.equal(r.total, 3); // 1 ALKE max × tap boost ×3
+  const e = await get("alke_members/BB1/entries/s1");
+  assert.equal(e.amount, 3);
+  assert.ok(e.breakdown.some((b) => b.label === "Your tap boost" && b.value === "×3"));
 });
