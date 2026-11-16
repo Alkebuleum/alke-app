@@ -135,16 +135,30 @@ test("allocation and entries: read by the member, written only by the server", a
   await assertFails(setDoc(doc(as(AMA), "alke_members", AMA, "entries", "x"), { amount: 5 }));
 });
 
-test("game scores: own row, own username, sane values", async () => {
+test("game scores: server-written, read by members only", async () => {
   const db = as(AMA);
   await join(db, AMA, "ama.builds");
-  const row = (o = {}) => ({ username: "ama.builds", hexXp: 120, rushXp: 180, rushBest: 120, rushDay: "2026-11-12", hexDaily: 0, hexDailyTime: 0, hexDay: "", updatedAt: serverTimestamp(), ...o });
-  await assertSucceeds(setDoc(doc(db, "alke_scores", AMA), row()));
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), "alke_scores", AMA), { hexXp: 120, rushXp: 180 });
+  });
   await assertSucceeds(getDoc(doc(as(KOFI), "alke_scores", AMA)));
-  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ username: "someone.else" })));
-  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ hexXp: -5 })));
-  await assertFails(setDoc(doc(db, "alke_scores", AMA), row({ ain: "AA00000001" })));
-  await assertFails(setDoc(doc(as(KOFI), "alke_scores", AMA), row()));
+  await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), "alke_scores", AMA)));
+  await assertFails(setDoc(doc(db, "alke_scores", AMA), { hexXp: 99999 }));
+  await assertFails(setDoc(doc(as(KOFI), "alke_scores", AMA), { hexXp: 1 }));
+});
+
+test("identity records, team list and config are never readable", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const f = ctx.firestore();
+    await setDoc(doc(f, "alke_verifications", "x"), { idHash: "h" });
+    await setDoc(doc(f, "alke_admins", AMA), { at: 1 });
+    await setDoc(doc(f, "alke_config", "verification"), { stripeCountries: [] });
+  });
+  for (const fs_ of [as(AMA), env.unauthenticatedContext().firestore()]) {
+    await assertFails(getDoc(doc(fs_, "alke_verifications", "x")));
+    await assertFails(getDoc(doc(fs_, "alke_admins", AMA)));
+    await assertFails(getDoc(doc(fs_, "alke_config", "verification")));
+  }
 });
 
 test("username can't be changed or released", async () => {

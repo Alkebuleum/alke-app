@@ -6,7 +6,8 @@
     // Uses the existing helpers isAuthed(), verifiedAin() (the `nid` claim set
     // by nuruAuth) and isVerifiedAs(id), and changed().
     //
-    // ALSO: add 'alke_members', 'alke_days' and 'alke_settlements' to the
+    // ALSO: add 'alke_members', 'alke_days', 'alke_settlements', 'alke_scores',
+    // 'alke_verifications', 'alke_admins' and 'alke_config' to the
     // exclusion list of the fallback
     // `match /{collection}/{document=**} { allow read: if !(collection in [...]) }`
     // (next to 'nuru_people'). Rules are OR-ed: without that, the fallback makes

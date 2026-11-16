@@ -12,7 +12,7 @@ match /alke_verification/{nuruId}/{file} {
   allow read, delete: if false;
   allow create, update: if request.auth != null
     && request.auth.token.nid == nuruId
-    && file.matches('^(id-front|id-back|selfie)\.(jpg|jpeg|png|webp|heic)$')
+    && file.matches('^(id-front|id-back|selfie)[.](jpg|jpeg|png|webp|heic)$')
     && request.resource.size < 10 * 1024 * 1024
     && request.resource.contentType.matches('image/.*');
 }

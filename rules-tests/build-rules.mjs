@@ -12,12 +12,23 @@ const alke = fs.readFileSync(path.resolve(here, "../firestore.alke.rules"), "utf
 
 const marker = rules.lastIndexOf("match /{collection}/{document=**}");
 if (marker < 0) throw new Error("fallback match not found in " + base);
-const lineStart = rules.lastIndexOf("\n", rules.lastIndexOf("//", marker) > rules.lastIndexOf("}", marker) ? rules.lastIndexOf("//", marker) : marker);
+// Insert above the fallback's whole comment block (the comment lines
+// directly above it), not in the middle of it.
+let lineStart = rules.lastIndexOf("\n", marker);
+for (;;) {
+  const prev = rules.lastIndexOf("\n", lineStart - 1);
+  if (prev < 0 || !rules.slice(prev + 1, lineStart).trim().startsWith("//")) break;
+  lineStart = prev;
+}
 let out = rules.slice(0, lineStart) + "\n" + alke + "\n" + rules.slice(lineStart);
-// The second console edit: keep member records and the server's per-day
-// session logs out of the public-read fallback.
+// The second console edit: keep member records, the server's per-day
+// session logs, identity records, the team list and config out of the
+// public-read fallback (rules are OR-ed: otherwise `read: if true` wins).
 const before = out;
-out = out.replace(/'nuru_people',(\s*)'nuru_logins'/, "'nuru_people', 'alke_members', 'alke_days', 'alke_settlements',$1'nuru_logins'");
+out = out.replace(
+  /'nuru_people',(\s*)'nuru_logins'/,
+  "'nuru_people', 'alke_members', 'alke_days', 'alke_settlements', 'alke_scores',$1'alke_verifications', 'alke_admins', 'alke_config',$1'nuru_logins'",
+);
 if (out === before) throw new Error("couldn't add the alke collections to the fallback exclusion list");
 fs.writeFileSync(path.join(here, "combined.rules"), out);
 console.log(`combined.rules from ${base}`);
