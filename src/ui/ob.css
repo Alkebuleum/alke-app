@@ -611,3 +611,11 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
   .ob-treasure .rays, .ob-treasure .swirl, .ob-treasure .hole, .ob-treasure .rain, .ob-core .beat { animation: none; }
   .ob-treasure .rain { display: none; }
 }
+
+/* Share card sheet (ShareSheet.jsx) */
+.ob-sheet { position: fixed; inset: 0; z-index: 70; display: grid; place-items: end center; padding: 16px 16px calc(var(--safe-bottom, 0px) + 16px); background: rgba(5, 5, 10, .72); backdrop-filter: blur(6px); animation: obTFade .2s ease-out; }
+.ob-sheet-card { width: min(420px, 100%); max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 24px; background: var(--surface, #15131F); box-shadow: 0 -10px 40px rgba(0, 0, 0, .5); animation: obSheetUp .28s cubic-bezier(.2, .9, .3, 1); }
+.ob-sheet-card img { display: block; width: 100%; max-height: 52vh; object-fit: contain; border-radius: 16px; }
+.ob-sheet-actions { display: grid; gap: 8px; }
+.ob-sheet-actions .ob-btn { width: 100%; text-decoration: none; }
+@keyframes obSheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }

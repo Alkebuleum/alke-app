@@ -5,7 +5,8 @@ import { approxAlke, fmtC, shortC } from "../../lib/genesis";
 import { Button, Notice } from "../../ui/ob";
 import { AppBar, AppPage, Ico, IconLink, Row, Stat, clock, hhmm } from "../../ui/shell";
 import { Burst, Core, Counter, buzz, useMilestones, useMining, usePortal, Treasure } from "./mining";
-import { shareCard } from "./shareCard";
+import { makeShareCard } from "./shareCard";
+import { ShareSheet } from "./ShareSheet";
 
 /* Community mining: one tap starts a 24-hour session; today's estimated
    cALKE climbs live while it runs. */
@@ -26,6 +27,21 @@ export default function Mine() {
   useMilestones(m.todayC, onMilestone);
 
   const portal = usePortal(m);
+  const [card, setCard] = useState(null);
+  const [cardBusy, setCardBusy] = useState(false);
+  const openCard = async () => {
+    if (cardBusy) return;
+    setCardBusy(true);
+    setError(null);
+    try {
+      setCard(await makeShareCard({ name: displayName, streak: m.streak, balanceC: m.balanceC, todayC: m.todayC, nuruId }));
+    } catch (e) {
+      setError(e.message || "Couldn't make the share card.");
+    } finally {
+      setCardBusy(false);
+    }
+  };
+  const closeCard = useCallback(() => setCard(null), []);
 
   const start = async () => {
     if (m.running || busy) return;
@@ -147,7 +163,7 @@ export default function Mine() {
           <Ico.Play size={14} />
           Stream mode
         </Button>
-        <Button kind="secondary" size="sm" style={{ width: "100%" }} onClick={() => shareCard({ name: displayName, streak: m.streak, balanceC: m.balanceC, todayC: m.todayC, nuruId })}>
+        <Button kind="secondary" size="sm" style={{ width: "100%" }} busy={cardBusy} onClick={openCard}>
           <Ico.Link size={16} />
           Share card
         </Button>
@@ -164,6 +180,7 @@ export default function Mine() {
 
       <p className="ob-small center">Today's figure is an estimate; the amount is set when the day is verified. Sessions never create new ALKE.</p>
       <Treasure treasure={portal.treasure} onDone={portal.close} />
+      <ShareSheet card={card} onClose={closeCard} />
     </AppPage>
   );
 }

@@ -4,6 +4,7 @@ import { inviteLink } from "../../lib/member";
 import { useMemberData } from "../../lib/useMemberData";
 import { Button } from "../../ui/ob";
 import { AppBar, AppPage, Ico, Row } from "../../ui/shell";
+import { copyText } from "../../lib/clipboard";
 
 /* Community chat + your invite link. The invite code is your Nuru ID; who
    joined with it is recorded (invitedBy) and counted once the server side
@@ -16,20 +17,15 @@ export default function Network() {
   const shown = link.replace(/^https:\/\//, "");
 
   const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      /* clipboard blocked: the link is still selectable */
-    }
+    setCopied((await copyText(link)) ? "Copied" : "Hold to copy");
+    setTimeout(() => setCopied(false), 1800);
   };
   const canShare = typeof navigator !== "undefined" && !!navigator.share;
   const share = async () => {
     try {
       await navigator.share({ title: "Join me on ALKE", text: "Join me on ALKE with my invite:", url: link });
-    } catch {
-      /* cancelled */
+    } catch (e) {
+      if (e?.name !== "AbortError") copy();
     }
   };
 
@@ -82,7 +78,7 @@ export default function Network() {
             {shown}
           </span>
           <button type="button" className="ob-invite-copy" onClick={copy} aria-label="Copy invite link">
-            {copied ? "Copied" : "Copy"}
+            {copied || "Copy"}
           </button>
         </div>
 

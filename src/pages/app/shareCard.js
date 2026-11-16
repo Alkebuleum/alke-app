@@ -2,8 +2,9 @@ import { approxAlke, fmtC } from "../../lib/genesis";
 import { inviteLink } from "../../lib/member";
 
 /* A 1080×1350 share image: name, streak, cALKE (with the ALKE equivalent)
-   and the invite link. Shared through the phone's share sheet when it can
-   take files, else downloaded. Real figures only. */
+   and the invite link. makeShareCard draws it; ShareSheet (Mine) previews
+   it and shares from a fresh tap, because phones refuse the share sheet
+   after the async drawing. Real figures only. */
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -15,7 +16,7 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
+export async function makeShareCard({ name, streak, balanceC, todayC, nuruId }) {
   const W = 1080;
   const H = 1350;
   const cv = document.createElement("canvas");
@@ -97,19 +98,27 @@ export async function shareCard({ name, streak, balanceC, todayC, nuruId }) {
   ctx.fillText("cALKE is cold ALKE: locked until warmed and released. Estimates until verified.", 80, 1250);
 
   const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
-  if (!blob) return;
-  const file = new File([blob], "alke.png", { type: "image/png" });
+  if (!blob) throw new Error("Couldn't draw the card on this device.");
+  const link = inviteLink(nuruId);
+  return { blob, url: URL.createObjectURL(blob), file: new File([blob], "alke.png", { type: "image/png" }), link, text: `Join me on ALKE: ${link}` };
+}
+
+/** Whether this device's share sheet takes image files. */
+export const canShareFile = (card) => {
   try {
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "ALKE", text: `Join me on ALKE: ${inviteLink(nuruId)}` });
-      return;
-    }
+    return !!(card && navigator.canShare && navigator.canShare({ files: [card.file] }));
   } catch {
-    return; // cancelled
+    return false;
   }
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "alke.png";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+
+/** Opens the share sheet with the image (call straight from a tap). "cancelled" if the person closed it. */
+export async function shareCardFile(card) {
+  try {
+    await navigator.share({ files: [card.file], title: "ALKE", text: card.text });
+    return "shared";
+  } catch (e) {
+    if (e?.name === "AbortError") return "cancelled";
+    throw e;
+  }
 }

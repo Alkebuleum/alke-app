@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { Bar, Button, Field, Notice, Page } from "../../ui/ob";
 import { Ico } from "../../ui/shell";
-import { countries, startVerification, submitManualVerification, uploadVerificationPhoto, useVerification } from "../../lib/verification";
+import { countries, startVerification, submitManualVerification, uploadVerificationPhoto, useVerification, VERIFY_OPEN } from "../../lib/verification";
 
 /* Personhood check: one person, one account.
    Stripe (ID + live selfie + ID number) where it's available; elsewhere,
@@ -149,6 +149,15 @@ export default function Verify() {
     return <Message title="In review" sub="The ALKE team is reviewing your documents, usually within a few days. We'll notify you. Your sessions keep counting meanwhile." footer={back} />;
   if (status === "processing" || (status === "pending" && new URLSearchParams(window.location.search).get("back")))
     return <Message title="Checking your ID" sub="Stripe is checking your documents. This usually takes a few minutes; we'll notify you when it's done." footer={back} />;
+
+  if (!VERIFY_OPEN)
+    return (
+      <Message
+        title="Personhood checks open soon"
+        sub="One person, one account. ID checks aren't open yet; we'll notify you when they are. Your sessions and cALKE keep counting meanwhile, and nothing is lost by waiting."
+        footer={back}
+      />
+    );
 
   const start = async () => {
     if (!country || busy) return;

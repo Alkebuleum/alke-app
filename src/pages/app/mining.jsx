@@ -128,9 +128,11 @@ export function usePortal(m) {
         buzz([40, 40, 40, 40, 140]);
       } else if (r?.reason === "cap") {
         setTreasure({ k: Date.now(), empty: true, mult: r.mult, count: r.count, perDay: r.perDay });
+      } else if (r?.reason === "no-session") {
+        setTreasure({ k: Date.now(), empty: true, title: "The portal needs a running session", sub: "Start mining, then open treasures" });
       }
     } catch {
-      /* no treasure this time; the energy refills */
+      setTreasure({ k: Date.now(), empty: true, title: "The portal flickered", sub: "Couldn't reach ALKE. Check your connection and tap again" });
     } finally {
       busy.current = false;
     }
@@ -366,11 +368,20 @@ export function Treasure({ treasure, onDone }) {
       <div className="ob-treasure empty" key={k} role="status">
         <div className="veil" />
         <div className="banner">
-          <span className="kicker">The treasury is empty today</span>
-          <b className="amt num">×{treasure.mult.toFixed(1)}</b>
-          <span className="sub">
-            Max tap boost reached · {treasure.count}/{treasure.perDay} · new treasures at 00:00 UTC
-          </span>
+          {treasure.title ? (
+            <>
+              <span className="kicker">{treasure.title}</span>
+              <span className="sub">{treasure.sub}</span>
+            </>
+          ) : (
+            <>
+              <span className="kicker">The treasury is empty today</span>
+              <b className="amt num">×{treasure.mult.toFixed(1)}</b>
+              <span className="sub">
+                Max tap boost reached · {treasure.count}/{treasure.perDay} · new treasures at 00:00 UTC
+              </span>
+            </>
+          )}
         </div>
       </div>
     );

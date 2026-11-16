@@ -30,8 +30,11 @@ export const isVerified = (v) => v?.status === "verified";
 /** "Done" / "In review" / "Not yet", for status rows. */
 export function verificationLabel(v) {
   if (!v) return "…";
-  return { verified: "Done", review: "In review", pending: "In progress", processing: "Checking", needs_input: "Try again", rejected: "Not approved" }[v.status] || "Not yet";
+  return { verified: "Done", review: "In review", pending: "In progress", processing: "Checking", needs_input: "Try again", rejected: "Not approved" }[v.status] || (VERIFY_OPEN ? "Not yet" : "Opens soon");
 }
+
+/** Personhood checks are open (Stripe set up and alkeVerifyStart/Submit deployed). Until then the Verify screen says "opening soon". */
+export const VERIFY_OPEN = false;
 
 const call = (name) => async (data) => (await httpsCallable(functions, name)(data)).data;
 
