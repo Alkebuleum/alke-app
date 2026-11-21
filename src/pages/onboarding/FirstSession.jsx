@@ -163,15 +163,9 @@ export default function FirstSession() {
       <div style={{ display: "flex", justifyContent: "center", padding: "6px 0 2px" }}>
         <Orb size={176} />
       </div>
-      <label
-        className="onb-check"
-        style={{ alignItems: "center", minHeight: 62, padding: "0 18px", borderRadius: 18, border: `1px solid ${human ? "rgba(110,231,183,.45)" : "rgba(255,255,255,.12)"}`, background: human ? "rgba(110,231,183,.08)" : "rgba(255,255,255,.04)" }}
-      >
-        <input type="checkbox" checked={human} onChange={(e) => setHuman(e.target.checked)} style={{ width: 24, height: 24, accentColor: "#6EE7B7" }} />
-        <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <b style={{ fontSize: 16, fontWeight: 600, color: "#F7F5F2" }}>I'm a person, not a bot</b>
-          <small style={{ fontSize: 12.5, color: "#A9A6B6" }}>Keeps rewards fair for real people</small>
-        </span>
+      <label className="onb-check" style={{ alignItems: "center", justifyContent: "center", color: human ? "#6EE7B7" : "#D8D5E2" }}>
+        <input type="checkbox" checked={human} onChange={(e) => setHuman(e.target.checked)} style={{ width: 20, height: 20, accentColor: "#6EE7B7" }} />
+        <span style={{ fontSize: 15, fontWeight: 600 }}>I'm a person, not a bot</span>
       </label>
       <p className="onb-note center">Drilling is app participation. Nothing runs on your phone and it doesn't use your battery.</p>
       <Problem>{error}</Problem>
