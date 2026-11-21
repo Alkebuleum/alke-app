@@ -8,7 +8,7 @@ import { useMemberData } from "../../lib/useMemberData";
 import { markCommunitySeen } from "../../lib/signup";
 
 /* The official channels. Each one adds REWARD ALKE once (functions/community.js). */
-export const TELEGRAM_URL = "https://t.me/alkebuleum";
+export const TELEGRAM_URL = "https://t.me/alke_network";
 const REWARD = 300;
 const CHANNELS = [
   {
