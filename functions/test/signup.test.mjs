@@ -2,12 +2,12 @@
 // replaced by a stub that keeps the last message, so the code can be read.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initializeApp } from "firebase-admin/app";
+import { getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { createAccount, reserveAlkerId, sendCode, verifyCode } from "../signup.js";
 
-initializeApp({ projectId: "demo-alke-fn" });
+if (!getApps().length) initializeApp({ projectId: "demo-alke-fn" });
 const db = getFirestore();
 
 let last = null;

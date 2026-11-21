@@ -163,3 +163,13 @@
 .onb-welcome .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; text-align: center; }
 .onb-welcome .hero h1 { margin: 0; font-family: var(--display); font-size: 34px; line-height: 38px; font-weight: 600; letter-spacing: -.03em; }
 .onb-welcome .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--gold); }
+
+/* Join the community (step 4) */
+.onb-mono { font-family: var(--mono); color: var(--text); white-space: nowrap; }
+.onb-mono.gold { color: var(--gold); font-size: 15px; letter-spacing: .04em; }
+.onb-follow { gap: 16px; padding: 20px; }
+.onb-follow-ic { width: 52px; height: 52px; border-radius: 16px; background: #0E0C14; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--text); flex: none; }
+.onb-btn.cream { background: #EDE6DA; color: #14111F; }
+.onb-btn.cream:hover { filter: brightness(1.04); }
+.onb-balance { margin: 8px 0 0; font-size: 15px; color: var(--muted); }
+.onb-balance .onb-mono { font-size: 16px; margin-left: 4px; }

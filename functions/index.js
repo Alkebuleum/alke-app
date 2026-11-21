@@ -21,6 +21,7 @@ import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
 import { decideReview, handleStripeEvent, isAdmin, listReviews, startVerification, submitManual } from "./verification.js";
 import { deleteMembership } from "./account.js";
 import { createAccount, reserveAlkerId, sendCode, verifyCode } from "./signup.js";
+import { communityStatus, creditCommunity } from "./community.js";
 
 /* Secrets (firebase functions:secrets:set NAME):
  *   STRIPE_SECRET_KEY               Stripe secret key (Identity enabled)
@@ -170,6 +171,12 @@ export const alkeCreateAccount = onCall(async (req) => createAccount(db, req.dat
     Only the server writes it or its Nuru ID / AIN link (alke_config, and a
     field the rules don't let the app change). */
 export const alkeAlkerId = onCall(async (req) => reserveAlkerId(db, memberId(req)));
+
+/** Join the Community: { channel } → credits 300 ALKE once per channel; {} → what's done. */
+export const alkeCommunity = onCall(async (req) => {
+  const id = memberId(req);
+  return req.data?.channel ? creditCommunity(db, id, String(req.data.channel)) : communityStatus(db, id);
+});
 
 /* ── Account ──────────────────────────────────────────────────────────── */
 
