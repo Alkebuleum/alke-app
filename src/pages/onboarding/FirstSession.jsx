@@ -150,7 +150,7 @@ export default function FirstSession() {
       step={5}
       label="Start drilling"
       title="Start drilling ALKE."
-      sub="One tap starts 24 hours of drilling. The ALKE you drill is yours, to claim when the post-quantum mainnet opens."
+      sub="One tap starts 24 hours of drilling. The ALKE you drill is yours."
       footer={
         <>
           <Gold busy={busy} disabled={!human || busy} onClick={start}>
