@@ -93,7 +93,7 @@ export default function FirstSession() {
         sub={`This drill runs for 24 hours. Your next one opens tomorrow at ${at}.`}
         footer={
           <>
-            <Gold onClick={next}>Continue</Gold>
+            <Gold onClick={next}>Next: the ALKÉ story</Gold>
             <Balance value={balance} />
           </>
         }
