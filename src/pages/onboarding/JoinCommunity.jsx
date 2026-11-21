@@ -15,7 +15,7 @@ const CHANNELS = [
     id: "x",
     title: "Follow on X",
     action: "Follow",
-    url: "https://x.com/alkenetwork",
+    url: "https://x.com/alke_network",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M17.8 3h3.1l-6.8 7.7 8 10.3h-6.2l-4.9-6.3L5.4 21H2.3l7.2-8.3L1.8 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.3 4.7H5.5z" />
