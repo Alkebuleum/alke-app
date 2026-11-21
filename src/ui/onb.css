@@ -173,3 +173,4 @@
 .onb-btn.cream:hover { filter: brightness(1.04); }
 .onb-balance { margin: 8px 0 0; font-size: 15px; color: var(--muted); }
 .onb-balance .onb-mono { font-size: 16px; margin-left: 4px; }
+.onb-balance.center { text-align: center; margin: 2px 0 0; }

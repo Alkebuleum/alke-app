@@ -5,6 +5,18 @@ import { useAuth } from "../../auth/AuthProvider";
 import { SESSION_MS, finishOnboarding, sessionRemaining } from "../../lib/member";
 import { enablePush, pushState, usePrefs } from "../../lib/notifications";
 import { hold } from "../../lib/signup";
+import { useMemberData } from "../../lib/useMemberData";
+
+const fmt = (n) => (Number(n) || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+
+/** The member's ALKE balance (the locked total), under the main button. */
+function Balance({ value }) {
+  return (
+    <p className="onb-balance center" aria-live="polite">
+      Your balance <span className="onb-mono">{fmt(value)} ALKE</span>
+    </p>
+  );
+}
 
 const pad = (n) => String(n).padStart(2, "0");
 const clock = (ms) => {
@@ -19,7 +31,8 @@ const Bell = () => (
   </svg>
 );
 
-/* Step 5: a person check, then session 1 starts (server time). Recording it
+/* Step 5: start drilling. A person check, then drill 1 starts (a 24-hour
+   session, server time; members see it as drilling). Recording it
    also finishes onboarding, which would move the router on, so this screen
    holds until "Continue" (then the story, step 6). A reload keeps the state:
    it lives on the member record. */
@@ -31,6 +44,8 @@ export default function FirstSession() {
   const [error, setError] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [prefs, setPref] = usePrefs();
+  const { allocation } = useMemberData({ allocation: true });
+  const balance = Number(allocation?.locked) || 0;
 
   const started = !!member?.onboardedAt && !!member?.lastSessionAt;
   const remaining = sessionRemaining(member, now);
@@ -51,7 +66,7 @@ export default function FirstSession() {
       setNow(Date.now());
     } catch (e) {
       hold(null);
-      setError(e.message || "Couldn't start the session. Try again.");
+      setError(e.message || "Couldn't start drilling. Try again.");
     } finally {
       setBusy(false);
     }
@@ -73,12 +88,17 @@ export default function FirstSession() {
     return (
       <Onb
         step={5}
-        label="First session"
-        title={`Session ${member.sessionCount || 1} is recorded.`}
-        sub={`Your next session opens tomorrow at ${at}.`}
-        footer={<Gold onClick={next}>Continue</Gold>}
+        label="Start drilling"
+        title="You're drilling ALKE."
+        sub={`This drill runs for 24 hours. Your next one opens tomorrow at ${at}.`}
+        footer={
+          <>
+            <Gold onClick={next}>Continue</Gold>
+            <Balance value={balance} />
+          </>
+        }
       >
-        <div className="onb-timer" role="timer" aria-label={`Next session in ${clock(remaining)}`}>
+        <div className="onb-timer" role="timer" aria-label={`Drill ends in ${clock(remaining)}`}>
           <svg width="196" height="196" viewBox="0 0 300 300" aria-hidden="true">
             <defs>
               <linearGradient id="obArc" x1="0" y1="0" x2="1" y2="1">
@@ -92,21 +112,21 @@ export default function FirstSession() {
           <div className="face">
             <Mark size={28} color="#C6B6FF" />
             <span className="clock">{clock(remaining)}</span>
-            <small>UNTIL NEXT SESSION</small>
+            <small>LEFT IN THIS DRILL</small>
           </div>
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-          <span className="onb-chip green">Recorded</span>
+          <span className="onb-chip green">Drilling</span>
           <span className="onb-chip gold">Pending verification</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 16px", borderRadius: 18, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)" }}>
           <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <b style={{ fontSize: 15, fontWeight: 600 }}>Provisional reward</b>
-            <small style={{ fontSize: 12.5, color: "#A9A6B6" }}>Shown once the reward rules are published</small>
+            <b style={{ fontSize: 15, fontWeight: 600 }}>Today's drill</b>
+            <small style={{ fontSize: 12.5, color: "#A9A6B6" }}>Added to your balance when today's drilling settles, just after midnight UTC</small>
           </span>
-          <span className="onb-chip plain">Not set yet</span>
+          <span className="onb-chip plain">Pending</span>
         </div>
 
         <div className="onb-panel onb-list" style={{ padding: 0 }}>
@@ -115,10 +135,10 @@ export default function FirstSession() {
               <Bell />
             </span>
             <span className="txt">
-              <b>Remind me when it opens</b>
+              <b>Remind me for my next drill</b>
               <small>Respects quiet hours</small>
             </span>
-            <Switch on={!!prefs.reminders} onChange={remind} label="Remind me when it opens" />
+            <Switch on={!!prefs.reminders} onChange={remind} label="Remind me for my next drill" />
           </div>
         </div>
       </Onb>
@@ -128,13 +148,16 @@ export default function FirstSession() {
   return (
     <Onb
       step={5}
-      label="First session"
-      title="Start your first ALKE session."
-      sub="One tap starts 24 hours of participation. Rewards stay provisional until the rules are published."
+      label="Start drilling"
+      title="Start drilling ALKE."
+      sub="One tap starts 24 hours of drilling. The ALKE you drill is yours, to claim when the post-quantum mainnet opens."
       footer={
-        <Gold busy={busy} disabled={!human || busy} onClick={start}>
-          Start my first session
-        </Gold>
+        <>
+          <Gold busy={busy} disabled={!human || busy} onClick={start}>
+            Start drilling
+          </Gold>
+          <Balance value={balance} />
+        </>
       }
     >
       <div style={{ display: "flex", justifyContent: "center", padding: "6px 0 2px" }}>
@@ -150,7 +173,7 @@ export default function FirstSession() {
           <small style={{ fontSize: 12.5, color: "#A9A6B6" }}>Keeps rewards fair for real people</small>
         </span>
       </label>
-      <p className="onb-note center">App participation, not proof-of-work mining. Nothing runs on your phone.</p>
+      <p className="onb-note center">Drilling is app participation. Nothing runs on your phone and it doesn't use your battery.</p>
       <Problem>{error}</Problem>
     </Onb>
   );
