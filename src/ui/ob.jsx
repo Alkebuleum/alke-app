@@ -122,10 +122,8 @@ export function MarkPaths({ stroke = "#fff", width = 8 }) {
     <g fill="none" stroke={stroke} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round">
       <path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" />
       <line x1="50" y1="27" x2="50" y2="85" />
-      <path d="M20 45 L32 56 L20 67" />
-      <path d="M30 45 L42 56 L30 67" />
-      <path d="M80 45 L68 56 L80 67" />
-      <path d="M70 45 L58 56 L70 67" />
+      <path d="M24 44 L38 56 L24 68" />
+      <path d="M76 44 L62 56 L76 68" />
     </g>
   );
 }
