@@ -1,6 +1,18 @@
+import { useEffect } from "react";
 import { Button, Logo, Page } from "../../ui/ob";
+import { Loading } from "../../ui/kit";
+import { SITE_URL, usesSiteWelcome } from "../../lib/handoff";
 
+/* On the web, alke.network is the welcome page: a signed-out visitor goes
+   there, enters their email and comes back to sign-up with it. This in-app
+   welcome stays for the iOS/Android apps and the Nuru app. */
 export default function Welcome() {
+  const toSite = usesSiteWelcome();
+  useEffect(() => {
+    if (toSite) window.location.replace(SITE_URL);
+  }, [toSite]);
+  if (toSite) return <Loading />;
+
   return (
     <Page
       bar={<header className="ob-bar" />}

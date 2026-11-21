@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { Loading } from "./ui/kit";
 import { namesOf, normInvite } from "./lib/member";
 import { refreshPush } from "./lib/notifications";
+import { SITE_URL, usesSiteWelcome } from "./lib/handoff";
 import { ensureGameOwner, loadLeaderboards, personLook, syncGames } from "./lib/games";
 import { useState } from "react";
 
@@ -132,9 +133,16 @@ function SplashRoute() {
   return <Splash />;
 }
 
-/** alke.network invite links: /join/CODE. */
+/** Older invite links: app.alke.network/join/CODE. On the web they continue
+    on alke.network/join/CODE (the welcome page), which hands the code back
+    with the email; in native apps and Nuru the code is kept here. */
 function JoinRoute() {
   const { code } = useParams();
+  const toSite = usesSiteWelcome();
+  useEffect(() => {
+    if (toSite) window.location.replace(`${SITE_URL}/join/${encodeURIComponent(normInvite(code))}`);
+  }, [toSite, code]);
+  if (toSite) return <Loading />;
   rememberInvite(code);
   return <Navigate to="/" replace />;
 }

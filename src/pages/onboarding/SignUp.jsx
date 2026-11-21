@@ -2,13 +2,17 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, Button, Field, Heading, I, Notice, Page } from "../../ui/ob";
 import { isInsideNuru, resetPassword, signInWithEmail, signInWithNuru, signInWithSocial, signUpWithEmail } from "../../lib/account";
+import { clearHandedEmail, handedEmail, SITE_URL, usesSiteWelcome } from "../../lib/handoff";
 
 /* Step 1: create an account (or sign in). Email + password, Google or Apple.
    What happens next is decided by the account state (AuthProvider), so this
-   screen only signs the person in; the router moves them on. */
+   screen only signs the person in; the router moves them on.
+   Visitors from alke.network arrive with their email already entered there
+   (lib/handoff), so the field is filled and the password is next. */
 export default function SignUp({ mode = "signup" }) {
   const signingUp = mode === "signup";
-  const [email, setEmail] = useState("");
+  const [handed] = useState(handedEmail);
+  const [email, setEmail] = useState(handed);
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(null); // "email" | "google" | "apple" | "reset" | "nuru"
@@ -22,6 +26,7 @@ export default function SignUp({ mode = "signup" }) {
     setNotice(null);
     try {
       await fn();
+      if (what !== "reset") clearHandedEmail();
     } catch (e) {
       if (!e.cancelled) setError({ message: e.message, field: e.field });
     } finally {
@@ -47,8 +52,16 @@ export default function SignUp({ mode = "signup" }) {
 
   const fieldErr = (f) => (error && error.field === f ? error.message : null);
 
+  // On the web, back from sign-up returns to alke.network (the welcome page).
+  const siteWelcome = usesSiteWelcome();
+  const bar = siteWelcome ? (
+    <Bar onBack={() => window.location.assign(SITE_URL)} step={signingUp ? 1 : null} />
+  ) : (
+    <Bar back={signingUp ? "/how-it-works" : "/welcome"} step={signingUp ? 1 : null} />
+  );
+
   return (
-    <Page bar={<Bar back={signingUp ? "/how-it-works" : "/welcome"} step={signingUp ? 1 : null} />}>
+    <Page bar={bar}>
       <Heading
         title={signingUp ? "Create your account" : "Welcome back"}
         sub={signingUp ? "It takes about a minute." : null}
@@ -95,6 +108,7 @@ export default function SignUp({ mode = "signup" }) {
               type={show ? "text" : "password"}
               autoComplete={signingUp ? "new-password" : "current-password"}
               placeholder={signingUp ? "At least 8 characters" : "Your password"}
+              autoFocus={!!handed}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-invalid={!!fieldErr("password")}

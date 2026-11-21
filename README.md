@@ -52,6 +52,14 @@ ALKÉ members are Nuru people: the app uses Nuru's Firebase project
   (username, name, avatar colour, invite code) → Participation Rules → first
   session → Home. `src/auth/AuthProvider.jsx` works out the current step;
   the router only shows that step.
+- **Arriving from alke.network** (`src/lib/handoff.js`): on the web, the
+  website is the welcome page. It sends people to
+  `/#email=…&invite=…` (the root, so GitHub Pages' 404 redirect never sees it; the app moves it to /sign-up); the fragment is read once at startup, removed
+  from the address bar, and fills the email (and the invite at the profile
+  step). Signed-out web visitors to `/welcome` and old `/join/CODE` links go
+  to alke.network (production builds only); the in-app welcome stays for
+  native apps and Nuru. Invite links are now `alke.network/join/<Nuru ID>`.
+  `VITE_SITE_URL` overrides the site address.
 - **Data** (`src/lib/member.js`): name and avatar tint on `nuru_people`;
   `alke_members/{nuruId}` (username, rules, sessions) and
   `alke_usernames/{name}`. Session times are server timestamps and the rules

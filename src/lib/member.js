@@ -30,9 +30,11 @@ import { db } from "./firebase";
 export const RULES_VERSION = 1;
 
 /* Invites: a member's invite code is their Nuru ID, so their link is
-   app.alke.network/join/<Nuru ID> (the same ID Nuru uses for referrals).
+   alke.network/join/<Nuru ID> (the same ID Nuru uses for referrals). The
+   website keeps the code and hands it to sign-up along with the email; older
+   app.alke.network/join/<code> links still work (JoinRoute in App.jsx).
    The new member's record keeps it as invitedBy. */
-export const inviteLink = (nuruId) => `https://app.alke.network/join/${nuruId}`;
+export const inviteLink = (nuruId) => `https://alke.network/join/${nuruId}`;
 
 /** The display name behind an invite code, or null if no such member. */
 export async function inviterName(code) {

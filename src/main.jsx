@@ -4,6 +4,10 @@ import "./index.css";
 import "./screens/screens.css";
 import App from "./App.jsx";
 import { isInsideNuru } from "./lib/account";
+import { readHandoff } from "./lib/handoff";
+
+// An email + invite handed over by alke.network (URL fragment), read before the router runs.
+readHandoff();
 
 /* Inside the Nuru app the page already sits below Nuru's own bar, but its
    web view still reports the phone's status-bar inset, which doubled the
