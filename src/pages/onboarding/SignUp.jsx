@@ -1,148 +1,251 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Bar, Button, Field, Heading, I, Notice, Page } from "../../ui/ob";
-import { isInsideNuru, resetPassword, signInWithEmail, signInWithNuru, signInWithSocial, signUpWithEmail } from "../../lib/account";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { I } from "../../ui/ob";
+import { Field, Gold, Invited, Onb, Problem, TextBtn } from "../../ui/onb";
+import { isInsideNuru, resetPassword, signInWithEmail, signInWithNuru, signInWithSocial } from "../../lib/account";
 import { clearHandedEmail, handedEmail, SITE_URL, usesSiteWelcome } from "../../lib/handoff";
+import { sendEmailCode, setSignupState, signupState, verifyEmailCode } from "../../lib/signup";
 
-/* Step 1: create an account (or sign in). Email + password, Google or Apple.
-   What happens next is decided by the account state (AuthProvider), so this
-   screen only signs the person in; the router moves them on.
-   Visitors from alke.network arrive with their email already entered there
-   (lib/handoff), so the field is filled and the password is next. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const savedInvite = () => {
+  try {
+    return sessionStorage.getItem("alke.invite") || "";
+  } catch {
+    return "";
+  }
+};
+
+function Socials({ busy, run }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {isInsideNuru() ? (
+        <button type="button" className="onb-btn violet" disabled={!!busy} onClick={() => run("nuru", signInWithNuru)}>
+          {busy === "nuru" ? <span className="onb-spin" /> : null}Continue with Nuru
+        </button>
+      ) : null}
+      <button type="button" className="onb-btn ghost" disabled={!!busy} onClick={() => run("google", () => signInWithSocial("google"))}>
+        {busy === "google" ? <span className="onb-spin" /> : <I.Google />}Continue with Google
+      </button>
+      <button type="button" className="onb-btn ghost" disabled={!!busy} onClick={() => run("apple", () => signInWithSocial("apple"))}>
+        {busy === "apple" ? <span className="onb-spin" /> : <I.Apple />}Continue with Apple
+      </button>
+    </div>
+  );
+}
+
+/* Step 1 (sign-up): Google / Apple, or the email (filled in when it came from
+   alke.network). Email gets a 6-digit code; once it's confirmed, step 2
+   creates the account. Nuru only opens accounts with a confirmed email.
+   Sign-in uses the same screen without the steps. */
 export default function SignUp({ mode = "signup" }) {
+  const navigate = useNavigate();
   const signingUp = mode === "signup";
-  const [handed] = useState(handedEmail);
-  const [email, setEmail] = useState(handed);
+  const [email, setEmail] = useState(() => handedEmail() || signupState().email || "");
+  const [phase, setPhase] = useState("email"); // "email" | "code"
+  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState(null); // "email" | "google" | "apple" | "reset" | "nuru"
-  const inNuru = isInsideNuru();
-  const [error, setError] = useState(null); // { message, field }
-  const [notice, setNotice] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const [error, setError] = useState(null); // { field?, message }
+  const [notice, setNotice] = useState(() => signupState().notice || null);
+  const [wait, setWait] = useState(0);
+  const codeRef = useRef(null);
+  const invite = savedInvite();
+
+  useEffect(() => {
+    if (!wait) return;
+    const t = setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => clearTimeout(t);
+  }, [wait]);
+  useEffect(() => {
+    if (phase === "code") codeRef.current?.focus();
+  }, [phase]);
+  useEffect(() => {
+    if (signupState().notice) setSignupState({ notice: null });
+  }, []);
 
   const run = async (what, fn) => {
     setBusy(what);
     setError(null);
-    setNotice(null);
     try {
       await fn();
-      if (what !== "reset") clearHandedEmail();
+      return true;
     } catch (e) {
-      if (!e.cancelled) setError({ message: e.message, field: e.field });
+      if (!e.cancelled) setError({ field: e.field, message: e.message });
+      return false;
     } finally {
       setBusy(null);
     }
   };
 
-  const submit = (e) => {
+  const sendCode = async (e) => {
+    e?.preventDefault?.();
+    const v = email.trim();
+    if (!EMAIL_RE.test(v)) return setError({ field: "email", message: "Enter your email address, like name@example.com." });
+    setNotice(null);
+    const ok = await run("send", () => sendEmailCode(v));
+    if (ok) {
+      setPhase("code");
+      setCode("");
+      setWait(45);
+    }
+  };
+
+  const checkCode = async (e) => {
+    e?.preventDefault?.();
+    const c = code.replace(/\D/g, "");
+    if (c.length !== 6) return setError({ field: "code", message: "Enter the 6-digit code from the email." });
+    await run("verify", async () => {
+      const res = await verifyEmailCode(email, c);
+      clearHandedEmail();
+      if (res.status === "new") {
+        setSignupState({ email: email.trim().toLowerCase(), ticket: res.ticket, notice: null });
+        navigate("/create-account");
+      } else if (res.status === "password") {
+        setSignupState({ email: email.trim().toLowerCase(), notice: "You already have an account with this email. Sign in with your password." });
+        navigate("/sign-in");
+      } else {
+        setPhase("email");
+        setNotice(`This email signs in with ${res.providers?.includes("apple.com") ? "Apple" : "Google"}. Use that button above.`);
+      }
+    });
+  };
+
+  const signIn = async (e) => {
     e.preventDefault();
-    if (!email.includes("@")) return setError({ message: "Enter your email address.", field: "email" });
-    if (signingUp && password.length < 8) return setError({ message: "Use at least 8 characters.", field: "password" });
-    if (!password) return setError({ message: "Enter your password.", field: "password" });
-    run("email", () => (signingUp ? signUpWithEmail(email, password) : signInWithEmail(email, password)));
+    if (!EMAIL_RE.test(email.trim())) return setError({ field: "email", message: "Enter your email address." });
+    if (!password) return setError({ field: "password", message: "Enter your password." });
+    if (await run("signin", () => signInWithEmail(email, password))) clearHandedEmail();
   };
 
   const forgot = () => {
-    if (!email.includes("@")) return setError({ message: "Enter your email first, then tap “Forgot password?”.", field: "email" });
+    if (!EMAIL_RE.test(email.trim())) return setError({ field: "email", message: "Enter your email first, then tap “Forgot password?”." });
     run("reset", async () => {
       await resetPassword(email);
       setNotice(`If there's an account for ${email.trim()}, a reset link is on its way.`);
     });
   };
 
-  const fieldErr = (f) => (error && error.field === f ? error.message : null);
+  const err = (f) => (error && error.field === f ? error.message : null);
+  const general = error && !["email", "code", "password"].includes(error.field) ? error.message : null;
+  const back = usesSiteWelcome() ? { onBack: () => window.location.assign(SITE_URL) } : { back: "/welcome" };
 
-  // On the web, back from sign-up returns to alke.network (the welcome page).
-  const siteWelcome = usesSiteWelcome();
-  const bar = siteWelcome ? (
-    <Bar onBack={() => window.location.assign(SITE_URL)} step={signingUp ? 1 : null} />
-  ) : (
-    <Bar back={signingUp ? "/how-it-works" : "/welcome"} step={signingUp ? 1 : null} />
+  const emailField = (
+    <Field id="su-email" label="Email" error={err("email")} help={signingUp ? "Use an email you check. We'll send a code to it." : null}>
+      <span className={err("email") ? "onb-input bad" : "onb-input"}>
+        <input
+          id="su-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false}
+          placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!err("email")}
+        />
+      </span>
+    </Field>
   );
 
-  return (
-    <Page bar={bar}>
-      <Heading
-        title={signingUp ? "Create your account" : "Welcome back"}
-        sub={signingUp ? "It takes about a minute." : null}
-      />
-
-      <form className="ob-stack loose" onSubmit={submit} noValidate>
-        <div className="ob-stack">
-          {inNuru ? (
-            <Button busy={busy === "nuru"} disabled={!!busy} onClick={() => run("nuru", signInWithNuru)}>
-              Continue with Nuru
-            </Button>
-          ) : null}
-          <Button kind="secondary" icon={<I.Google />} busy={busy === "google"} disabled={!!busy} onClick={() => run("google", () => signInWithSocial("google"))}>
-            Continue with Google
-          </Button>
-          <Button kind="secondary" icon={<I.Apple />} busy={busy === "apple"} disabled={!!busy} onClick={() => run("apple", () => signInWithSocial("apple"))}>
-            Continue with Apple
-          </Button>
-        </div>
-
-        <div className="ob-divider">or with email</div>
-
-        <Field id="su-email" label="Email" error={fieldErr("email")}>
-          <div className={fieldErr("email") ? "ob-input bad" : "ob-input"}>
+  /* ── Sign in ── */
+  if (!signingUp) {
+    return (
+      <Onb
+        {...back}
+        label="Welcome back"
+        title="Sign in to ALKÉ."
+        onSubmit={signIn}
+        footer={
+          <>
+            <Gold type="submit" busy={busy === "signin"} disabled={!!busy}>
+              Sign in
+            </Gold>
+            <TextBtn to="/sign-up">New to ALKÉ? Join free</TextBtn>
+          </>
+        }
+      >
+        {notice ? <p className="onb-sub" role="status">{notice}</p> : null}
+        <Socials busy={busy} run={run} />
+        <div className="onb-divider">or with email</div>
+        {emailField}
+        <Field id="si-pass" label="Password" error={err("password")}>
+          <span className={err("password") ? "onb-input has-eye bad" : "onb-input has-eye"}>
             <input
-              id="su-email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={!!fieldErr("email")}
+              id="si-pass" type={show ? "text" : "password"} autoComplete="current-password" autoFocus={!!email}
+              value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={!!err("password")}
             />
-          </div>
-        </Field>
-
-        <Field id="su-pass" label="Password" error={fieldErr("password")}>
-          <div className={fieldErr("password") ? "ob-input bad" : "ob-input"}>
-            <input
-              id="su-pass"
-              type={show ? "text" : "password"}
-              autoComplete={signingUp ? "new-password" : "current-password"}
-              placeholder={signingUp ? "At least 8 characters" : "Your password"}
-              autoFocus={!!handed}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={!!fieldErr("password")}
-            />
-            <button type="button" className="ob-icon-btn" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"}>
+            <button type="button" className="eye" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide password" : "Show password"}>
               {show ? <I.EyeOff /> : <I.Eye />}
             </button>
-          </div>
+          </span>
         </Field>
+        <button type="button" className="onb-link" style={{ alignSelf: "flex-start", fontSize: 14 }} onClick={forgot} disabled={!!busy}>
+          {busy === "reset" ? "Sending…" : "Forgot password?"}
+        </button>
+        <Problem>{general}</Problem>
+      </Onb>
+    );
+  }
 
-        {!signingUp ? (
-          <div style={{ marginTop: -8 }}>
-            <button type="button" className="ob-textlink accent" style={{ fontSize: 14 }} onClick={forgot} disabled={!!busy}>
-              {busy === "reset" ? "Sending…" : "Forgot password?"}
+  /* ── Step 1, code sent ── */
+  if (phase === "code") {
+    return (
+      <Onb
+        onBack={() => setPhase("email")}
+        step={1}
+        label="Your email"
+        title="Check your email."
+        sub={
+          <>
+            We sent a 6-digit code to <b>{email.trim()}</b>.{" "}
+            <button type="button" className="onb-link" onClick={() => setPhase("email")}>
+              Change
             </button>
-          </div>
-        ) : null}
+          </>
+        }
+        onSubmit={checkCode}
+        footer={
+          <>
+            <Gold type="submit" busy={busy === "verify"} disabled={!!busy || code.replace(/\D/g, "").length !== 6}>
+              Continue
+            </Gold>
+            <TextBtn onClick={() => sendCode()} disabled={!!busy || wait > 0}>
+              {busy === "send" ? "Sending…" : wait ? `Send a new code in ${wait}s` : "Send a new code"}
+            </TextBtn>
+          </>
+        }
+      >
+        <Field id="su-code" label="Code" error={err("code")} help="It can take a minute. Check your spam folder too.">
+          <span className={err("code") ? "onb-input code bad" : "onb-input code"}>
+            <input
+              id="su-code" ref={codeRef} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000"
+              value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} aria-invalid={!!err("code")}
+            />
+          </span>
+        </Field>
+        <Problem>{general}</Problem>
+      </Onb>
+    );
+  }
 
-        {error && !error.field ? <Notice kind="error">{error.message}</Notice> : null}
-        {notice ? <Notice kind="success">{notice}</Notice> : null}
-
-        <Button type="submit" busy={busy === "email"} disabled={!!busy}>
-          {signingUp ? "Create account" : "Sign in"}
-        </Button>
-      </form>
-
-      <div className="ob-push" style={{ textAlign: "center" }}>
-        <p className="ob-small" style={{ fontSize: 15, color: "var(--text-2)" }}>
-          {signingUp ? "Already a member? " : "New to ALKE? "}
-          <Link to={signingUp ? "/sign-in" : "/sign-up"} className="ob-textlink accent" style={{ fontSize: 15, minHeight: 0, display: "inline" }}>
-            {signingUp ? "Sign in" : "Create an account"}
-          </Link>
-        </p>
-      </div>
-    </Page>
+  /* ── Step 1 ── */
+  return (
+    <Onb
+      {...back}
+      step={1}
+      label="Your email"
+      title="Join ALKÉ free."
+      sub="No payment. No crypto wallet needed."
+      onSubmit={sendCode}
+      footer={
+        <>
+          <Gold type="submit" busy={busy === "send"} disabled={!!busy}>
+            Send my code
+          </Gold>
+          <TextBtn to="/sign-in">Already a member? Sign in</TextBtn>
+        </>
+      }
+    >
+      {invite ? <Invited /> : null}
+      {notice ? <p className="onb-sub" role="status">{notice}</p> : null}
+      <Socials busy={busy} run={run} />
+      <div className="onb-divider">or with email</div>
+      {emailField}
+      <Problem>{general}</Problem>
+    </Onb>
   );
 }

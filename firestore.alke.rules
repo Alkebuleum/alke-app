@@ -190,6 +190,11 @@
     match /alke_admins/{id} {
       allow read, write: if false;
     }
-    match /alke_config/{id} {
+    // Everything under alke_config, at any depth, is the server's alone:
+    // configuration, sign-up codes and tickets (auth/…), and the Alker ID
+    // map (alker_ids/taken/{ALK-…} → { nuruId, ain }). No app can read, add,
+    // change or delete any of it. The member's own copy (alke_members.alkerId)
+    // isn't in the update list above, so the app can't change that either.
+    match /alke_config/{rest=**} {
       allow read, write: if false;
     }

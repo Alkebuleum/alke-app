@@ -161,6 +161,29 @@ test("identity records, team list and config are never readable", async () => {
   }
 });
 
+test("Alker IDs: the map and the member's ID are server-only", async () => {
+  const ID = "ALK-1234-5678-9012";
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const f = ctx.firestore();
+    await setDoc(doc(f, "alke_config", "alker_ids", "taken", ID), { nuruId: AMA, ain: null });
+    await setDoc(doc(f, "alke_config", "auth", "codes", "h"), { hash: "x" });
+    await setDoc(doc(f, "alke_config", "auth", "tickets", "t"), { email: "ama@example.com" });
+  });
+  for (const fs_ of [as(AMA), as(KOFI), plain(), env.unauthenticatedContext().firestore()]) {
+    await assertFails(getDoc(doc(fs_, "alke_config", "alker_ids", "taken", ID)));
+    await assertFails(setDoc(doc(fs_, "alke_config", "alker_ids", "taken", ID), { nuruId: KOFI }));
+    await assertFails(setDoc(doc(fs_, "alke_config", "alker_ids", "taken", "ALK-0000-0000-0001"), { nuruId: KOFI }));
+    await assertFails(getDoc(doc(fs_, "alke_config", "auth", "codes", "h")));
+    await assertFails(getDoc(doc(fs_, "alke_config", "auth", "tickets", "t")));
+  }
+  // The member can't put an ID on their record when joining, or change the one they have.
+  await assertFails(join(as(AMA), AMA, "ama.builds", { alkerId: ID }));
+  await join(as(AMA), AMA, "ama.builds");
+  await setMember(AMA, { alkerId: ID });
+  await assertFails(updateDoc(doc(as(AMA), "alke_members", AMA), { alkerId: "ALK-0000-0000-0001", updatedAt: serverTimestamp() }));
+  await assertSucceeds(getDoc(doc(as(AMA), "alke_members", AMA)));
+});
+
 test("username can't be changed or released", async () => {
   const db = as(AMA);
   await join(db, AMA, "ama.builds");

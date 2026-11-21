@@ -3,15 +3,20 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { openNuruAccount, signOut as accountSignOut, tryNuruHandoff } from "../lib/account";
 import { initialsOf, watchMember, watchPerson } from "../lib/member";
+import { communitySeen } from "../lib/signup";
 
 export const AuthContext = createContext(null);
 
-/* Where the person is in the first run. */
+/* Where the person is in the first run (the six-step card):
+   1 email (/sign-up, signed out) · 2 account (/create-account) · 3 Alker ID ·
+   4 New Alkers · 5 first session · 6 story (held after step 5, see lib/signup hold). */
 export const STEPS = {
   signedOut: "/welcome",
   verifyEmail: "/verify-email",
-  profile: "/profile-setup",
+  profile: "/create-account",
   rules: "/rules",
+  alkerId: "/alker-id",
+  community: "/new-alkers",
   firstSession: "/first-session",
   done: "/home",
   error: "/account-problem",
@@ -22,8 +27,12 @@ function stepFor(s) {
   if (s.needsVerify) return "verifyEmail";
   if (!s.nuruId || s.member === undefined) return s.error ? "error" : null; // null = still loading
   if (!s.member?.username) return "profile";
-  if (!s.member.rulesAcceptedAt) return "rules";
-  if (!s.member.onboardedAt) return "firstSession";
+  if (!s.member.rulesAcceptedAt) return "rules"; // members from before the terms moved into step 2
+  if (!s.member.onboardedAt) {
+    if (!s.member.alkerId) return "alkerId";
+    if (!communitySeen(s.nuruId)) return "community";
+    return "firstSession";
+  }
   return "done";
 }
 
@@ -32,6 +41,8 @@ const needsVerification = (u) => !!u && !u.emailVerified && u.providerData.some(
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ ready: false, user: null, needsVerify: false, nuruId: null, person: undefined, member: undefined, error: null });
   const unsubs = useRef([]);
+  // Bumped when a device-only step (New Alkers) is done, so the step is worked out again.
+  const [advanced, setAdvanced] = useState(0);
 
   const stopWatching = () => {
     unsubs.current.forEach((u) => u());
@@ -87,12 +98,15 @@ export function AuthProvider({ children }) {
       initials: initialsOf(name, "A"),
       /** Re-checks the account (after verifying an email, or a failed open). */
       refresh: () => openAccount(auth.currentUser),
+      /** Re-works out the step after something saved only on this device. */
+      advance: () => setAdvanced((n) => n + 1),
       signOut: async () => {
         stopWatching();
         await accountSignOut();
       },
     };
-  }, [state, openAccount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, openAccount, advanced]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

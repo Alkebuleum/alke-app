@@ -5,17 +5,21 @@ import { Loading } from "./ui/kit";
 import { namesOf, normInvite } from "./lib/member";
 import { refreshPush } from "./lib/notifications";
 import { SITE_URL, usesSiteWelcome } from "./lib/handoff";
+import { holding, reserveAlkerId } from "./lib/signup";
 import { ensureGameOwner, loadLeaderboards, personLook, syncGames } from "./lib/games";
 import { useState } from "react";
 
 import Splash from "./pages/onboarding/Splash";
 
-// First run: real screens.
+// First run: the six-step card (see AuthProvider STEPS).
 const SignUp = lazy(() => import("./pages/onboarding/SignUp"));
 const VerifyEmail = lazy(() => import("./pages/onboarding/VerifyEmail"));
-const ProfileSetup = lazy(() => import("./pages/onboarding/ProfileSetup"));
+const CreateAccount = lazy(() => import("./pages/onboarding/CreateAccount"));
 const Rules = lazy(() => import("./pages/onboarding/Rules"));
+const AlkerID = lazy(() => import("./pages/onboarding/AlkerID"));
+const JoinCommunity = lazy(() => import("./pages/onboarding/JoinCommunity"));
 const FirstSession = lazy(() => import("./pages/onboarding/FirstSession"));
+const Story = lazy(() => import("./pages/onboarding/Story"));
 const AccountProblem = lazy(() => import("./pages/onboarding/AccountProblem"));
 
 // Public explainer screens.
@@ -59,12 +63,13 @@ function Public({ children }) {
   return children;
 }
 
-/** One first-run step: shown only when it's the person's current step. */
+/** One first-run step: shown only when it's the person's current step, or the
+    screen is being held after its step finished (lib/signup hold). */
 function Step({ name, children }) {
-  const { ready, step, stepPath } = useAuth();
-  const holdingFirstSession = name === "firstSession" && sessionStorage.getItem("alke.firstSession") === "1";
-  if (!ready || (step === null && !holdingFirstSession)) return <Loading />;
-  if (step !== name && !holdingFirstSession) return <Navigate to={stepPath} replace />;
+  const { ready, user, step, stepPath } = useAuth();
+  const held = !!user && holding() === name;
+  if (!ready || (step === null && !held)) return <Loading />;
+  if (step !== name && !held) return <Navigate to={stepPath} replace />;
   return children;
 }
 
@@ -171,9 +176,14 @@ const ROUTES = [
   ["/sign-up", pub(<SignUp mode="signup" />)],
   ["/sign-in", pub(<SignUp mode="signin" />)],
   ["/verify-email", step("verifyEmail", <VerifyEmail />)],
-  ["/profile-setup", step("profile", <ProfileSetup />)],
+  // Step 2 works signed out (right after the email code) and signed in; it guards itself.
+  ["/create-account", <CreateAccount />],
+  ["/profile-setup", <Navigate to="/create-account" replace />],
   ["/rules", step("rules", <Rules />)],
+  ["/alker-id", step("alkerId", <AlkerID />)],
+  ["/new-alkers", step("community", <JoinCommunity />)],
   ["/first-session", step("firstSession", <FirstSession />)],
+  ["/story", step("story", <Story />)],
   ["/account-problem", step("error", <AccountProblem />)],
   ["/home", member(<Home />)],
   ["/mine", member(<Mine />)],
@@ -214,6 +224,11 @@ function Shell() {
   useEffect(() => {
     if (auth.step === "done") refreshPush(auth.nuruId);
   }, [auth.step, auth.nuruId]);
+  // Members from before Alker IDs get theirs reserved quietly.
+  const needsAlkerId = auth.step === "done" && auth.member && !auth.member.alkerId;
+  useEffect(() => {
+    if (needsAlkerId) reserveAlkerId().catch(() => {});
+  }, [needsAlkerId]);
 
   // ?invite=CODE on any link is kept for the profile step.
   useEffect(() => {

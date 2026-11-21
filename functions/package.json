@@ -7,7 +7,8 @@
     "node": "22"
   },
   "scripts": {
-    "test": "firebase emulators:exec --only firestore --project demo-alke-fn \"node --test test/core.test.mjs\""
+    "test": "firebase emulators:exec --only firestore --project demo-alke-fn \"node --test test/core.test.mjs\"",
+    "test:signup": "firebase emulators:exec --only firestore,auth --project demo-alke-fn \"node --test test/signup.test.mjs\""
   },
   "dependencies": {
     "firebase-admin": "12.7.0",

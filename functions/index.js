@@ -20,14 +20,17 @@ import { syncGames } from "./games.js";
 import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
 import { decideReview, handleStripeEvent, isAdmin, listReviews, startVerification, submitManual } from "./verification.js";
 import { deleteMembership } from "./account.js";
+import { createAccount, reserveAlkerId, sendCode, verifyCode } from "./signup.js";
 
 /* Secrets (firebase functions:secrets:set NAME):
  *   STRIPE_SECRET_KEY               Stripe secret key (Identity enabled)
  *   STRIPE_IDENTITY_WEBHOOK_SECRET  signing secret of the alkeStripeIdentity webhook
- *   ALKE_ID_HASH_SECRET             any long random string; keys the ID-number hash */
+ *   ALKE_ID_HASH_SECRET             any long random string; keys the ID-number hash
+ *   BREVO_API_KEY                   Brevo v3 API key (the same one Nuru sends email with) */
 const STRIPE_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK = defineSecret("STRIPE_IDENTITY_WEBHOOK_SECRET");
 const ID_HASH = defineSecret("ALKE_ID_HASH_SECRET");
+const BREVO_KEY = defineSecret("BREVO_API_KEY");
 
 initializeApp();
 const db = getFirestore();
@@ -148,6 +151,25 @@ export const alkeReviewList = onCall(async (req) => {
   return { reviews: await listReviews(db) };
 });
 export const alkeReviewDecide = onCall(async (req) => decideReview(db, await adminId(req), req.data || {}));
+
+/* ── Sign-up (functions/signup.js) ────────────────────────────────────── */
+
+/** A 6-digit code to the email (no sign-in needed). Rate-limited per email and per IP. */
+export const alkeEmailCode = onCall({ secrets: [BREVO_KEY] }, async (req) => {
+  const email = req.data?.email || (req.auth ? req.auth.token?.email : "");
+  return sendCode(db, BREVO_KEY.value(), email, req.rawRequest?.ip || "");
+});
+
+/** Checks the code: a ticket for a new account, or what to do for an existing one. */
+export const alkeEmailVerify = onCall(async (req) => verifyCode(db, req.data || {}, req.auth || null));
+
+/** Creates the email + password login, already verified, from a ticket. */
+export const alkeCreateAccount = onCall(async (req) => createAccount(db, req.data || {}));
+
+/** The member's reserved Alker ID (ALK-0000-0000-0000), reserved on the first call.
+    Only the server writes it or its Nuru ID / AIN link (alke_config, and a
+    field the rules don't let the app change). */
+export const alkeAlkerId = onCall(async (req) => reserveAlkerId(db, memberId(req)));
 
 /* ── Account ──────────────────────────────────────────────────────────── */
 

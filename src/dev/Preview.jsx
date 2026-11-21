@@ -2,7 +2,10 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../auth/AuthProvider";
 import SignUp from "../pages/onboarding/SignUp";
 import VerifyEmail from "../pages/onboarding/VerifyEmail";
-import ProfileSetup from "../pages/onboarding/ProfileSetup";
+import CreateAccount from "../pages/onboarding/CreateAccount";
+import AlkerID from "../pages/onboarding/AlkerID";
+import JoinCommunity from "../pages/onboarding/JoinCommunity";
+import Story from "../pages/onboarding/Story";
 import Rules from "../pages/onboarding/Rules";
 import FirstSession from "../pages/onboarding/FirstSession";
 import AccountProblem from "../pages/onboarding/AccountProblem";
@@ -41,7 +44,10 @@ const SCREENS = {
   signup: () => <SignUp mode="signup" />,
   signin: () => <SignUp mode="signin" />,
   verify: VerifyEmail,
-  setup: ProfileSetup,
+  account: CreateAccount,
+  alkerid: AlkerID,
+  community: JoinCommunity,
+  story: Story,
   rules: Rules,
   first: FirstSession,
   problem: AccountProblem,
@@ -108,20 +114,21 @@ export default function Preview() {
   const Screen = SCREENS[name] || Welcome;
   const value = {
     ready: true,
-    step: name,
+    step: name === "account" ? "profile" : name,
     stepPath: null,
     nuruId: "preview",
     user: { email: "amara.mensah@example.com", displayName: "Amara Mensah" },
     person: { name: "Amara Mensah", emojiColor: 0 },
     member: started
       ? { username: "amara", onboardedAt: new Date(), sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => Date.now() - 3600e3, toDate: () => new Date(Date.now() - 3600e3) } }
-      : name === "first" ? null : { username: "amara", sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => Date.now() - 30 * 3600e3, toDate: () => new Date(Date.now() - 30 * 3600e3) } },
+      : name === "first" ? { username: "amara", alkerId: "ALK-9886-9849-8498" } : name === "account" ? null : { username: "amara", alkerId: "ALK-9886-9849-8498", sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => Date.now() - 30 * 3600e3, toDate: () => new Date(Date.now() - 30 * 3600e3) } },
     firstName: "Amara",
     displayName: "Amara Mensah",
     initials: "AM",
     error: "Missing or insufficient permissions.",
     refresh: noop,
     signOut: noop,
+    advance: noop,
   };
   return <AuthContext.Provider value={value}><Screen /></AuthContext.Provider>;
 }

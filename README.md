@@ -14,13 +14,13 @@ npm run build    # production build in dist/
 
 ## How the screens are made
 
-Onboarding (`src/pages/onboarding/`: splash, welcome, how it works, sign up /
-sign in, verify email, profile, rules, first session) is hand-built on the
-onboarding kit in `src/ui/ob.jsx` + `ob.css`: every screen is a fixed top
-bar, a scrolling content area and a pinned footer, so nothing overlaps on
-short phones. In dev, `/__preview/<screen>` (welcome, how, signup, signin,
-verify, profile, rules, first, first?started=1, problem, splash, loading)
-shows any of them with a stand-in account.
+Onboarding (`src/pages/onboarding/`) follows the design handoff
+(`ALKE-Network-website-and-app/app/screens`): one card with six steps, built
+on `src/ui/onb.jsx` + `onb.css` (top bar, then a card with the progress, the
+step's content and its pinned gold action). In dev, `/__preview/<screen>`
+(splash, welcome, signup, signin, account, alkerid, community, first,
+first?started=1, story, verify, rules, problem) shows any of them with a
+stand-in account.
 
 The member screens (`src/pages/app/`: home, mine, allocation, history, games,
 network, profile, notifications, settings) use the shell in `src/ui/shell.jsx`
@@ -42,16 +42,37 @@ out as a top-to-bottom stack (the board scales down on short phones; see
 ALKÉ members are Nuru people: the app uses Nuru's Firebase project
 (`amid-7592b`) and the shared `nuru_people` listing.
 
-- **Sign-in**: email + password (verified by email link), Google or Apple
-  (`src/lib/account.js`). After Firebase sign-in, Nuru's `nuruAuth` function
-  finds or creates the person and puts their Nuru ID on the session (`nid`).
+- **Sign-in**: email + password, Google or Apple (`src/lib/account.js`).
+  After Firebase sign-in, Nuru's `nuruAuth` function finds or creates the
+  person and puts their Nuru ID on the session (`nid`). It only accepts a
+  confirmed email (Nuru links accounts by email), so email sign-up confirms
+  the address with a 6-digit code first (`functions/signup.js`).
 - **Inside the Nuru app**: Nuru can hand over its session as a one-time token
   (`#nuru_token=` in the URL, or the `nuru_appSession` bridge request), so
   members never sign in twice.
-- **First run** (`src/pages/onboarding/`): account → verify email → profile
-  (username, name, avatar colour, invite code) → Participation Rules → first
-  session → Home. `src/auth/AuthProvider.jsx` works out the current step;
-  the router only shows that step.
+- **First run** (`src/pages/onboarding/`, six steps):
+  1. **Email** (`SignUp`): Google / Apple, or the email (prefilled from
+     alke.network) → a 6-digit code (`alkeEmailCode`) → confirmed
+     (`alkeEmailVerify`), which returns a short-lived ticket.
+  2. **Account** (`CreateAccount`): name, password, age + terms. The server
+     creates the login already verified (`alkeCreateAccount`), the app signs
+     in, then creates the membership and records the terms. Google / Apple
+     people give their name and the terms here.
+  3. **Alker ID** (`AlkerID`): the server reserves `ALK-0000-0000-0000`
+     (`alkeAlkerId`), a member number, not a wallet address. The map
+     `alke_config/alker_ids/taken/{id}` → `{ nuruId, ain }` and the member's
+     `alkerId` are written only by the server; the rules let no app read or
+     change them. It links to the AIN through the Nuru ID. Members from before
+     get theirs quietly on their next visit.
+  4. **New Alkers** (`JoinCommunity`): joins the community chat (optional).
+  5. **First session** (`FirstSession`): person check, session 1, countdown,
+     reminder switch.
+  6. **Story** (`Story`): three episodes (videos to come), then Home.
+
+  `src/auth/AuthProvider.jsx` works out the current step and the router only
+  shows that step; a screen whose step just finished is held
+  (`lib/signup.js` `hold`) until its button moves on. Older accounts may see
+  `VerifyEmail` (code) or `Rules` (terms) once.
 - **Arriving from alke.network** (`src/lib/handoff.js`): on the web, the
   website is the welcome page. It sends people to
   `/#email=…&invite=…` (the root, so GitHub Pages' 404 redirect never sees it; the app moves it to /sign-up); the fragment is read once at startup, removed
@@ -90,7 +111,8 @@ to any device.
 - **Account** (`account.js`): `alkeDeleteAccount` deletes the ALKE
   membership (the Nuru account stays).
 
-Secrets (`firebase functions:secrets:set NAME`): `STRIPE_SECRET_KEY`,
+Secrets (`firebase functions:secrets:set NAME`): `BREVO_API_KEY` (sign-up
+codes; the same Brevo key Nuru uses), `STRIPE_SECRET_KEY`,
 `STRIPE_IDENTITY_WEBHOOK_SECRET`, `ALKE_ID_HASH_SECRET`.
 Rules: `firestore.alke.rules` and `storage.alke.rules` are pasted into the
 live rulesets by hand (the project is shared).
