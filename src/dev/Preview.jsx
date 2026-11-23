@@ -34,6 +34,7 @@ import RushIntro from "../screens/RushIntro";
 import RushPlay from "../screens/RushPlay";
 import RushBanked from "../screens/RushBanked";
 import RushHazard from "../screens/RushHazard";
+import StoryEpisodes from "../pages/app/Story";
 
 /* Dev only (/__preview/<screen>): renders an onboarding screen with a stand-in
    account so its design can be checked without signing in. Not in builds. */
@@ -53,6 +54,7 @@ const SCREENS = {
   problem: AccountProblem,
   loading: Loading,
   home: Home,
+  episodes: StoryEpisodes,
   mine: Mine,
   allocation: Allocation,
   history: History,

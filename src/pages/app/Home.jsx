@@ -5,6 +5,7 @@ import { SESSION_MS, liveStreak, sessionRemaining, startSession, tintHex } from 
 import { lastDays, useMemberData } from "../../lib/useMemberData";
 import { useNotifications } from "../../lib/notifications";
 import { gameStatus } from "../../lib/games";
+import { EPISODES, mmss, watched } from "../../lib/episodes";
 import { Button, Notice } from "../../ui/ob";
 import { shortC, toC } from "../../lib/genesis";
 import { AppPage, Avatar, Ico, IconLink, Ring, Row, Section, Stat, alke, clock, useNow } from "../../ui/shell";
@@ -28,6 +29,7 @@ export default function Home() {
   const streak = liveStreak(member, now);
   const days = lastDays(sessions, 7);
   const games = gameStatus();
+  const seen = watched();
 
   const start = async () => {
     setBusy(true);
@@ -110,6 +112,22 @@ export default function Home() {
           <li>
             <Row to="/games/rush" icon={<Ico.Bolt />} tone="cyan" title="ALKE Rush" sub={games.rushStatus} end={<span className="ob-pill">+50 XP</span>} />
           </li>
+        </ul>
+      </Section>
+
+      <Section title="The ALKÉ story" action={<Link to="/episodes">Watch</Link>}>
+        <ul className="ob-list">
+          {EPISODES.map((e) => (
+            <li key={e.id}>
+              <Row
+                to={`/episodes?ep=${e.n}`}
+                icon={seen.has(e.id) ? <Ico.Check /> : <Ico.Play />}
+                tone={seen.has(e.id) ? "green" : "gold"}
+                title={e.title}
+                sub={`Episode ${e.n} · ${mmss(e.secs)}${seen.has(e.id) ? " · watched" : ""}`}
+              />
+            </li>
+          ))}
         </ul>
       </Section>
 

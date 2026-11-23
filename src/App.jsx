@@ -46,6 +46,7 @@ const Settings = lazy(() => import("./pages/app/Settings"));
 const Chat = lazy(() => import("./pages/app/Chat"));
 const Redeem = lazy(() => import("./pages/app/Redeem"));
 const ReleasePolicy = lazy(() => import("./pages/app/ReleasePolicy"));
+const StoryEpisodes = lazy(() => import("./pages/app/Story"));
 const ProfileEdit = lazy(() => import("./pages/app/ProfileEdit"));
 const DeleteAccount = lazy(() => import("./pages/app/DeleteAccount"));
 const Reviews = lazy(() => import("./pages/app/Reviews"));
@@ -203,6 +204,7 @@ const ROUTES = [
   ["/chat", member(<Chat />)],
   ["/how-to-redeem", member(<Redeem />)],
   ["/release-policy", member(<ReleasePolicy />)],
+  ["/episodes", member(<StoryEpisodes />)],
   ["/mine/live", member(<Live />)],
   ["/profile", member(<Profile />)],
   ["/profile/edit", member(<ProfileEdit />)],
