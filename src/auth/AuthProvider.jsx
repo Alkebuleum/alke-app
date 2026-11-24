@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { openNuruAccount, signOut as accountSignOut, tryNuruHandoff } from "../lib/account";
+import { clearMemberHint, setMemberHint } from "../lib/memberHint";
 import { initialsOf, watchMember, watchPerson } from "../lib/member";
 import { communitySeen } from "../lib/signup";
 
@@ -102,11 +103,20 @@ export function AuthProvider({ children }) {
       advance: () => setAdvanced((n) => n + 1),
       signOut: async () => {
         stopWatching();
+        clearMemberHint();
         await accountSignOut();
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, openAccount, advanced]);
+
+  // Tell alke.network a member is signed in here (or no longer is).
+  const { step: hintStep, firstName: hintName } = value;
+  useEffect(() => {
+    if (!state.ready) return;
+    if (!state.user) clearMemberHint();
+    else if (hintStep === "done") setMemberHint(hintName);
+  }, [state.ready, state.user, hintStep, hintName]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
