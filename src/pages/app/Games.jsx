@@ -55,51 +55,47 @@ function GameCard({ to, art, theme, name, tag, status, xp, progress, progressLab
   );
 }
 
+/* Games: your game XP and today's warming up top (like Home's main card),
+   today's two challenges, then the leaderboards. */
 export default function Games() {
   useNow(1000);
   const g = gameStatus();
   const w = gameWarmingToday();
 
   return (
-    <AppPage
-      tab="games"
-      bar={
-        <AppBar title="Games">
-          <span className="ob-pill gold" style={{ marginRight: 8 }}>
-            <Ico.Star size={13} />
-            <span className="num">{g.total}</span> XP
+    <AppPage tab="games" bar={<AppBar title="Games" />}>
+      <Link to="/drill/allocation" className="ob-games-hero" aria-label={`Your game XP ${g.total}. Warming from games today ${(w.warm * 0.1).toFixed(1)}% of ${(w.cap * 0.1).toFixed(1)}%`}>
+        <span className="lbl">Your game XP</span>
+        <b className="num">{g.total.toLocaleString("en-US")}</b>
+        <span className="warm">
+          <span className="row num">
+            <span>
+              Warming today <b>{(w.warm * 0.1).toFixed(1)}%</b> / {(w.cap * 0.1).toFixed(1)}%
+            </span>
+            <span>{w.nextAt ? `${w.nextAt - w.xp} XP to the next` : "Maxed for today"}</span>
           </span>
-        </AppBar>
-      }
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px" }}>
-        <span style={{ fontSize: 15, fontWeight: 600 }}>Today's challenges</span>
-        <span className="ob-small" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-          <Ico.Clock size={14} />
-          Resets in <span className="num">{clock(g.resetMs)}</span>
+          <span className="segs" aria-hidden="true">
+            {Array.from({ length: w.cap }, (_, i) => (
+              <i key={i} className={i < w.warm ? "on" : undefined} />
+            ))}
+          </span>
         </span>
-      </div>
+      </Link>
 
-      <div className="ob-stats two">
-        <GameCard to="/games/hex" theme="gold" art={<HexArt />} name="ALKE Hex" tag={`Level ${g.hexLevel} · 3 lives`} status={g.hexStatus} xp={g.hexXp} progress={g.hexCleared / 20} progressLabel={`${g.hexCleared} of 20 levels`} />
-        <GameCard to="/games/rush" theme="cyan" art={<RushArt />} name="ALKE Rush" tag={`Best run ${g.rushBest} XP`} status={g.rushStatus} xp={g.rushXp} progress={g.rushChalDone ? 1 : g.rushChal / 250} progressLabel={g.rushChalDone ? "Challenge done" : `${g.rushChal} of 250 today`} />
-      </div>
-
-      <ul className="ob-list">
-        <li>
-          <Row
-            to="/drill/allocation"
-            icon={<Ico.Lock />}
-            title="Contribution from games"
-            sub={w.nextAt ? `${w.nextAt - w.xp} XP to the next one today` : "Today's maximum reached"}
-            end={
-              <b className="num">
-                {(w.warm * 0.1).toFixed(1)}% / {(w.cap * 0.1).toFixed(1)}%
-              </b>
-            }
-          />
-        </li>
-      </ul>
+      <Section
+        title="Today's challenges"
+        action={
+          <span className="num" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <Ico.Clock size={13} />
+            Resets in {clock(g.resetMs)}
+          </span>
+        }
+      >
+        <div className="ob-stats two">
+          <GameCard to="/games/hex" theme="gold" art={<HexArt />} name="ALKE Hex" tag={`Level ${g.hexLevel} · 3 lives`} status={g.hexStatus} xp={g.hexXp} progress={g.hexCleared / 20} progressLabel={`${g.hexCleared} of 20 levels`} />
+          <GameCard to="/games/rush" theme="cyan" art={<RushArt />} name="ALKE Rush" tag={`Best run ${g.rushBest} XP`} status={g.rushStatus} xp={g.rushXp} progress={g.rushChalDone ? 1 : g.rushChal / 250} progressLabel={g.rushChalDone ? "Challenge done" : `${g.rushChal} of 250 today`} />
+        </div>
+      </Section>
 
       <Section title="Leaderboards">
         <ul className="ob-list">
@@ -112,7 +108,7 @@ export default function Games() {
         </ul>
       </Section>
 
-      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to 0.3% of your cold ALKE a day.</p>
+      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to {(w.cap * 0.1).toFixed(1)}% of your cold ALKE a day.</p>
     </AppPage>
   );
 }
