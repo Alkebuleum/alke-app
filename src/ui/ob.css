@@ -693,7 +693,7 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-list, .ob-card, .ob-disclosure { border-radius: 22px; }
 .ob-pulse, .ob-notice { border-radius: 18px; }
 .ob-row .ic { border-radius: 12px; }
-.ob-row .ic:not(.gold):not(.cyan):not(.green):not(.plain) { background: rgba(139, 109, 255, .16); color: var(--accent-text); }
+.ob-row .ic:not(.gold):not(.cyan):not(.green):not(.plain):not(.danger) { background: rgba(139, 109, 255, .16); color: var(--accent-text); }
 .ob-hero:not(.vivid):not(.gold):not(.cyan) { background: radial-gradient(120% 70% at 50% 0%, rgba(110, 72, 255, .22) 0%, rgba(110, 72, 255, 0) 70%), var(--panel); border-color: rgba(198, 182, 255, .16); }
 
 /* Pills, like the onboarding chips */
@@ -930,3 +930,22 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-hist-break .num { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
 .ob-hist-break > div:last-of-type .num { color: #FFDB8E; font-weight: 600; }
 .ob-hist-break .batch { padding: 6px 0 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--text-3); }
+
+/* Settings: you up top, coloured tiles, a red sign-out section */
+.ob-set-me { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 24px; border: 1px solid rgba(198, 182, 255, .2); color: var(--text); text-decoration: none; background: radial-gradient(120% 90% at 100% 0%, rgba(110, 72, 255, .22) 0%, rgba(110, 72, 255, 0) 60%), var(--panel); }
+.ob-set-me:hover { color: var(--text); }
+.ob-set-me .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ob-set-me b { font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ob-set-me .tx > span { font-size: 13.5px; color: var(--text-2); }
+.ob-set-me small { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin-top: 3px; }
+.ob-set-me .edit { flex: none; height: 34px; padding: 0 14px; border-radius: 999px; display: inline-flex; align-items: center; background: rgba(255, 255, 255, .06); border: 1px solid var(--border-2); font-size: 13px; font-weight: 600; }
+.ob .ob-row .ic.danger { background: var(--danger-soft); color: var(--danger); }
+.ob-danger { border-color: rgba(255, 138, 154, .22); }
+.ob-danger .ob-row .tx b { color: var(--danger); }
+.ob .ob-toggle { width: 50px; height: 30px; }
+.ob .ob-toggle::after { width: 24px; height: 24px; }
+.ob .ob-toggle[aria-checked="true"] { background: var(--violet-grad); }
+.ob .ob-toggle[aria-checked="true"]::after { transform: translateX(20px); }
+.ob .ob-rules .n { font-family: var(--mono); font-size: 12px; color: var(--gold); }
+.ob .ob-disclosure summary { font-family: var(--display); font-weight: 600; }
+.ob-set-foot { margin: 0; text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
