@@ -744,7 +744,6 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-deeper-sub { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--text-2); }
 .ob-deeper-sub b { color: var(--text); font-weight: 600; }
 .ob-deeper-now { position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(242, 198, 107, .3); background: linear-gradient(180deg, rgba(242, 198, 107, .08), rgba(242, 198, 107, .02)); }
-.ob-deeper-now::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--p, 0%); background: linear-gradient(90deg, #FFDB8E, #EBA33B); transition: width .6s ease; }
 .ob-deeper-now .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .ob-deeper-now b { font-size: 14.5px; font-weight: 600; }
 .ob-deeper-now small { font-size: 12.5px; color: #FFDB8E; }
@@ -762,8 +761,6 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-deeper-ladder li.cur { border-color: rgba(245, 184, 77, .55); background: rgba(245, 184, 77, .08); color: var(--text); }
 .ob-deeper-ladder .out { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--text); }
 .ob-deeper-ladder li:not(.cur):not(.got) .out { color: var(--text-3); }
-.ob-deeper-invite { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-.ob-deeper-invite .lbl { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-2); }
 .ob-deeper .ob-invite { height: 48px; border-radius: 14px; padding-left: 14px; background: rgba(255, 255, 255, .05); }
 .ob-deeper .ob-invite > span { color: var(--accent-text); font-family: var(--mono); font-size: 12.5px; }
 .ob-deeper .ob-invite-copy { height: 36px; border-radius: 999px; background: var(--gold-grad); color: #1C1030; }
@@ -772,3 +769,32 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-deeper-rules { margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-3); }
 @media (prefers-reduced-motion: reduce) { .ob-deeper { opacity: 1; transform: none; transition: none; } .ob-drill-cue svg { animation: none; } }
 .ob-drill > .ob-drill-info { margin-top: auto; }
+
+/* Progress to the next level, in segments */
+.ob-deeper-prog { display: flex; flex-direction: column; gap: 8px; }
+.ob-deeper-prog > span:first-child { font-size: 13.5px; color: var(--text-2); }
+.ob-deeper-prog b { color: #FFDB8E; font-weight: 700; }
+.ob-deeper-prog .segs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.ob-deeper-prog .segs i { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); }
+.ob-deeper-prog .segs i.on { background: linear-gradient(90deg, #FFDB8E, #EBA33B); box-shadow: 0 0 10px rgba(245, 184, 77, .45); }
+/* Share: link + copy, then each app in its own colours */
+.ob-deeper .ob-deeper-link { height: 56px; margin-top: 4px; background: rgba(0, 0, 0, .35); }
+.ob-deeper .ob-deeper-link .ob-invite-copy { height: 44px; padding: 0 18px; font-size: 14px; }
+.ob-share { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 52px; gap: 8px; }
+.ob-share-btn { height: 52px; border: 0; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s ease, filter .15s ease; }
+.ob-share-btn:hover { filter: brightness(1.06); }
+.ob-share-btn:active { transform: scale(.97); }
+.ob-share-btn.wa { background: #25D366; color: #06210F; }
+.ob-share-btn.tg { background: #229ED9; }
+.ob-share-btn.x { width: 52px; background: #000; border: 1px solid rgba(255, 255, 255, .22); }
+.ob-share-btn.fb { grid-column: 1 / -1; background: #1877F2; }
+.ob-deeper-note { margin: -4px 0 0; font-size: 13px; font-weight: 600; color: var(--success); text-align: center; }
+/* The message preview, as a chat bubble */
+.ob-deeper-msg { border-radius: 18px; border: 1px solid var(--border); background: rgba(255, 255, 255, .03); overflow: hidden; }
+.ob-deeper-msg-h { width: 100%; height: 48px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.ob-deeper-msg-h svg { color: var(--text-3); transition: transform .2s ease; }
+.ob-bubble-preview { margin: 0 12px; padding: 12px 14px; border-radius: 4px 18px 18px 18px; background: #1F2C33; color: #E9EDEF; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.ob-bubble-preview p { margin: 0; }
+.ob-bubble-preview u { color: #53BDEB; text-decoration: underline; }
+.ob-deeper-msg-acts { display: flex; justify-content: flex-end; gap: 16px; padding: 6px 14px 8px; }
+.ob-deeper-msg-acts .ob-textlink { min-height: 36px; font-size: 13.5px; }

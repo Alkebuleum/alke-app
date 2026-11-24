@@ -133,7 +133,7 @@ export default function Drill() {
         </button>
       </section>
 
-      <DrillDeeper ref={deeper} nuruId={nuruId} level={m.level} active={m.activeInvites} joined={m.joinedInvites} />
+      <DrillDeeper ref={deeper} nuruId={nuruId} level={m.level} active={m.activeInvites} joined={m.joinedInvites} phase={`Phase ${m.phase.n} · ${m.phase.name}`} />
 
       <Vein vein={vein.vein} onDone={vein.close} />
       <ShareSheet card={card} onClose={closeCard} />

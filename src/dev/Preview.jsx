@@ -97,7 +97,13 @@ const SCREENS = {
   },
   // Drill, scrolled down to the invite section.
   deeper: () => {
-    setTimeout(() => document.querySelector(".ob-deeper")?.scrollIntoView({ block: "start" }), 1500);
+    if (window.__deeper) return <Drill />;
+    window.__deeper = true; // render runs twice in dev; schedule once
+    setTimeout(() => {
+      if (new URLSearchParams(window.location.search).get("msg") === "1") document.querySelector(".ob-deeper-msg-h")?.click();
+      document.querySelector(q || ".ob-deeper")?.scrollIntoView({ block: "start" });
+    }, 1500);
+    const q = new URLSearchParams(window.location.search).get("at");
     return <Drill />;
   },
   hexhub: HexHub,
