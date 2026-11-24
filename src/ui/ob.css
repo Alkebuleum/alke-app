@@ -871,3 +871,10 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob .ob-game-play { height: 40px; border-radius: 999px; font-size: 14.5px; }
 .ob .ob-game.gold .ob-game-play { background: var(--gold-grad); color: #1C1030; box-shadow: 0 10px 22px -12px rgba(245, 184, 77, .7); }
 .ob .ob-game.cyan .ob-game-play { background: linear-gradient(180deg, #A5F3F8, #5EE0E8 55%, #2CC2CC); color: #04161A; box-shadow: 0 10px 22px -12px rgba(94, 224, 232, .6); }
+
+/* Game hubs: the top card in the new look (glow over the gradient panel) */
+.ob .ob-hero.gold { background: radial-gradient(120% 80% at 100% 0%, rgba(242, 198, 107, .16) 0%, rgba(242, 198, 107, 0) 60%), var(--panel); border-color: rgba(242, 198, 107, .28); border-radius: 24px; }
+.ob .ob-hero.cyan { background: radial-gradient(120% 80% at 100% 0%, rgba(94, 224, 232, .14) 0%, rgba(94, 224, 232, 0) 60%), var(--panel); border-color: rgba(94, 224, 232, .28); border-radius: 24px; }
+.ob .ob-hero.gold .big, .ob .ob-hero.cyan .big { font-family: var(--display); font-weight: 600; letter-spacing: -.03em; }
+.ob .ob-hero.gold .tag, .ob .ob-hero.cyan .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.ob .ob-hero.cyan .ob-btn.primary { background: linear-gradient(180deg, #A5F3F8 0%, #5EE0E8 55%, #2CC2CC 100%); color: #04161A; box-shadow: 0 10px 24px -12px rgba(94, 224, 232, .6), inset 0 1px 0 rgba(255, 255, 255, .5); }
