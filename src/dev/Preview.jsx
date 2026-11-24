@@ -57,7 +57,33 @@ const SCREENS = {
   episodes: StoryEpisodes,
   drill: Drill,
   allocation: Allocation,
-  history: History,
+  history: () => {
+    if (!window.__hist && new URLSearchParams(window.location.search).get("open") === "1") {
+      window.__hist = true; // render runs twice in dev; click once
+      setTimeout(() => document.querySelector(".ob-row[aria-expanded]")?.click(), 1200);
+    }
+    const ts = (h) => ({ toDate: () => new Date(T0 - h * 3600e3) });
+    const br = [
+      { label: "Day's pool", value: "30,000 ALKE", note: "Phase 1 · Genesis" },
+      { label: "Drills that day", value: "8,412" },
+      { label: "Your streak boost", value: "×1.1" },
+      { label: "Your tap boost", value: "×1.4", note: "2 of 10 veins" },
+      { label: "Your rig boost", value: "×1.25", note: "Level 1 rig" },
+      { label: "Your share", value: "1.925000 ALKE", note: "max 1.925000 ALKE" },
+    ];
+    return (
+      <History
+        demo={{
+          sessions: [12, 11, 10].map((n, i) => ({ n, startedAt: ts(1 + i * 24) })),
+          entries: [
+            { id: "s11", session: 11, label: "Drill 11", amount: 1.925, status: "locked", breakdown: br, batch: "2026-11-22" },
+            { id: "s10", session: 10, label: "Drill 10", amount: 1.54, status: "verified", breakdown: br, batch: "2026-11-21" },
+            { id: "g1", kind: "contrib", label: "Game warming", note: "0.2% of cold ALKE", amount: 0.003, status: "verified", at: ts(30) },
+          ],
+        }}
+      />
+    );
+  },
   games: Games,
   network: Network,
   profile: Profile,

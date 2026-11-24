@@ -29,9 +29,10 @@ function dayLabel(d, now = new Date()) {
 
 /* Every session the member started (sessions/{n}) plus the server's ledger
    lines (entries/{id}) — amounts appear only once the server sets them. */
-export default function History() {
+export default function History({ demo }) {
   const { member } = useAuth();
-  const { sessions, entries } = useMemberData({ sessions: true, entries: true });
+  const live = useMemberData({ sessions: !demo, entries: !demo });
+  const { sessions, entries } = demo || live;
   const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState(null);
   const now = useNow(30000);
@@ -50,7 +51,7 @@ export default function History() {
         kind: "session",
         at,
         title: `Drill ${s.n}`,
-        sub: e?.label || `Started ${hhmm(at)}`,
+        sub: `Started ${hhmm(at)}${e?.breakdown ? " · details" : ""}`,
         amount: e?.amount,
         status: e?.status || (ends > now && sessionRemaining(member, now) > 0 && s.n === member?.sessionCount ? "recorded" : "pending"),
         breakdown: e?.breakdown,
@@ -76,9 +77,21 @@ export default function History() {
   }
   const loading = sessions === undefined;
 
+  // Totals for the summary card: settled amounts and drills still waiting.
+  const settled = items.reduce((t, i) => t + (i.amount != null && i.status !== "pending" ? Number(i.amount) || 0 : 0), 0);
+  const waiting = items.filter((i) => i.kind === "session" && i.status === "pending").length;
+
   return (
     <AppPage tab="drill" bar={<SubBar title="History" back="/drill" />}>
-      <div className="ob-seg" role="tablist">
+      <section className="ob-hist-hero" aria-label="Your drilling so far">
+        <span className="lbl">Your drills</span>
+        <b className="num">{(member?.sessionCount || 0).toLocaleString("en-US")}</b>
+        <span className="sub num">
+          <b>{fmtAlke(settled, 6)} ALKE</b> settled{waiting ? ` · ${waiting} pending` : ""}
+        </span>
+      </section>
+
+      <div className="ob-seg pill" role="tablist">
         {TABS.map(([k, label]) => (
           <button key={k} type="button" role="tab" aria-selected={filter === k} onClick={() => setFilter(k)}>
             {label}
@@ -88,7 +101,7 @@ export default function History() {
 
       {loading ? <p className="ob-small center">Loading…</p> : null}
       {!loading && !groups.length ? (
-        <div className="ob-empty">
+        <div className="ob-empty ob-lb-empty">
           <span className="ob-tile">
             <Ico.History size={24} />
           </span>
@@ -118,23 +131,23 @@ export default function History() {
                       <b>{i.title}</b>
                       <span>{i.sub}</span>
                     </span>
-                    <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "") + fmtAlke(i.amount) + " ALKE"}</b> : null}
+                    <span className="end ob-hist-end">
+                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "+") + fmtAlke(i.amount)}</b> : null}
                       <span className={statusCls}>{statusLabel}</span>
                     </span>
                   </button>
                   {isOpen ? (
-                    <div style={{ padding: "0 14px 14px 62px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div className="ob-hist-break">
                       {(i.breakdown || []).map((b) => (
-                        <div key={b.label} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 13 }}>
-                          <span style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ fontWeight: 600 }}>{b.label}</span>
-                            {b.note ? <span style={{ color: "var(--text-3)", fontSize: 12 }}>{b.note}</span> : null}
+                        <div key={b.label}>
+                          <span>
+                            <b>{b.label}</b>
+                            {b.note ? <small>{b.note}</small> : null}
                           </span>
                           <span className="num">{b.value}</span>
                         </div>
                       ))}
-                      {i.batch ? <span className="ob-small">Batch #{i.batch}</span> : null}
+                      {i.batch ? <small className="batch">Batch #{i.batch}</small> : null}
                     </div>
                   ) : null}
                 </li>
