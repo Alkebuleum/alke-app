@@ -949,3 +949,17 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob .ob-rules .n { font-family: var(--mono); font-size: 12px; color: var(--gold); }
 .ob .ob-disclosure summary { font-family: var(--display); font-weight: 600; }
 .ob-set-foot { margin: 0; text-align: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+
+/* Notifications: summary card, unread rows marked gold */
+.ob-note-hero { display: flex; flex-direction: column; gap: 4px; padding: 18px; border-radius: 24px; border: 1px solid rgba(242, 198, 107, .24); background: radial-gradient(120% 90% at 100% 0%, rgba(242, 198, 107, .12) 0%, rgba(242, 198, 107, 0) 60%), var(--panel); }
+.ob-note-hero .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.ob-note-hero > b { font-family: var(--display); font-size: 34px; line-height: 1.05; font-weight: 600; letter-spacing: -.03em; }
+.ob-note-hero .sub { font-size: 13.5px; color: var(--text-2); }
+.ob-note-hero .sub a { color: #FFDB8E; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.ob-note-hero .sub a::after { content: " →"; }
+.ob-list > li.ob-note-new { background: rgba(242, 198, 107, .06); box-shadow: inset 3px 0 0 #F2C66B; }
+.ob-notes > li:not(.ob-note-new) .ob-row .tx b { font-weight: 500; color: var(--text-2); }
+.ob-notes .ob-row .tx span { white-space: normal; }
+.ob-note-end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; align-self: flex-start; padding-top: 2px; }
+.ob-note-end .num { font-family: var(--mono); font-size: 11.5px; color: var(--text-3); }
+.ob-note-end i { width: 8px; height: 8px; border-radius: 50%; background: #F2C66B; box-shadow: 0 0 8px rgba(242, 198, 107, .7); }

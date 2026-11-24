@@ -87,7 +87,20 @@ const SCREENS = {
   games: Games,
   network: Network,
   profile: Profile,
-  notifications: Notifications,
+  notifications: () => {
+    const ts = (h) => ({ toDate: () => new Date(T0 - h * 3600e3) });
+    return (
+      <Notifications
+        demo={[
+          { id: "1", kind: "session", title: "Your next drill is ready", body: "Tap to start it and keep your 5-day streak going.", at: ts(0.2), read: false, link: "/drill" },
+          { id: "2", kind: "invite", title: "Kojo joined with your link", body: "Kojo joined ALKE. Their invite becomes active after 3 drills.", at: ts(3), read: false, link: "/network" },
+          { id: "3", kind: "games", title: "Today's challenges are ready", body: "A new Hex board and Rush challenge are waiting.", at: ts(5), read: false, link: "/games" },
+          { id: "4", kind: "invite", title: "Esi is an active invite", body: "Esi finished 3 drills. It now warms 1% of your cold ALKE a day.", at: ts(27), read: true, link: "/network" },
+          { id: "5", kind: "policy", title: "Release policy updated", body: "Draft 2: cold ALKE and how claiming works.", at: ts(50), read: true, link: "/release-policy" },
+        ]}
+      />
+    );
+  },
   settings: Settings,
   warming: () => (
     <AppPage tab="drill" bar={<SubBar title="Allocation" back="/drill" />}>
