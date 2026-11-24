@@ -5,7 +5,8 @@ import { RIG, rigBoost } from "./drillScene";
 
 /* "Invite 10 friends. Become a Founder." Progress counts active invites
    (friends who've completed 3 drills), the same count that grows the rig.
-   Founder is a status and a badge, with no extra reward. */
+   Founder is a status and a badge for now; the Founder reward is still to
+   be decided (don't promise one in the UI until it is). */
 export function FounderCard({ nuruId, phase, active = 0, more = true }) {
   const done = active >= FOUNDER_INVITES;
   const n = Math.min(active, FOUNDER_INVITES);
