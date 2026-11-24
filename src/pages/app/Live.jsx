@@ -2,18 +2,18 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import QRCode from "qrcode";
 import { useAuth } from "../../auth/AuthProvider";
-import { approxAlke, shortC } from "../../lib/genesis";
+import { fmtAlke, toAlke } from "../../lib/genesis";
 import { inviteLink } from "../../lib/member";
 import { Button } from "../../ui/ob";
 import { Ico, clock } from "../../ui/shell";
-import { Burst, Core, Counter, buzz, useMilestones, useMining, usePortal, Treasure } from "./mining";
+import { Burst, DrillScene, RollingNumber, Vein, buzz, useDrilling, useMilestones, useVein } from "./drilling";
 
-/* Stream mode: a full-screen mining view for going live on social. Real
+/* Stream mode: a full-screen drilling view for going live on social. Real
    figures only (today's estimate is labelled as one), plus the member's
    invite as a QR code so viewers can join. Keeps the screen awake. */
 export default function Live() {
   const { nuruId, displayName } = useAuth();
-  const m = useMining();
+  const m = useDrilling();
   const [qr, setQr] = useState("");
   const [burst, setBurst] = useState(0);
   const [toast, setToast] = useState(null);
@@ -47,25 +47,25 @@ export default function Live() {
 
   const onMilestone = useCallback((v) => {
     setBurst(Date.now());
-    setToast(`${shortC(v)} cALKE today`);
+    setToast(`+${fmtAlke(toAlke(v), 1)} ALKE today`);
     setTimeout(() => setToast(null), 2400);
     buzz([20, 40, 20]);
   }, []);
   useMilestones(m.todayC, onMilestone);
 
-  const portal = usePortal(m);
+  const vein = useVein(m);
 
   return (
     <div className="ob ob-live">
       <header className="ob-live-top">
-        <Link to="/mine" className="ob-icon-btn" aria-label="Close stream mode">
+        <Link to="/drill" className="ob-icon-btn" aria-label="Close stream mode">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" />
           </svg>
         </Link>
         <span className="ob-onair">
           <i />
-          {m.running ? "Mining live" : "Not mining"}
+          {m.running ? "Drilling live" : "Not drilling"}
         </span>
         <span style={{ width: 44 }} />
       </header>
@@ -81,32 +81,33 @@ export default function Live() {
       </div>
 
       <div className="ob-live-core">
-        <Core fraction={m.fraction} running={m.running} size="min(300px, 40cqh, 78cqw)" onPortal={portal.open} locked={!!portal.treasure} />
+        <DrillScene
+          depth={m.depth}
+          sessionDepth={m.sessionDepth}
+          sessionTarget={m.sessionTarget}
+          fraction={m.fraction}
+          running={m.running}
+          onVein={vein.strike}
+          locked={!!vein.vein}
+          flare={burst}
+          veinKey={vein.vein && !vein.vein.empty ? vein.vein.k : 0}
+          height="min(360px, 44dvh)"
+        />
         <Burst k={burst} />
         {toast ? <span className="ob-toast">{toast}</span> : null}
       </div>
 
       <div className="ob-live-count">
+        <span className="lbl">ALKE Rewards · provisional</span>
+        <RollingNumber value={m.rewardsAlke} size={44} label={`ALKE Rewards: ${fmtAlke(m.rewardsAlke)} ALKE`} />
         {m.running ? (
-          <>
-            <span className="lbl">Today's estimate{m.hasLive ? "" : " (up to)"}</span>
-            <span className="plus">
-              <span>+</span>
-              <Counter value={m.todayC} size={52} />
-            </span>
-            <span className="sub">
-              cALKE · {approxAlke(m.todayC)} · {clock(m.remaining)} left
-            </span>
-          </>
+          <span className="sub">
+            +{fmtAlke(m.todayAlke)} today{m.hasLive ? " (est.)" : " (up to)"} · {clock(m.remaining)} left
+          </span>
         ) : (
-          <>
-            <span className="lbl">Cold balance</span>
-            <Counter value={m.balanceC} size={52} decimals={false} />
-            <span className="sub">cALKE · {approxAlke(m.balanceC)}</span>
-            <Button size="sm" to="/mine" style={{ marginTop: 8 }}>
-              Start a session first
-            </Button>
-          </>
+          <Button size="sm" to="/drill" style={{ marginTop: 8 }}>
+            Start a drill first
+          </Button>
         )}
       </div>
 
@@ -118,7 +119,7 @@ export default function Live() {
           <small>Scan to sign up with my invite</small>
         </div>
       </div>
-      <Treasure treasure={portal.treasure} onDone={portal.close} />
+      <Vein vein={vein.vein} onDone={vein.close} />
     </div>
   );
 }

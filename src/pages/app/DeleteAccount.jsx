@@ -7,7 +7,7 @@ import { AppPage, SubBar } from "../../ui/shell";
 
 /* Deletes the ALKE membership (functions/account.js). The Nuru account stays. */
 const GONE = [
-  "Your cALKE, sessions, streak and allocation",
+  "Your ALKE, drills, streak and allocation",
   "Your game progress and leaderboard scores",
   "Your notifications and alert settings",
   "Your personhood check, including the copy Stripe keeps",
@@ -43,7 +43,7 @@ export default function DeleteAccount() {
   return (
     <AppPage tab="profile" bar={<SubBar title="Delete ALKE account" back="/settings" />}>
       <div style={{ margin: "0 4px" }} className="ob-stack">
-        <p className="ob-sub">This permanently deletes your ALKE membership. It can't be undone, and any cALKE you've mined is lost.</p>
+        <p className="ob-sub">This permanently deletes your ALKE membership. It can't be undone, and any ALKE you've drilled is lost.</p>
         <section className="ob-sec">
           <div className="ob-group">What gets deleted</div>
           <ul className="ob-rules" style={{ listStyle: "none", padding: 0 }}>

@@ -3,11 +3,11 @@ import { useAuth } from "../../auth/AuthProvider";
 import { SESSION_MS, sessionRemaining } from "../../lib/member";
 import { useMemberData } from "../../lib/useMemberData";
 import { AppPage, Ico, SubBar, hhmm, useNow } from "../../ui/shell";
-import { fmtC, toC } from "../../lib/genesis";
+import { fmtAlke } from "../../lib/genesis";
 
 const TABS = [
   ["all", "All"],
-  ["session", "Sessions"],
+  ["session", "Drills"],
   ["contrib", "Contributions"],
 ];
 
@@ -49,7 +49,7 @@ export default function History() {
         key: "s" + s.n,
         kind: "session",
         at,
-        title: `Session ${s.n}`,
+        title: `Drill ${s.n}`,
         sub: e?.label || `Started ${hhmm(at)}`,
         amount: e?.amount,
         status: e?.status || (ends > now && sessionRemaining(member, now) > 0 && s.n === member?.sessionCount ? "recorded" : "pending"),
@@ -77,7 +77,7 @@ export default function History() {
   const loading = sessions === undefined;
 
   return (
-    <AppPage tab="mine" bar={<SubBar title="History" back="/mine" />}>
+    <AppPage tab="drill" bar={<SubBar title="History" back="/drill" />}>
       <div className="ob-seg" role="tablist">
         {TABS.map(([k, label]) => (
           <button key={k} type="button" role="tab" aria-selected={filter === k} onClick={() => setFilter(k)}>
@@ -93,7 +93,7 @@ export default function History() {
             <Ico.History size={24} />
           </span>
           <b>Nothing here yet</b>
-          <p>{filter === "contrib" ? "Lessons and discussions will show here." : "Start a session from Mine."}</p>
+          <p>{filter === "contrib" ? "Lessons and discussions will show here." : "Start a drill from the Drill tab."}</p>
         </div>
       ) : null}
 
@@ -119,7 +119,7 @@ export default function History() {
                       <span>{i.sub}</span>
                     </span>
                     <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "") + fmtC(toC(i.amount))}</b> : null}
+                      {i.amount != null ? <b className="num">{(i.status === "pending" ? "~" : "") + fmtAlke(i.amount) + " ALKE"}</b> : null}
                       <span className={statusCls}>{statusLabel}</span>
                     </span>
                   </button>

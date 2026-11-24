@@ -37,6 +37,14 @@ export const approxAlke = (c) => {
   const a = (Number(c) || 0) / C_PER_ALKE;
   return `≈ ${a.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: a < 1 ? 4 : 2 })} ALKE`;
 };
+/** cALKE → real ALKE. */
+export const toAlke = (c) => (Number(c) || 0) / C_PER_ALKE;
+/** "1,234.567890": ALKE to [d] decimals (6 = every cALKE), rounded down. */
+export const fmtAlke = (alke, d = 6) => {
+  const v = Math.max(0, Number(alke) || 0);
+  const f = (Math.floor(v * 10 ** d + 1e-6) / 10 ** d).toFixed(d).split(".");
+  return Number(f[0]).toLocaleString("en-US") + (d ? `.${f[1]}` : "");
+};
 /** Compact: 1.2M, 184K. */
 export const shortC = (c) => {
   const v = Number(c) || 0;
@@ -46,7 +54,7 @@ export const shortC = (c) => {
   return fmtC(v);
 };
 
-/* Tap boost: every TAP_BOOST.combo-tap combo while mining earns one boost;
+/* Tap boost: every TAP_BOOST.combo-tap combo while drilling earns one boost;
    each adds `step` to today's (UTC) share, up to `perDay` boosts a day
    (×3 at most). The server records them (alkeBoost) and applies them when
    the day settles. Keep in step with functions/genesis.js. */

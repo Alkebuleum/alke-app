@@ -52,7 +52,7 @@ export function IconLink({ to, label, children, badge }) {
 const TABS = [
   ["home", "/home", "Home"],
   ["games", "/games", "Games"],
-  ["mine", "/mine", "Mine"],
+  ["drill", "/drill", "Drill"],
   ["network", "/network", "Network"],
   ["profile", "/profile", "Profile"],
 ];
@@ -61,18 +61,18 @@ export function TabBar({ active }) {
   return (
     <nav className="ob-tabs" aria-label="Main">
       {TABS.map(([id, to, label]) => {
-        if (id === "mine") {
+        if (id === "drill") {
           return (
-            <Link key={id} to={to} className="ob-tab ob-tab-mine" aria-current={active === id ? "page" : undefined}>
+            <Link key={id} to={to} className="ob-tab ob-tab-drill" aria-current={active === id ? "page" : undefined}>
               <span className="hex" aria-hidden="true">
                 <svg viewBox="0 0 100 112" width="40" height="45">
                   <defs>
-                    <linearGradient id="tabMine" x1="0" y1="0" x2="1" y2="1">
+                    <linearGradient id="tabDrill" x1="0" y1="0" x2="1" y2="1">
                       <stop offset="0" stopColor="#8D70FF" />
                       <stop offset="1" stopColor="#6141F0" />
                     </linearGradient>
                   </defs>
-                  <path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="url(#tabMine)" stroke="rgba(255,255,255,.22)" strokeWidth="3" strokeLinejoin="round" />
+                  <path d="M50 4 L94 29 L94 83 L50 108 L6 83 L6 29 Z" fill="url(#tabDrill)" stroke="rgba(255,255,255,.22)" strokeWidth="3" strokeLinejoin="round" />
                   <g transform="translate(50 56) scale(.5) translate(-50 -56)">
                     <MarkPaths stroke="#fff" width={9} />
                   </g>
@@ -300,7 +300,7 @@ export const Ico = {
 
 const TabIcons = {
   home: icon(<path d="M3.5 10.2 12 3.5l8.5 6.7V19a1.5 1.5 0 0 1-1.5 1.5h-4v-6h-6v6H5A1.5 1.5 0 0 1 3.5 19z" />, 22),
-  mine: () => (
+  drill: () => (
     <svg width="20" height="22" viewBox="0 0 100 112" aria-hidden="true">
       <MarkPaths stroke="currentColor" width={8} />
     </svg>

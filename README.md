@@ -1,6 +1,6 @@
 # ALKÉ Network App (app.alke.network)
 
-The member app: onboarding, the daily mining session, allocation and history,
+The member app: onboarding, the daily drilling session, allocation and history,
 ALKE Hex and ALKE Rush, invitations, profile, notifications and settings.
 
 Built with Vite + React. On phones each screen fills the display; on larger
@@ -22,7 +22,7 @@ step's content and its pinned gold action). In dev, `/__preview/<screen>`
 first?started=1, story, verify, rules, problem) shows any of them with a
 stand-in account.
 
-The member screens (`src/pages/app/`: home, mine, allocation, history, games,
+The member screens (`src/pages/app/`: home, drill, allocation, history, games,
 network, profile, notifications, settings) use the shell in `src/ui/shell.jsx`
 (app bar, tab bar, stat tiles, list rows) on the same tokens. They preview at
 `/__preview/home` etc.; add `?started=1` for a running session. The game
@@ -90,7 +90,7 @@ ALKÉ members are Nuru people: the app uses Nuru's Firebase project
   `cd rules-tests && npm install && npm test` (needs Java; builds Nuru's rules
   + ours and runs them in the emulator).
 
-Home, Mine, History, Allocation, Network and Profile show the member's live
+Home, Drill, History, Allocation, Network and Profile show the member's live
 data. Game results and progress go to the server (`alkeGameSync`), which
 checks each result and writes the leaderboards; progress follows the member
 to any device.

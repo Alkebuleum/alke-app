@@ -78,7 +78,7 @@ export const alkeDaily = onSchedule({ schedule: "10 0 * * *", timeZone: "UTC", t
   logger.info("warm", await warmDay(db, day));
 });
 
-/** Every 10 minutes: the live figures the Mine screen shows. */
+/** Every 10 minutes: the live figures the Drill screen shows. */
 export const alkeLive = onSchedule({ schedule: "every 10 minutes", timeoutSeconds: 120 }, async () => {
   await updateLive(db);
 });
@@ -95,7 +95,7 @@ export const alkeGameSync = onCall({ enforceAppCheck: false }, async (req) => {
   return syncGames(db, memberId(req), req.data || {});
 });
 
-/** A 25-tap combo on the mining core: one tap boost for today, capped per day. */
+/** A 25-tap combo on the drilling rig: one tap boost for today, capped per day. */
 export const alkeBoost = onCall(async (req) => {
   return recordBoost(db, memberId(req));
 });

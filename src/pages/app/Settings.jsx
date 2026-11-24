@@ -83,9 +83,9 @@ export default function Settings() {
             <Row
               icon={<Ico.Bell size={18} />}
               tone="plain"
-              title="Session reminders"
-              sub="When your next session is ready"
-              end={<Toggle on={!!prefs.reminders} onChange={(v) => setPref("reminders", v)} label="Session reminders" />}
+              title="Drill reminders"
+              sub="When your next drill is ready"
+              end={<Toggle on={!!prefs.reminders} onChange={(v) => setPref("reminders", v)} label="Drill reminders" />}
             />
           </li>
           <li>

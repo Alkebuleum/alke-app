@@ -88,7 +88,7 @@ export default function Games() {
       <ul className="ob-list">
         <li>
           <Row
-            to="/mine/allocation"
+            to="/drill/allocation"
             icon={<Ico.Lock />}
             title="Contribution from games"
             sub={w.nextAt ? `${w.nextAt - w.xp} XP to the next one today` : "Today's maximum reached"}

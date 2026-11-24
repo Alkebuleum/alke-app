@@ -1,7 +1,7 @@
 /* Contributions warm cold ALKE. Each kind warms a percentage of your cold
  * balance per day, at its own weight; a verified invite weighs more than 3×
  * any other kind. Percentages scale with any balance (cALKE runs into the
- * millions). Mining sessions record participation but don't warm.
+ * millions). Drilling sessions record participation but don't warm.
  *
  * This table is the single place to tune the weights. The real calculation
  * belongs on the server; the app shows today's estimate from what it knows.

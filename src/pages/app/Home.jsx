@@ -7,7 +7,7 @@ import { useNotifications } from "../../lib/notifications";
 import { gameStatus } from "../../lib/games";
 import { EPISODES, mmss, watched } from "../../lib/episodes";
 import { Button, Notice } from "../../ui/ob";
-import { shortC, toC } from "../../lib/genesis";
+import { fmtAlke } from "../../lib/genesis";
 import { AppPage, Avatar, Ico, IconLink, Ring, Row, Section, Stat, alke, clock, useNow } from "../../ui/shell";
 
 function greeting(d = new Date()) {
@@ -36,7 +36,7 @@ export default function Home() {
     setError(null);
     try {
       await startSession(nuruId, member);
-      navigate("/mine");
+      navigate("/drill");
     } catch (e) {
       setError(e.message);
       setBusy(false);
@@ -63,16 +63,16 @@ export default function Home() {
         </header>
       }
     >
-      {/* Today's session */}
-      <section className="ob-hero vivid" aria-label="Today's session">
+      {/* Today's drill */}
+      <section className="ob-hero vivid" aria-label="Today's drill">
         <div className="top">
           <Ring size={60} fraction={running ? remaining / SESSION_MS : 0} active={running} color="#FFFFFF" track="rgba(255,255,255,.22)" mark="#FFFFFF" />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="lbl">{running ? "Session active" : "Today's session"}</div>
+            <div className="lbl">{running ? "Drilling now" : "Today's drill"}</div>
             <div className="big num">{running ? clock(remaining) : "Ready to start"}</div>
           </div>
           {running ? (
-            <Button kind="secondary" size="sm" to="/mine">
+            <Button kind="secondary" size="sm" to="/drill">
               View
             </Button>
           ) : (
@@ -86,7 +86,7 @@ export default function Home() {
             <Ico.Flame />
             {streak ? `${streak}-day streak` : "No streak yet"}
           </span>
-          <span className="ob-week" aria-label={`Last 7 days: ${days.filter((d) => d.done).length} with a session`}>
+          <span className="ob-week" aria-label={`Last 7 days: ${days.filter((d) => d.done).length} with a drill`}>
             {days.map((d) => (
               <span key={d.date.toDateString()}>
                 <i className={[d.done && "on", d.today && "today"].filter(Boolean).join(" ")}>{d.done ? <Ico.Check size={11} /> : null}</i>
@@ -99,8 +99,8 @@ export default function Home() {
       {error ? <Notice kind="error">{error}</Notice> : null}
 
       <div className="ob-stats">
-        <Stat to="/mine/allocation" label="Cold" icon={<Ico.Lock size={13} />} value={shortC(toC(allocation?.locked))} unit="cALKE" />
-        <Stat to="/mine/history" label="Sessions" value={member?.sessionCount || 0} />
+        <Stat to="/drill/allocation" label="Cold" icon={<Ico.Lock size={13} />} value={fmtAlke(allocation?.locked, 2)} unit="ALKE" />
+        <Stat to="/drill/history" label="Drills" value={member?.sessionCount || 0} />
         <Stat to="/games" label="Game XP" value={games.total} />
       </div>
 

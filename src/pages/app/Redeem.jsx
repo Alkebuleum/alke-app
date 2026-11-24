@@ -24,13 +24,13 @@ function Step({ n, title, children }) {
 export default function Redeem() {
   const verification = useVerification();
   return (
-    <AppPage tab="mine" bar={<SubBar title="How to redeem ALKE" back="/mine" />}>
+    <AppPage tab="drill" bar={<SubBar title="How to redeem ALKE" back="/drill" />}>
       <p className="ob-sub" style={{ margin: "0 4px" }}>
         From your daily session to ALKE in Nuru, in five steps. The ALKE app never holds crypto.
       </p>
 
       <ol className="ob-guide">
-        <Step n="1" title="Mine cold ALKE">
+        <Step n="1" title="Drill cold ALKE">
           <p>
             Start a session each day. Everyone with a verified session shares that day's pool, up to a per-member maximum. Your share arrives as <b>cALKE</b> (cold
             ALKE): locked, not transferable.
@@ -83,7 +83,7 @@ export default function Redeem() {
             <b>Example:</b> with {EX.invites} verified invites plus full games and lessons, you warm {pct(exRate)} a day and your cALKE is fully warm in about{" "}
             {Math.ceil(100 / exRate)} days. With no invites, about {Math.ceil(100 / EX.other)} days.
           </p>
-          <p className="note">An invite becomes active once the person you invited has completed 3 sessions. Practice runs and mining sessions warm nothing.</p>
+          <p className="note">An invite becomes active once the person you invited has completed 3 sessions. Practice runs and drilling sessions warm nothing.</p>
         </Step>
 
         <Step n="3" title="Verify you're one real person">
@@ -116,7 +116,7 @@ export default function Redeem() {
 
       <ul className="ob-list">
         <li>
-          <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Your allocation" sub="Pending, verified and locked" />
+          <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Your allocation" sub="Pending, verified and locked" />
         </li>
         <li>
           <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Your biggest contribution" />

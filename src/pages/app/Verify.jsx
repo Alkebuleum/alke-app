@@ -146,7 +146,7 @@ export default function Verify() {
   if (status === "verified")
     return <Message title="You're verified" sub="One person, one account: your personhood check is done. You can claim in Nuru when claiming opens." footer={back} />;
   if (status === "review")
-    return <Message title="In review" sub="The ALKE team is reviewing your documents, usually within a few days. We'll notify you. Your sessions keep counting meanwhile." footer={back} />;
+    return <Message title="In review" sub="The ALKE team is reviewing your documents, usually within a few days. We'll notify you. Your drills keep counting meanwhile." footer={back} />;
   if (status === "processing" || (status === "pending" && new URLSearchParams(window.location.search).get("back")))
     return <Message title="Checking your ID" sub="Stripe is checking your documents. This usually takes a few minutes; we'll notify you when it's done." footer={back} />;
 
@@ -154,7 +154,7 @@ export default function Verify() {
     return (
       <Message
         title="Personhood checks open soon"
-        sub="One person, one account. ID checks aren't open yet; we'll notify you when they are. Your sessions and cALKE keep counting meanwhile, and nothing is lost by waiting."
+        sub="One person, one account. ID checks aren't open yet; we'll notify you when they are. Your drills and ALKE keep counting meanwhile, and nothing is lost by waiting."
         footer={back}
       />
     );
@@ -194,7 +194,7 @@ export default function Verify() {
       ? ["Verification wasn't approved", v.reason || "Your check couldn't be approved. You can try again."]
       : status === "needs_input"
         ? ["Let's try that again", "Stripe couldn't finish the check (often a blurry photo or glare). Start again when you're ready."]
-        : ["Personhood check", "One person, one account. Verify once to claim your ALKE in Nuru when claiming opens. Your sessions keep counting meanwhile."];
+        : ["Personhood check", "One person, one account. Verify once to claim your ALKE in Nuru when claiming opens. Your drills keep counting meanwhile."];
 
   return (
     <Shell

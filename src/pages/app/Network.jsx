@@ -96,7 +96,7 @@ export default function Network() {
 
       <ul className="ob-list">
         <li>
-          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Mining, warming and converting, step by step" />
+          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Drilling, warming and converting, step by step" />
         </li>
       </ul>
     </AppPage>

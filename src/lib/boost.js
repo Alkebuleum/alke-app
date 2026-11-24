@@ -1,4 +1,4 @@
-/* Tap boost: a 25-tap combo while mining earns one boost for today (UTC).
+/* Tap boost: a 25-tap combo while drilling earns one boost for today (UTC).
  * The server (alkeBoost, functions/core.js recordBoost) checks and counts
  * it, capped per day, and writes alke_members/{id}/allocation/boost
  * { day, count }; settlement multiplies that day's share by tapBoost(count). */

@@ -103,7 +103,7 @@ export async function sendSessionReminders(db, now = Date.now(), windowMs = 15 *
       kind: "session",
       title: "Your next session is ready",
       body: `Tap to start it and keep your ${d.get("streak") || 1}-day streak going.`,
-      link: "/mine",
+      link: "/drill",
     });
     sent++;
   }

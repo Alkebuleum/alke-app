@@ -1,8 +1,8 @@
-import { approxAlke, fmtC } from "../../lib/genesis";
+import { fmtAlke, toAlke } from "../../lib/genesis";
 import { inviteLink } from "../../lib/member";
 
 /* A 1080×1350 share image: name, streak, cALKE (with the ALKE equivalent)
-   and the invite link. makeShareCard draws it; ShareSheet (Mine) previews
+   and the invite link. makeShareCard draws it; ShareSheet (Drill) previews
    it and shares from a fresh tap, because phones refuse the share sheet
    after the async drawing. Real figures only. */
 
@@ -65,21 +65,21 @@ export async function makeShareCard({ name, streak, balanceC, todayC, nuruId }) 
   if (streak) {
     ctx.font = font(700, 40);
     ctx.fillStyle = "#F5C451";
-    ctx.fillText(`🔥 ${streak}-day mining streak`, 80, 425);
+    ctx.fillText(`🔥 ${streak}-day drilling streak`, 80, 425);
   }
 
   // The number
   const big = Math.max(balanceC || 0, 0);
   ctx.fillStyle = "#FFFFFF";
-  ctx.font = font(800, big >= 1e8 ? 110 : 132);
-  ctx.fillText(fmtC(big), 80, 640);
+  ctx.font = font(800, big >= 1e8 ? 104 : 120);
+  ctx.fillText(fmtAlke(toAlke(big)), 80, 640);
   ctx.font = font(600, 48);
   ctx.fillStyle = "#E4DCFF";
-  ctx.fillText(`cALKE · ${approxAlke(big)}`, 80, 715);
+  ctx.fillText("ALKE Rewards · provisional", 80, 715);
   if (todayC > 0) {
     ctx.font = font(600, 40);
     ctx.fillStyle = "#34D399";
-    ctx.fillText(`+${fmtC(todayC)} mining today (est.)`, 80, 790);
+    ctx.fillText(`+${fmtAlke(toAlke(todayC))} ALKE drilled today (est.)`, 80, 790);
   }
 
   // Invite
@@ -95,7 +95,7 @@ export async function makeShareCard({ name, streak, balanceC, todayC, nuruId }) 
 
   ctx.font = font(400, 26);
   ctx.fillStyle = "rgba(255,255,255,.55)";
-  ctx.fillText("cALKE is cold ALKE: locked until warmed and released. Estimates until verified.", 80, 1250);
+  ctx.fillText("ALKE Rewards are provisional: locked until warmed and released. Estimates until verified.", 80, 1250);
 
   const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
   if (!blob) throw new Error("Couldn't draw the card on this device.");

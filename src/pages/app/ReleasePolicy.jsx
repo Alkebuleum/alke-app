@@ -10,14 +10,14 @@ const SECTIONS = [
   [
     "What you hold in ALKE",
     [
-      "Your mining and contributions are recorded as cALKE (cold ALKE). cALKE is a record inside this app: it isn't a cryptocurrency, it can't be sold, sent or exchanged, and it has no cash value.",
+      "Your drilling and contributions are recorded as cALKE (cold ALKE). cALKE is a record inside this app: it isn't a cryptocurrency, it can't be sold, sent or exchanged, and it has no cash value.",
       "The ALKE app never holds or sends crypto and never asks for a wallet.",
     ],
   ],
   [
     "Warming",
     [
-      "Contributions warm a share of your cALKE each day: active invites, game XP up to a daily cap and, later, lessons and discussions. Mining sessions record participation but don't warm.",
+      "Contributions warm a share of your cALKE each day: active invites, game XP up to a daily cap and, later, lessons and discussions. Drilling sessions record participation but don't warm.",
       "Only warm cALKE can be claimed. Cold cALKE stays cold until it's warmed.",
     ],
   ],
@@ -54,7 +54,7 @@ const SECTIONS = [
 
 export default function ReleasePolicy() {
   return (
-    <AppPage tab="mine" bar={<SubBar title="Release policy" back="/how-to-redeem" />}>
+    <AppPage tab="drill" bar={<SubBar title="Release policy" back="/how-to-redeem" />}>
       <div style={{ margin: "0 4px" }}>
         <span className="ob-pill">{POLICY.final ? "Published" : "Draft"}</span>
         <p className="ob-sub" style={{ marginTop: 10 }}>

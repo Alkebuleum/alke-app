@@ -28,7 +28,7 @@ const HowItWorks = lazy(() => import("./pages/onboarding/HowItWorks"));
 
 // Member screens (from the design; wired to live data next).
 const Home = lazy(() => import("./pages/app/Home"));
-const Mine = lazy(() => import("./pages/app/Mine"));
+const Drill = lazy(() => import("./pages/app/Drill"));
 const Allocation = lazy(() => import("./pages/app/Allocation"));
 const History = lazy(() => import("./pages/app/History"));
 const GamesHub = lazy(() => import("./pages/app/Games"));
@@ -187,10 +187,16 @@ const ROUTES = [
   ["/story", step("story", <Story />)],
   ["/account-problem", step("error", <AccountProblem />)],
   ["/home", member(<Home />)],
-  ["/mine", member(<Mine />)],
-  ["/mine/session", member(<Mine />)],
-  ["/mine/allocation", member(<Allocation />)],
-  ["/mine/history", member(<History />)],
+  ["/drill", member(<Drill />)],
+  ["/drill/session", member(<Drill />)],
+  ["/drill/allocation", member(<Allocation />)],
+  ["/drill/history", member(<History />)],
+  // Old links (notifications, bookmarks) from before drilling.
+  ["/mine", <Navigate to="/drill" replace />],
+  ["/mine/session", <Navigate to="/drill/session" replace />],
+  ["/mine/allocation", <Navigate to="/drill/allocation" replace />],
+  ["/mine/history", <Navigate to="/drill/history" replace />],
+  ["/mine/live", <Navigate to="/drill/live" replace />],
   ["/games", member(<GamesHub />)],
   ["/games/hex", member(<Boards><HexHub /></Boards>)],
   ["/games/hex/play", member(<Boards><HexPlay /></Boards>)],
@@ -205,7 +211,7 @@ const ROUTES = [
   ["/how-to-redeem", member(<Redeem />)],
   ["/release-policy", member(<ReleasePolicy />)],
   ["/episodes", member(<StoryEpisodes />)],
-  ["/mine/live", member(<Live />)],
+  ["/drill/live", member(<Live />)],
   ["/profile", member(<Profile />)],
   ["/profile/edit", member(<ProfileEdit />)],
   ["/settings/delete", member(<DeleteAccount />)],

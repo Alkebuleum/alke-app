@@ -7,7 +7,7 @@ import { MIN_AGE, PRIVACY_URL, TERMS_URL } from "../../lib/signup";
 /* Shown in Settings → Participation rules. */
 export const RULES = [
   ["One person, one account", "Duplicate, shared or automated accounts are removed and their records voided."],
-  ["A session records participation", "It's app participation, not proof-of-work mining, and nothing runs in the background."],
+  ["A session records participation", "It's app participation: your phone does no computing, and nothing runs in the background."],
   ["Rewards are provisional", "Participation rewards are provisional. They are not currently transferable or redeemable blockchain coins."],
   ["Claims open at mainnet", "Eligible rewards are intended to become claimable when the post-quantum mainnet launches, under rules published first. No price or exchange listing is promised."],
   ["Rewards depend on where you live", "Where rewards are off, sessions, the community and games still work."],

@@ -5,7 +5,7 @@
  *   alke_members/{id}/allocation/summary   { locked, warmed, warmRate, lastXp, updatedAt }
  *   alke_members/{id}/allocation/invites   { joined, active }
  *   alke_network/genesis                   { distributed: {phase: ALKE}, members }
- *   alke_network/live                      what the Mine screen shows
+ *   alke_network/live                      what the Drill screen shows
  *   alke_settlements/{day}                 one per settled day (idempotency)
  *
  * Amounts are ALKE (the app shows cALKE = ALKE × 1,000,000).
@@ -202,7 +202,7 @@ export async function warmDay(db, day) {
   return { day, members: ids.length, warmedMembers };
 }
 
-/* ── Live figures for the Mine screen ─────────────────────────────────── */
+/* ── Live figures for the Drill screen ────────────────────────────────── */
 
 export async function updateLive(db, now = Date.now()) {
   const gen = (await db.doc("alke_network/genesis").get()).data() || {};

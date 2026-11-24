@@ -34,7 +34,7 @@ export const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
 /** Round to whole cALKE (6 decimals of ALKE). */
 export const roundAlke = (v) => Math.floor(v * C_PER_ALKE) / C_PER_ALKE;
 
-/* Tap boost: every TAP_BOOST.combo-tap combo on the mining core while a
+/* Tap boost: every TAP_BOOST.combo-tap combo on the drilling rig while a
    session runs is one boost; each adds `step` to that UTC day's share
    weight, up to `perDay` boosts (1 + 0.2 × 10 = ×3). Keep in step with the
    app's src/lib/genesis.js. */

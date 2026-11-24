@@ -14,7 +14,7 @@ import HowItWorks from "../pages/onboarding/HowItWorks";
 import Splash from "../pages/onboarding/Splash";
 import { Loading } from "../ui/kit";
 import Home from "../pages/app/Home";
-import Mine from "../pages/app/Mine";
+import Drill from "../pages/app/Drill";
 import Allocation from "../pages/app/Allocation";
 import History from "../pages/app/History";
 import Games from "../pages/app/Games";
@@ -55,7 +55,7 @@ const SCREENS = {
   loading: Loading,
   home: Home,
   episodes: StoryEpisodes,
-  mine: Mine,
+  drill: Drill,
   allocation: Allocation,
   history: History,
   games: Games,
@@ -64,7 +64,7 @@ const SCREENS = {
   notifications: Notifications,
   settings: Settings,
   warming: () => (
-    <AppPage tab="mine" bar={<SubBar title="Allocation" back="/mine" />}>
+    <AppPage tab="drill" bar={<SubBar title="Allocation" back="/drill" />}>
       <WarmingSection cold={120} />
     </AppPage>
   ),
@@ -83,17 +83,17 @@ const SCREENS = {
   },
   redeem: Redeem,
   live: Live,
-  // Mine, with a burst of taps on the core shortly before the screenshot.
+  // Drill, with a burst of taps on the rock shortly before the screenshot.
   tap: () => {
     setTimeout(() => {
-      const el = document.querySelector(".ob-core.on");
+      const el = document.querySelector(".ob-drill-scene.on .hit");
       if (!el) return;
       const b = el.getBoundingClientRect();
       for (let i = 0; i < 7; i++) {
         setTimeout(() => el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: b.left + b.width * (0.4 + Math.random() * 0.2), clientY: b.top + b.height * (0.45 + Math.random() * 0.15) })), i * 90);
       }
     }, 4300);
-    return <Mine />;
+    return <Drill />;
   },
   hexhub: HexHub,
   hexplay: HexPlay,
@@ -108,6 +108,8 @@ const SCREENS = {
 };
 
 const noop = async () => {};
+// The stand-in session started at a fixed moment, so its clock runs.
+const T0 = Date.now();
 
 export default function Preview() {
   const { name } = useParams();
@@ -122,8 +124,8 @@ export default function Preview() {
     user: { email: "amara.mensah@example.com", displayName: "Amara Mensah" },
     person: { name: "Amara Mensah", emojiColor: 0 },
     member: started
-      ? { username: "amara", onboardedAt: new Date(), sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => Date.now() - 3600e3, toDate: () => new Date(Date.now() - 3600e3) } }
-      : name === "first" ? { username: "amara", alkerId: "ALK-9886-9849-8498" } : name === "account" ? null : { username: "amara", alkerId: "ALK-9886-9849-8498", sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => Date.now() - 30 * 3600e3, toDate: () => new Date(Date.now() - 30 * 3600e3) } },
+      ? { username: "amara", onboardedAt: new Date(), sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => T0 - 3600e3, toDate: () => new Date(T0 - 3600e3) } }
+      : name === "first" ? { username: "amara", alkerId: "ALK-9886-9849-8498" } : name === "account" ? null : { username: "amara", alkerId: "ALK-9886-9849-8498", sessionCount: 12, streak: 5, bestStreak: 9, createdAt: { toDate: () => new Date(2026, 9, 2) }, lastSessionAt: { toMillis: () => T0 - 30 * 3600e3, toDate: () => new Date(T0 - 30 * 3600e3) } },
     firstName: "Amara",
     displayName: "Amara Mensah",
     initials: "AM",

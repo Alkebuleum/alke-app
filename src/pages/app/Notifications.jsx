@@ -57,7 +57,7 @@ export default function Notifications() {
             <Ico.Bell size={24} />
           </span>
           <b>You're all caught up</b>
-          <p>Session reminders, invites and verification updates show here.</p>
+          <p>Drill reminders, invites and verification updates show here.</p>
         </div>
       ) : null}
       {items?.length ? (

@@ -4,7 +4,7 @@ import { handleOf, liveStreak, tintHex } from "../../lib/member";
 import { gameStatus } from "../../lib/games";
 import { useMemberData } from "../../lib/useMemberData";
 import { AppBar, AppPage, Avatar, Ico, IconLink, Row, Section, Stat } from "../../ui/shell";
-import { shortC, toC } from "../../lib/genesis";
+import { fmtAlke } from "../../lib/genesis";
 
 export default function Profile() {
   const { member, person, displayName, initials } = useAuth();
@@ -24,7 +24,7 @@ export default function Profile() {
 
   // Earned from real records only.
   const badges = [
-    ["First session", sessions >= 1, <Ico.Hex key="i" />],
+    ["First drill", sessions >= 1, <Ico.Hex key="i" />],
     ["7-day streak", best >= 7, <Ico.Flame key="i" size={18} />],
     ["30-day streak", best >= 30, <Ico.Flame key="i" size={18} />],
     ["100 game XP", g.total >= 100, <Ico.Star key="i" />],
@@ -60,7 +60,7 @@ export default function Profile() {
 
       <div className="ob-stats">
         <Stat label="Streak" value={liveStreak(member)} unit="days" />
-        <Stat label="Sessions" value={sessions} />
+        <Stat label="Drills" value={sessions} />
         <Stat label="Game XP" value={g.total} />
       </div>
 
@@ -78,10 +78,10 @@ export default function Profile() {
       <Section title="Activity">
         <ul className="ob-list">
           <li>
-            <Row to="/mine/allocation" icon={<Ico.Wallet />} title="Allocation" end={<span className="num">{shortC(toC(allocation?.locked))} cALKE</span>} />
+            <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Allocation" end={<span className="num">{fmtAlke(allocation?.locked, 2)} ALKE</span>} />
           </li>
           <li>
-            <Row to="/mine/history" icon={<Ico.History />} title="History" end={<span className="num">{sessions} sessions</span>} />
+            <Row to="/drill/history" icon={<Ico.History />} title="History" end={<span className="num">{sessions} drills</span>} />
           </li>
           <li>
             <Row to="/games/hex" icon={<Ico.Hex />} tone="gold" title="ALKE Hex" end={<span className="num">{g.hexXp} XP</span>} />

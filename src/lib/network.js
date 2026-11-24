@@ -1,5 +1,5 @@
-/* Live network figures for the mining screen, published by the server at
- * alke_network/live: { members, miningNow, poolToday (ALKE),
+/* Live network figures for the drilling screen, published by the server at
+ * alke_network/live: { members, miningNow (members drilling now; the field keeps its old name), poolToday (ALKE),
  * estPerSession (ALKE), updatedAt }. Until the server writes it, this
  * returns null and the app shows the published Genesis figures instead of
  * made-up live numbers.
