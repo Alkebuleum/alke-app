@@ -30,11 +30,14 @@ import { db } from "./firebase";
 export const RULES_VERSION = 1;
 
 /* Invites: a member's invite code is their Nuru ID, so their link is
-   alke.network/join/<Nuru ID> (the same ID Nuru uses for referrals). The
-   website keeps the code and hands it to sign-up along with the email; older
-   app.alke.network/join/<code> links still work (JoinRoute in App.jsx).
-   The new member's record keeps it as invitedBy. */
-export const inviteLink = (nuruId) => `https://alke.network/join/${nuruId}`;
+   alke.network/join/?ref=<Nuru ID> (the same ID Nuru uses for referrals).
+   That's a real page on the website, so chat apps show a link preview
+   (GitHub Pages answers /join/<code> with a 404 and no preview). The
+   website keeps the code and hands it to sign-up along with the email;
+   older alke.network/join/<code> and app.alke.network/join/<code> links
+   still work (JoinRoute in App.jsx). The new member's record keeps it as
+   invitedBy. */
+export const inviteLink = (nuruId) => `https://alke.network/join/?ref=${encodeURIComponent(nuruId)}`;
 
 /** The display name behind an invite code, or null if no such member. */
 export async function inviterName(code) {

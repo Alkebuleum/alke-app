@@ -140,13 +140,13 @@ function SplashRoute() {
 }
 
 /** Older invite links: app.alke.network/join/CODE. On the web they continue
-    on alke.network/join/CODE (the welcome page), which hands the code back
+    on alke.network/join/?ref=CODE (the welcome page), which hands the code back
     with the email; in native apps and Nuru the code is kept here. */
 function JoinRoute() {
   const { code } = useParams();
   const toSite = usesSiteWelcome();
   useEffect(() => {
-    if (toSite) window.location.replace(`${SITE_URL}/join/${encodeURIComponent(normInvite(code))}`);
+    if (toSite) window.location.replace(`${SITE_URL}/join/?ref=${encodeURIComponent(normInvite(code))}`);
   }, [toSite, code]);
   if (toSite) return <Loading />;
   rememberInvite(code);
