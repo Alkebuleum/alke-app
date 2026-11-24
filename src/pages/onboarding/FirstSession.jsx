@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Gold, Mark, Onb, Orb, Problem, Switch } from "../../ui/onb";
+import { Gold, Onb, Problem, Switch } from "../../ui/onb";
 import { useAuth } from "../../auth/AuthProvider";
-import { SESSION_MS, finishOnboarding, sessionRemaining } from "../../lib/member";
+import { SESSION_MS, finishOnboarding } from "../../lib/member";
+import { fmtAlke } from "../../lib/genesis";
 import { enablePush, pushState, usePrefs } from "../../lib/notifications";
 import { hold } from "../../lib/signup";
-import { useMemberData } from "../../lib/useMemberData";
-
-const fmt = (n) => (Number(n) || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
-
-/** The member's ALKE balance (the locked total), under the main button. */
-function Balance({ value }) {
-  return (
-    <p className="onb-balance center" aria-live="polite">
-      Your balance <span className="onb-mono">{fmt(value)} ALKE</span>
-    </p>
-  );
-}
+import { DrillScene, RollingNumber, useDrilling } from "../app/drilling";
 
 const pad = (n) => String(n).padStart(2, "0");
 const clock = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
 };
-const C = 892.2; // 2πr for r = 142 in the 300 viewBox
 
 const Bell = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -32,29 +21,23 @@ const Bell = () => (
 );
 
 /* Step 5: start drilling. A person check, then drill 1 starts (a 24-hour
-   session, server time; members see it as drilling). Recording it
+   session, server time). Kept minimal for someone still onboarding: the rig
+   from the Drill tab, their ALKE climbing, and one next step. No tap game
+   yet; they meet veins and invites on the Drill tab. Recording the drill
    also finishes onboarding, which would move the router on, so this screen
-   holds until "Continue" (then the story, step 6). A reload keeps the state:
+   holds until "Next" (then the story, step 6). A reload keeps the state:
    it lives on the member record. */
 export default function FirstSession() {
   const { nuruId, member } = useAuth();
   const navigate = useNavigate();
+  const m = useDrilling();
   const [human, setHuman] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  const [now, setNow] = useState(Date.now());
+  const [flare, setFlare] = useState(0);
   const [prefs, setPref] = usePrefs();
-  const { allocation } = useMemberData({ allocation: true });
-  const balance = Number(allocation?.locked) || 0;
 
   const started = !!member?.onboardedAt && !!member?.lastSessionAt;
-  const remaining = sessionRemaining(member, now);
-
-  useEffect(() => {
-    if (!started) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [started]);
 
   const start = async () => {
     if (!human || busy) return;
@@ -63,7 +46,7 @@ export default function FirstSession() {
     hold("firstSession");
     try {
       await finishOnboarding(nuruId, member, { startSession: true });
-      setNow(Date.now());
+      setFlare(Date.now());
     } catch (e) {
       hold(null);
       setError(e.message || "Couldn't start drilling. Try again.");
@@ -82,51 +65,36 @@ export default function FirstSession() {
     navigate("/story", { replace: true });
   };
 
+  const scene = (
+    <div className="onb-drill">
+      <DrillScene
+        depth={m.depth}
+        sessionDepth={m.sessionDepth}
+        sessionTarget={m.sessionTarget}
+        fraction={m.fraction}
+        running={m.running}
+        level={m.level}
+        taps={false}
+        onIdleTap={() => (human ? start() : null)}
+        flare={flare}
+        height="clamp(210px, 32dvh, 280px)"
+      />
+    </div>
+  );
+
   if (started) {
     const opens = new Date((member.lastSessionAt?.toMillis?.() || Date.now()) + SESSION_MS);
     const at = opens.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     return (
-      <Onb
-        step={5}
-        label="Start drilling"
-        title="You're drilling ALKE."
-        sub={`This drill runs for 24 hours. Your next one opens tomorrow at ${at}.`}
-        footer={
-          <>
-            <Gold onClick={next}>Next: the ALKÉ story</Gold>
-            <Balance value={balance} />
-          </>
-        }
-      >
-        <div className="onb-timer" role="timer" aria-label={`Drill ends in ${clock(remaining)}`}>
-          <svg width="196" height="196" viewBox="0 0 300 300" aria-hidden="true">
-            <defs>
-              <linearGradient id="obArc" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#C6B6FF" />
-                <stop offset="1" stopColor="#5530E8" />
-              </linearGradient>
-            </defs>
-            <circle cx="150" cy="150" r="142" fill="none" stroke="rgba(255,255,255,.10)" strokeWidth="5" />
-            <circle cx="150" cy="150" r="142" fill="none" stroke="url(#obArc)" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${((remaining / SESSION_MS) * C).toFixed(1)} ${C}`} transform="rotate(-90 150 150)" />
-          </svg>
-          <div className="face">
-            <Mark size={28} color="#C6B6FF" />
-            <span className="clock">{clock(remaining)}</span>
-            <small>LEFT IN THIS DRILL</small>
-          </div>
-        </div>
+      <Onb step={5} label="Start drilling" title="You're drilling ALKE." sub={`Your rig drills for 24 hours. Your next drill opens tomorrow at ${at}.`} footer={<Gold onClick={next}>Next: the ALKÉ story</Gold>}>
+        {scene}
 
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-          <span className="onb-chip green">Drilling</span>
-          <span className="onb-chip gold">Pending verification</span>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 16px", borderRadius: 18, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.07)" }}>
-          <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <b style={{ fontSize: 15, fontWeight: 600 }}>Today's drill</b>
-            <small style={{ fontSize: 12.5, color: "#A9A6B6" }}>Added to your balance when today's drilling settles, just after midnight UTC</small>
+        <div className="onb-drill-total">
+          <span className="lbl">ALKE Rewards · provisional</span>
+          <RollingNumber value={m.rewardsAlke} size={38} label={`Your ALKE Rewards: ${fmtAlke(m.rewardsAlke)} ALKE`} />
+          <span className="sub" role="timer">
+            +{fmtAlke(m.todayAlke)} today (est.) · {clock(m.remaining)} left
           </span>
-          <span className="onb-chip plain">Pending</span>
         </div>
 
         <div className="onb-panel onb-list" style={{ padding: 0 }}>
@@ -152,17 +120,12 @@ export default function FirstSession() {
       title="Start drilling ALKE."
       sub="One tap starts 24 hours of drilling. The ALKE you drill is yours."
       footer={
-        <>
-          <Gold busy={busy} disabled={!human || busy} onClick={start}>
-            Start drilling
-          </Gold>
-          <Balance value={balance} />
-        </>
+        <Gold busy={busy} disabled={!human || busy} onClick={start}>
+          Start drilling
+        </Gold>
       }
     >
-      <div style={{ display: "flex", justifyContent: "center", padding: "6px 0 2px" }}>
-        <Orb size={176} />
-      </div>
+      {scene}
       <label className="onb-check" style={{ alignItems: "center", justifyContent: "center", color: human ? "#6EE7B7" : "#D8D5E2" }}>
         <input type="checkbox" checked={human} onChange={(e) => setHuman(e.target.checked)} style={{ width: 20, height: 20, accentColor: "#6EE7B7" }} />
         <span style={{ fontSize: 15, fontWeight: 600 }}>I'm a person, not a bot</span>

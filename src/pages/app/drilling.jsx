@@ -312,7 +312,7 @@ const m2 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFra
 /** The drilling scene: rig, bore and rock (drillScene.js), with tap-to-strike
     pressure on top. Tapping while idle starts a session. A change of [flare]
     replays a celebration (session start, milestones); of [veinKey], a vein strike. */
-export function DrillScene({ depth, sessionDepth = 0, sessionTarget = 0, fraction, running, level = 0, onIdleTap, onVein, locked = false, flare = 0, veinKey = 0, height = 300, children }) {
+export function DrillScene({ depth, sessionDepth = 0, sessionTarget = 0, fraction, running, level = 0, taps = true, onIdleTap, onVein, locked = false, flare = 0, veinKey = 0, height = 300, children }) {
   const cv = useRef(null);
   const scene = useRef(null);
   const depthEl = useRef(null);
@@ -376,6 +376,11 @@ export function DrillScene({ depth, sessionDepth = 0, sessionTarget = 0, fractio
   const tap = () => {
     if (!running) return onIdleTap?.();
     if (locked) return;
+    if (!taps) {
+      // Onboarding: taps just throw sparks; no pressure game yet.
+      scene.current?.strike(false);
+      return buzz(6);
+    }
     const s = st.current;
     const now = performance.now();
     const gap = s.last ? now - s.last : 0;
@@ -401,7 +406,7 @@ export function DrillScene({ depth, sessionDepth = 0, sessionTarget = 0, fractio
   return (
     <div className={`ob-drill-scene${running ? " on" : ""}${pressure > 0.75 ? " charged" : ""}`} style={{ height }}>
       <canvas ref={cv} aria-hidden="true" />
-      <button type="button" className="hit" onPointerDown={tap} aria-label={running ? `Strike the rock. Pressure ${pct}%` : "Start drilling"} />
+      <button type="button" className="hit" onPointerDown={tap} aria-label={running ? (taps ? `Strike the rock. Pressure ${pct}%` : "Strike the rock") : "Start drilling"} />
       <span className="ob-drill-badge" data-s={running ? "drilling" : "ready"}>
         <i />
         {running ? "Drilling" : "Ready"}
@@ -418,7 +423,7 @@ export function DrillScene({ depth, sessionDepth = 0, sessionTarget = 0, fractio
           </span>
         ) : null}
       </div>
-      {running ? (
+      {running && taps ? (
         <span className={`ob-drill-pressure${pct ? " live" : ""}`} aria-hidden="true">
           <span className="track">
             <span style={{ height: `${pct}%` }} />
