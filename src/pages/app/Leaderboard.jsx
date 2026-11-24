@@ -30,8 +30,6 @@ function readHex() {
   }
 }
 
-const MEDAL = ["var(--gold)", "#D4D4D8", "#E0A577"];
-
 export default function Leaderboard({ game = "hex", boards, memberId, demoNames }) {
   const { displayName } = useAuth();
   const [tab, setTab] = useState("today");
@@ -87,10 +85,34 @@ export default function Leaderboard({ game = "hex", boards, memberId, demoNames 
 
   const chal = rush.day === today && rush.chal ? rush.chal : { best: 0, done: false, block: false };
 
+  const me = myIdx >= 0 ? rows[myIdx] : null;
+  const podium = shown.slice(0, 3);
+  const rest = shown.slice(3);
+  const theme = isHex ? "gold" : "cyan";
+
   return (
     <AppPage tab="games" bar={<SubBar title={isHex ? "Hex leaderboards" : "Rush boards"} back={isHex ? "/games/hex" : "/games/rush"} />}>
+      <section className={`ob-lb-hero ${theme}`} aria-label="Your rank">
+        <span className="lbl">{isHex ? "ALKE Hex" : "ALKE Rush"} · {tab === "today" ? "today" : "all time"}</span>
+        {me ? (
+          <b className="num">
+            #{myIdx + 1}
+            <small>
+              {" "}
+              · {me.v.toLocaleString("en-US")} XP
+            </small>
+          </b>
+        ) : (
+          <b className="none">Not ranked yet</b>
+        )}
+        <span className="sub num">
+          {isHex ? (tab === "today" ? "Today's daily board · same board for everyone" : "Total Hex game XP") : tab === "today" ? "Best single banked run today" : "Total Rush game XP"}
+          {tab === "today" ? ` · resets in ${clock(g.resetMs)}` : ""}
+        </span>
+      </section>
+
       {!isHex ? (
-        <Section title="Daily challenges" action={<span className="num">Resets in {clock(g.resetMs)}</span>}>
+        <Section title="Daily challenges">
           <ul className="ob-list">
             <li>
               <Row
@@ -109,7 +131,7 @@ export default function Leaderboard({ game = "hex", boards, memberId, demoNames 
         </Section>
       ) : null}
 
-      <div className="ob-seg" role="tablist">
+      <div className={`ob-seg pill ${theme}`} role="tablist">
         {[
           ["today", "Today"],
           ["all", "All time"],
@@ -120,14 +142,10 @@ export default function Leaderboard({ game = "hex", boards, memberId, demoNames 
         ))}
       </div>
 
-      <p className="ob-small" style={{ padding: "0 4px", marginTop: -6 }}>
-        {isHex ? (tab === "today" ? "Today's daily board · same board for everyone" : "Total Hex game XP") : tab === "today" ? "Best single banked run today" : "Total Rush game XP"}
-      </p>
-
       {!boards ? (
         <p className="ob-small center">Loading…</p>
       ) : !rows.length ? (
-        <div className="ob-empty">
+        <div className="ob-empty ob-lb-empty">
           <span className="ob-tile" style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
             <Ico.Trophy size={24} />
           </span>
@@ -135,18 +153,41 @@ export default function Leaderboard({ game = "hex", boards, memberId, demoNames 
           <p>{tab === "today" ? "Be the first on today's board." : "Win a round to get on the board."}</p>
         </div>
       ) : (
-        <ul className="ob-list">
-          {shown.map((r, i) => (
-            <LbRow key={r.id + i} r={r} rank={i + 1} />
-          ))}
-          {meOutside ? <LbRow r={rows[myIdx]} rank={myIdx + 1} /> : null}
-        </ul>
+        <>
+          <ol className="ob-podium" aria-label="Top three">
+            {[1, 0, 2].map((i) =>
+              podium[i] ? (
+                <li key={i} className={`p${i + 1}${podium[i].me ? " me" : ""}`}>
+                  <span className="ob-avatar" style={{ background: personLook(podium[i].name).grad }}>
+                    {personLook(podium[i].name).ini}
+                    <i className="medal num">{i + 1}</i>
+                  </span>
+                  <b>{podium[i].me ? "You" : podium[i].name}</b>
+                  <span className="num">{podium[i].v.toLocaleString("en-US")} XP</span>
+                  <span className="step" aria-hidden="true" />
+                </li>
+              ) : (
+                <li key={i} className={`p${i + 1} empty`} aria-hidden="true">
+                  <span className="step" />
+                </li>
+              ),
+            )}
+          </ol>
+          {rest.length || meOutside ? (
+            <ul className="ob-list">
+              {rest.map((r, i) => (
+                <LbRow key={r.id + i} r={r} rank={i + 4} />
+              ))}
+              {meOutside ? <LbRow r={rows[myIdx]} rank={myIdx + 1} /> : null}
+            </ul>
+          ) : null}
+        </>
       )}
 
       {boards && myIdx < 0 ? (
         <ul className="ob-list">
           <li>
-            <Row to={isHex ? "/games/hex/play" : "/games/rush/play"} icon={<Ico.Play />} title="You're not ranked yet" sub={isHex ? "Win today's board to rank" : "Bank a scored run to rank"} />
+            <Row to={isHex ? "/games/hex/play" : "/games/rush/play"} icon={<Ico.Play />} tone={theme} title="You're not ranked yet" sub={isHex ? "Win today's board to rank" : "Bank a scored run to rank"} />
           </li>
         </ul>
       ) : null}
@@ -159,11 +200,9 @@ export default function Leaderboard({ game = "hex", boards, memberId, demoNames 
 function LbRow({ r, rank }) {
   const look = personLook(r.name);
   return (
-    <li style={r.me ? { background: "rgba(124,92,255,.08)" } : undefined}>
+    <li className={r.me ? "ob-lb-me" : undefined}>
       <div className="ob-row static">
-        <span className="num" style={{ width: 22, textAlign: "center", fontSize: 14, fontWeight: 700, color: MEDAL[rank - 1] || "var(--text-3)" }}>
-          {rank}
-        </span>
+        <span className="ob-lb-rank num">{rank}</span>
         <span className="ob-avatar" style={{ width: 34, height: 34, fontSize: 12, background: look.grad }}>
           {look.ini}
         </span>
@@ -172,7 +211,7 @@ function LbRow({ r, rank }) {
           {r.meta ? <span>{r.meta}</span> : null}
         </span>
         <span className="end">
-          <b className="num">{r.v.toLocaleString()}</b> XP
+          <b className="num">{r.v.toLocaleString("en-US")}</b> XP
         </span>
       </div>
     </li>
