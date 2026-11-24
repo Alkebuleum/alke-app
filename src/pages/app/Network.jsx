@@ -1,104 +1,89 @@
-import { useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
-import { inviteLink } from "../../lib/member";
-import { useMemberData } from "../../lib/useMemberData";
-import { Button } from "../../ui/ob";
-import { AppBar, AppPage, Ico, Row } from "../../ui/shell";
-import { copyText } from "../../lib/clipboard";
+import { FOUNDER_INVITES } from "../../lib/genesis";
+import { AppBar, AppPage, Ico, Row, Section, Stat } from "../../ui/shell";
+import { useDrilling } from "./drilling";
+import { FounderCard } from "./FounderCard";
+import { Lvl } from "./DrillDeeper";
+import { RIG, rigBoost, rigName } from "./drillScene";
 
-/* Community chat + your invite link. The invite code is your Nuru ID; who
-   joined with it is recorded (invitedBy) and counted once the server side
-   is in place. */
+/* Your network: invite friends (Founder progress and the share buttons),
+   what your invites have done for your rig, how invites work, and the
+   community chat. The invite code is your Nuru ID; the server counts who
+   joined with it and who is active (3 drills). */
 export default function Network() {
   const { nuruId } = useAuth();
-  const { invites } = useMemberData({ invites: true });
-  const [copied, setCopied] = useState(false);
-  const link = nuruId ? inviteLink(nuruId) : "";
-  const shown = link.replace(/^https:\/\//, "");
-
-  const copy = async () => {
-    setCopied((await copyText(link)) ? "Copied" : "Hold to copy");
-    setTimeout(() => setCopied(false), 1800);
-  };
-  const canShare = typeof navigator !== "undefined" && !!navigator.share;
-  const share = async () => {
-    try {
-      await navigator.share({ title: "Join me on ALKE", text: "Join me on ALKE with my invite:", url: link });
-    } catch (e) {
-      if (e?.name !== "AbortError") copy();
-    }
-  };
+  const m = useDrilling();
+  const phase = `Phase ${m.phase.n} · ${m.phase.name}`;
+  const top = m.level >= RIG.max;
+  const toNext = top ? 0 : (m.level + 1) * RIG.perLevel - m.activeInvites;
 
   return (
     <AppPage tab="network" bar={<AppBar title="Network" />}>
-      <ul className="ob-list">
-        <li>
-          <Row
-            to="/chat"
-            icon={<Ico.Users />}
-            tone="green"
-            title="Alkers community chat"
-            sub="Shared with the Nuru app"
-            end={
-              <span className="ob-pill green">
-                <span className="d" />
-                Live
-              </span>
-            }
-          />
-        </li>
-      </ul>
+      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} more={false} />
 
-      <section className="ob-hero" aria-label="Invite friends">
-        <div className="top">
-          <span className="ob-tile" style={{ width: 48, height: 48, borderRadius: 14 }}>
-            <Ico.Link size={22} />
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="big" style={{ fontSize: 18 }}>
-              Invite friends
-            </div>
-            <div className="lbl">Each active invite warms 1% of your cold ALKE a day</div>
-          </div>
-        </div>
+      <div className="ob-stats">
+        <Stat label="Joined" value={m.joinedInvites} />
+        <Stat label="Active" value={m.activeInvites} />
+        <Stat label="Rig" value={`×${m.rig.toFixed(2)}`} unit={m.level ? `L${m.level}` : "starter"} />
+      </div>
 
-        <div className="ob-stats two" style={{ gap: 8 }}>
-          <div className="ob-stat" style={{ background: "rgba(0,0,0,.25)" }}>
-            <span className="l">Joined with your link</span>
-            <span className="v">{invites?.joined || 0}</span>
-          </div>
-          <div className="ob-stat" style={{ background: "rgba(0,0,0,.25)" }}>
-            <span className="l">Active (warming)</span>
-            <span className="v">{invites?.active || 0}</span>
-          </div>
-        </div>
+      <Section title="Your rig">
+        <ul className="ob-list">
+          <li>
+            <Row
+              to="/drill"
+              icon={<Lvl n={m.level} size={30} />}
+              tone="plain"
+              title={`${rigName(m.level)} · ×${m.rig.toFixed(2)} daily ALKE share`}
+              sub={top ? "Top level: your rig is at its biggest" : `${toNext} more active friend${toNext === 1 ? "" : "s"} to Level ${m.level + 1} (×${rigBoost(m.level + 1).toFixed(2)})`}
+            />
+          </li>
+        </ul>
+      </Section>
 
-        <div className="ob-invite">
-          <span className="num" title={link}>
-            {shown}
-          </span>
-          <button type="button" className="ob-invite-copy" onClick={copy} aria-label="Copy invite link">
-            {copied || "Copy"}
-          </button>
-        </div>
+      <Section title="How invites work">
+        <ol className="ob-how">
+          <li>
+            <b>Share your link.</b> Your friend signs up with it, free.
+          </li>
+          <li>
+            <b>They drill 3 times.</b> Then they count as an active invite.
+          </li>
+          <li>
+            <b>Your rig grows.</b> Every {RIG.perLevel} active invites add a level: +{Math.round(RIG.step * 100)}% to your daily ALKE share, up to ×{rigBoost(RIG.max)} at Level {RIG.max}. It's a bigger share of the same daily pool, like a streak.
+          </li>
+          <li>
+            <b>Your ALKE warms.</b> Each active invite warms 1% of your cold ALKE a day.
+          </li>
+          <li>
+            <b>Become a Founder</b> with {FOUNDER_INVITES} active invites: a Founder badge on your profile.
+          </li>
+        </ol>
+        <p className="ob-small">Only friends you invite directly count. Fake or duplicate accounts break the Participation Rules.</p>
+      </Section>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {canShare ? (
-            <Button size="sm" onClick={share} style={{ flex: 1 }}>
-              Share invite
-            </Button>
-          ) : null}
-          <span className="ob-small" style={{ flex: canShare ? "none" : 1 }}>
-            Your code: <b className="num" style={{ color: "var(--text)" }}>{nuruId}</b>
-          </span>
-        </div>
-      </section>
-
-      <ul className="ob-list">
-        <li>
-          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Drilling, warming and converting, step by step" />
-        </li>
-      </ul>
+      <Section title="Community">
+        <ul className="ob-list">
+          <li>
+            <Row
+              to="/chat"
+              icon={<Ico.Users />}
+              tone="green"
+              title="Alkers community chat"
+              sub="Shared with the Nuru app"
+              end={
+                <span className="ob-pill green">
+                  <span className="d" />
+                  Live
+                </span>
+              }
+            />
+          </li>
+          <li>
+            <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Drilling, warming and converting, step by step" />
+          </li>
+        </ul>
+      </Section>
     </AppPage>
   );
 }

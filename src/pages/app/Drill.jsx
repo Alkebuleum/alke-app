@@ -66,6 +66,7 @@ export default function Drill() {
   const info = [`Phase ${m.phase.n} · ${m.phase.name}`];
   if (m.streak) info.push(`${m.streak}-day streak`);
   if (m.boost > 1) info.push(`×${m.boost.toFixed(2)} streak boost`);
+  if (m.rig > 1) info.push(`×${m.rig.toFixed(2)} rig boost`);
   if (m.running) info.push(`${m.tapCount}/${m.tapMax} veins`);
 
   return (

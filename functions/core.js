@@ -11,7 +11,7 @@
  * Amounts are ALKE (the app shows cALKE = ALKE × 1,000,000).
  */
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { ACTIVE_AFTER, SESSION_MS, TAP_BOOST, WARMING, currentPhase, dayKey, roundAlke, streakBoost, tapBoost } from "./genesis.js";
+import { ACTIVE_AFTER, SESSION_MS, TAP_BOOST, WARMING, currentPhase, dayKey, rigBoost, rigLevel, roundAlke, streakBoost, tapBoost } from "./genesis.js";
 
 const ms = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : Number(t) || 0);
 const summaryRef = (db, id) => db.doc(`alke_members/${id}/allocation/summary`);
@@ -98,7 +98,7 @@ export async function memberUpdated(db, nuruId, before, after) {
 
 /* ── Daily settlement: split the day's pool, then warm ────────────────── */
 
-/** Each row's share of [pool]: by streak weight, capped at maxPerMember × weight. */
+/** Each row's share of [pool]: by weight (streak × taps × rig), capped at maxPerMember × weight. */
 export function shares(pool, rows, maxPerMember) {
   const W = rows.reduce((t, r) => t + r.w, 0);
   if (!W || !pool) return rows.map(() => 0);
@@ -117,10 +117,17 @@ export async function settleDay(db, day) {
 
   const sessions = await allDocs(db.collection(`alke_days/${day}/sessions`));
   const boosts = Object.fromEntries((await allDocs(db.collection(`alke_days/${day}/boosts`))).map((d) => [d.id, d.data().count || 0]));
+  // Each driller's active invites set their rig level (read in batches).
+  const active = {};
+  for (let i = 0; i < sessions.length; i += 300) {
+    const snaps = await db.getAll(...sessions.slice(i, i + 300).map((d) => invitesRef(db, d.id)));
+    for (const s of snaps) active[s.ref.parent.parent.id] = Number(s.get("active")) || 0;
+  }
   const rows = sessions.map((d) => {
     const sb = streakBoost(d.data().streak || 1);
     const tb = tapBoost(boosts[d.id]);
-    return { id: d.id, ...d.data(), sb, tb, taps: Math.min(boosts[d.id] || 0, TAP_BOOST.perDay), w: Math.round(sb * tb * 1000) / 1000 };
+    const rb = rigBoost(active[d.id]);
+    return { id: d.id, ...d.data(), sb, tb, rb, rig: rigLevel(active[d.id]), taps: Math.min(boosts[d.id] || 0, TAP_BOOST.perDay), w: Math.round(sb * tb * rb * 1000) / 1000 };
   });
   const W = rows.reduce((a, r) => a + r.w, 0);
 
@@ -139,16 +146,17 @@ export async function settleDay(db, day) {
         {
           session: r.n,
           kind: "session",
-          label: `Session ${r.n}`,
+          label: `Drill ${r.n}`,
           amount: share,
           status: "locked",
           batch: day,
           breakdown: [
             { label: "Day's pool", value: `${pool.toLocaleString("en-US")} ALKE`, note: phase ? `Phase ${phase.n} · ${phase.name}` : "Genesis complete" },
-            { label: "Sessions that day", value: rows.length.toLocaleString("en-US") },
+            { label: "Drills that day", value: rows.length.toLocaleString("en-US") },
             { label: "Your streak boost", value: `×${r.sb}` },
-            { label: "Your tap boost", value: `×${r.tb}`, note: `${r.taps} of ${TAP_BOOST.perDay} boosts` },
-            { label: "Your share", value: `${Math.round(share * 1e6).toLocaleString("en-US")} cALKE`, note: phase ? `max ${(phase.maxPerMember * r.w * 1e6).toLocaleString("en-US")} cALKE` : "" },
+            { label: "Your tap boost", value: `×${r.tb}`, note: `${r.taps} of ${TAP_BOOST.perDay} veins` },
+            { label: "Your rig boost", value: `×${r.rb}`, note: r.rig ? `Level ${r.rig} rig` : "Starter rig" },
+            { label: "Your share", value: `${share.toFixed(6)} ALKE`, note: phase ? `max ${roundAlke(phase.maxPerMember * r.w).toFixed(6)} ALKE` : "" },
           ],
         },
         { merge: true },

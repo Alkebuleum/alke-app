@@ -5,9 +5,9 @@
 const base = import.meta.env.BASE_URL || "/";
 
 export const EPISODES = [
-  { id: "ep1", n: 1, title: "The ALKÉ Story", sub: "The Next Billion Network, Powered by Kedo", secs: 116, src: `${base}videos/alke-ep1.mp4` },
-  { id: "ep2", n: 2, title: "Your First Day on ALKÉ", secs: 79, src: `${base}videos/alke-ep2.mp4` },
-  { id: "ep3", n: 3, title: "How Deep Can You Drill?", secs: 89, src: `${base}videos/alke-ep3.mp4` },
+  { id: "ep1", n: 1, title: "The ALKÉ Story", sub: "The Next Billion Network, Powered by Kedo", secs: 116, src: `${base}videos/alke-ep1.mp4`, poster: `${base}videos/alke-ep1.jpg` },
+  { id: "ep2", n: 2, title: "Your First Day on ALKÉ", secs: 79, src: `${base}videos/alke-ep2.mp4`, poster: `${base}videos/alke-ep2.jpg` },
+  { id: "ep3", n: 3, title: "How Deep Can You Drill?", secs: 89, src: `${base}videos/alke-ep3.mp4`, poster: `${base}videos/alke-ep3.jpg` },
 ];
 
 export const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;

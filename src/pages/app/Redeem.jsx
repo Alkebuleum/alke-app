@@ -1,5 +1,6 @@
 import { CONTRIBUTIONS, pct } from "../../lib/contribution";
-import { C_PER_ALKE, GENESIS_POOL, PHASES, STREAK_BOOSTS, fmtC } from "../../lib/genesis";
+import { GENESIS_POOL, PHASES, STREAK_BOOSTS, TAP_BOOST, tapBoost } from "../../lib/genesis";
+import { RIG, rigBoost } from "./drillScene";
 import { AppPage, Ico, Row, SubBar } from "../../ui/shell";
 import { useVerification, verificationLabel } from "../../lib/verification";
 
@@ -26,16 +27,15 @@ export default function Redeem() {
   return (
     <AppPage tab="drill" bar={<SubBar title="How to redeem ALKE" back="/drill" />}>
       <p className="ob-sub" style={{ margin: "0 4px" }}>
-        From your daily session to ALKE in Nuru, in five steps. The ALKE app never holds crypto.
+        From your daily drill to ALKE in Nuru, in five steps. The ALKE app never holds crypto.
       </p>
 
       <ol className="ob-guide">
         <Step n="1" title="Drill cold ALKE">
           <p>
-            Start a session each day. Everyone with a verified session shares that day's pool, up to a per-member maximum. Your share arrives as <b>cALKE</b> (cold
-            ALKE): locked, not transferable.
+            Start a drill each day. Everyone with a verified drill shares that day's pool, up to a per-member maximum. Your share arrives as <b>cold ALKE</b>: locked,
+            not transferable.
           </p>
-          <div className="ob-formula">1 ALKE = {fmtC(C_PER_ALKE)} cALKE</div>
           <ul className="ob-list">
             {PHASES.map((p) => (
               <li key={p.n}>
@@ -48,21 +48,22 @@ export default function Redeem() {
                   </span>
                   <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 0 }}>
                     <b className="num">{p.daily.toLocaleString("en-US")} ALKE/day</b>
-                    <span style={{ fontSize: 12 }}>max {fmtC(p.maxPerMember * C_PER_ALKE)} cALKE each</span>
+                    <span style={{ fontSize: 12 }}>max {p.maxPerMember} ALKE each</span>
                   </span>
                 </div>
               </li>
             ))}
           </ul>
           <p>
-            Streaks earn a bigger share of the same pool: {STREAK_BOOSTS.slice().reverse().map((b) => `×${b.boost} at ${b.days} days`).join(", ")}. The Genesis Program
-            shares {GENESIS_POOL.toLocaleString("en-US")} ALKE in total.
+            Boosts earn a bigger share of the same pool: streaks {STREAK_BOOSTS.slice().reverse().map((b) => `×${b.boost} at ${b.days} days`).join(", ")}; your rig ×
+            {rigBoost(1)} per level (every {RIG.perLevel} active invites, up to ×{rigBoost(RIG.max)}); and veins up to ×{tapBoost(TAP_BOOST.perDay)} a day. The Genesis
+            Program shares {GENESIS_POOL.toLocaleString("en-US")} ALKE in total.
           </p>
-          <p className="note">Sessions never create new ALKE, and amounts are estimates until verified.</p>
+          <p className="note">Drills never create new ALKE, and amounts are estimates until verified.</p>
         </Step>
 
         <Step n="2" title="Warm it with contributions">
-          <p>Each day, contributions warm a share of your cALKE. Invites count most.</p>
+          <p>Each day, contributions warm a share of your cold ALKE. Invites count most.</p>
           <ul className="ob-list">
             {CONTRIBUTIONS.map((c) => (
               <li key={c.id}>
@@ -80,20 +81,20 @@ export default function Redeem() {
           </ul>
           <div className="ob-formula">Warmed per day = invites × 1% + lessons + games + discussions</div>
           <p>
-            <b>Example:</b> with {EX.invites} verified invites plus full games and lessons, you warm {pct(exRate)} a day and your cALKE is fully warm in about{" "}
+            <b>Example:</b> with {EX.invites} verified invites plus full games and lessons, you warm {pct(exRate)} a day and your cold ALKE is fully warm in about{" "}
             {Math.ceil(100 / exRate)} days. With no invites, about {Math.ceil(100 / EX.other)} days.
           </p>
-          <p className="note">An invite becomes active once the person you invited has completed 3 sessions. Practice runs and drilling sessions warm nothing.</p>
+          <p className="note">An invite becomes active once the person you invited has completed 3 drills. Practice runs and drills themselves warm nothing.</p>
         </Step>
 
         <Step n="3" title="Verify you're one real person">
-          <p>Complete the personhood check (one person, one account) before you convert. Your cALKE keeps building and warming meanwhile. Nothing is lost.</p>
+          <p>Complete the personhood check (one person, one account) before you convert. Your cold ALKE keeps building and warming meanwhile. Nothing is lost.</p>
         </Step>
 
         <Step n="4" title="Claim it in Nuru">
           <p>
-            When claiming opens, open the Nuru app, where you have a wallet, and claim your warm cALKE. It becomes real ALKE at {fmtC(C_PER_ALKE)} cALKE = 1 ALKE. Cold
-            cALKE that isn't warmed yet stays cold until it is.
+            When claiming opens, open the Nuru app, where you have a wallet, and claim your warm ALKE. It moves to your Nuru wallet one for one. Cold ALKE that isn't
+            warmed yet stays cold until it is.
           </p>
           <ul className="ob-list">
             <li>

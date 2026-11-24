@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
-import { SESSION_MS, liveStreak, sessionRemaining, startSession, tintHex } from "../../lib/member";
+import { SESSION_MS, liveStreak, startSession, tintHex } from "../../lib/member";
 import { lastDays, useMemberData } from "../../lib/useMemberData";
 import { useNotifications } from "../../lib/notifications";
 import { gameStatus } from "../../lib/games";
-import { EPISODES, mmss, watched } from "../../lib/episodes";
-import { Button, Notice } from "../../ui/ob";
 import { fmtAlke } from "../../lib/genesis";
-import { AppPage, Avatar, Ico, IconLink, Ring, Row, Section, Stat, alke, clock, useNow } from "../../ui/shell";
+import { Button, Notice } from "../../ui/ob";
+import { AppPage, Avatar, Ico, IconLink, Ring, Row, Section, Stat, clock } from "../../ui/shell";
+import { RollingNumber, useDrilling } from "./drilling";
+import { FounderCard } from "./FounderCard";
+import { Series } from "./Series";
 
 function greeting(d = new Date()) {
   const h = d.getHours();
@@ -17,19 +19,18 @@ function greeting(d = new Date()) {
 
 export default function Home() {
   const { nuruId, member, person, displayName, initials } = useAuth();
-  const { sessions, allocation } = useMemberData({ sessions: true, allocation: true });
+  const { sessions } = useMemberData({ sessions: true });
   const { unread } = useNotifications(20);
   const navigate = useNavigate();
-  const now = useNow(1000);
+  const m = useDrilling();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
-  const remaining = sessionRemaining(member, now);
-  const running = remaining > 0;
-  const streak = liveStreak(member, now);
+  const { running, remaining } = m;
+  const streak = liveStreak(member);
   const days = lastDays(sessions, 7);
   const games = gameStatus();
-  const seen = watched();
+  const phase = `Phase ${m.phase.n} · ${m.phase.name}`;
 
   const start = async () => {
     setBusy(true);
@@ -63,13 +64,18 @@ export default function Home() {
         </header>
       }
     >
-      {/* Today's drill */}
-      <section className="ob-hero vivid" aria-label="Today's drill">
+      {/* Balance to date, and today's drill */}
+      <section className="ob-hero vivid ob-home-hero" aria-label="Your ALKE and today's drill">
+        <Link to="/drill/allocation" className="bal">
+          <span className="lbl">Your ALKE · provisional</span>
+          <RollingNumber value={m.rewardsAlke} size={40} label={`Your ALKE to date: ${fmtAlke(m.rewardsAlke)} ALKE`} />
+          <span className="sub">{running ? `+${fmtAlke(m.todayAlke)} today (est.) · ${phase}` : phase}</span>
+        </Link>
         <div className="top">
-          <Ring size={60} fraction={running ? remaining / SESSION_MS : 0} active={running} color="#FFFFFF" track="rgba(255,255,255,.22)" mark="#FFFFFF" />
+          <Ring size={52} fraction={running ? remaining / SESSION_MS : 0} active={running} color="#FFFFFF" track="rgba(255,255,255,.22)" mark="#FFFFFF" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="lbl">{running ? "Drilling now" : "Today's drill"}</div>
-            <div className="big num">{running ? clock(remaining) : "Ready to start"}</div>
+            <div className="big num">{running ? `${clock(remaining)} left` : "Ready to start"}</div>
           </div>
           {running ? (
             <Button kind="secondary" size="sm" to="/drill">
@@ -99,10 +105,14 @@ export default function Home() {
       {error ? <Notice kind="error">{error}</Notice> : null}
 
       <div className="ob-stats">
-        <Stat to="/drill/allocation" label="Cold" icon={<Ico.Lock size={13} />} value={fmtAlke(allocation?.locked, 2)} unit="ALKE" />
         <Stat to="/drill/history" label="Drills" value={member?.sessionCount || 0} />
+        <Stat to="/network" label="Invites" value={m.activeInvites} unit="active" />
         <Stat to="/games" label="Game XP" value={games.total} />
       </div>
+
+      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} />
+
+      <Series />
 
       <Section title="Play today" action={<Link to="/games">All games</Link>}>
         <ul className="ob-list">
@@ -112,32 +122,8 @@ export default function Home() {
           <li>
             <Row to="/games/rush" icon={<Ico.Bolt />} tone="cyan" title="ALKE Rush" sub={games.rushStatus} end={<span className="ob-pill">+50 XP</span>} />
           </li>
-        </ul>
-      </Section>
-
-      <Section title="The ALKÉ story" action={<Link to="/episodes">Watch</Link>}>
-        <ul className="ob-list">
-          {EPISODES.map((e) => (
-            <li key={e.id}>
-              <Row
-                to={`/episodes?ep=${e.n}`}
-                icon={seen.has(e.id) ? <Ico.Check /> : <Ico.Play />}
-                tone={seen.has(e.id) ? "green" : "gold"}
-                title={e.title}
-                sub={`Episode ${e.n} · ${mmss(e.secs)}${seen.has(e.id) ? " · watched" : ""}`}
-              />
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section title="Community">
-        <ul className="ob-list">
           <li>
             <Row to="/chat" icon={<Ico.Users />} tone="green" title="Alkers chat" sub="Say hi to the community" />
-          </li>
-          <li>
-            <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Each verified invite warms 1% a day" />
           </li>
         </ul>
       </Section>

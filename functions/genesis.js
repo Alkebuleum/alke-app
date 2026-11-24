@@ -12,6 +12,14 @@ export const PHASES = [
 
 export const streakBoost = (streak) => (streak >= 30 ? 1.25 : streak >= 7 ? 1.1 : 1);
 
+/* Rig levels: every RIG.perLevel active invites add a level (up to RIG.max);
+   each level adds RIG.step to the day's share weight (Level 4 = ×2). Like the
+   streak boost, it's a bigger share of the same pool, never new ALKE. Keep
+   in step with the app's src/pages/app/drillScene.js. */
+export const RIG = { perLevel: 3, step: 0.25, max: 4 };
+export const rigLevel = (active) => Math.min(RIG.max, Math.floor((Number(active) || 0) / RIG.perLevel));
+export const rigBoost = (active) => 1 + RIG.step * rigLevel(active);
+
 /** Warming, as % of the cold balance per day. */
 export const WARMING = {
   perActiveInvite: 1, // each invitee who has completed ACTIVE_AFTER sessions

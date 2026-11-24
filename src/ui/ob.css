@@ -749,7 +749,7 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-deeper-now small { font-size: 12.5px; color: #FFDB8E; }
 .ob-lvl { position: relative; flex: none; display: grid; place-items: center; }
 .ob-lvl svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ob-lvl path { fill: url(#obLvlGold); stroke: rgba(255, 236, 190, .75); stroke-width: 1.2; }
+.ob-lvl path { stroke: rgba(255, 236, 190, .75); stroke-width: 1.2; }
 .ob-lvl b { position: relative; font-family: var(--display); font-weight: 700; line-height: 1; color: #1C1030; }
 .ob-lvl[data-l="0"] path { fill: rgba(139, 109, 255, .16); stroke: rgba(198, 182, 255, .6); }
 .ob-lvl[data-l="0"] b { color: var(--accent-text); }
@@ -778,8 +778,10 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-deeper-prog .segs i { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); }
 .ob-deeper-prog .segs i.on { background: linear-gradient(90deg, #FFDB8E, #EBA33B); box-shadow: 0 0 10px rgba(245, 184, 77, .45); }
 /* Share: link + copy, then each app in its own colours */
-.ob-deeper .ob-deeper-link { height: 56px; margin-top: 4px; background: rgba(0, 0, 0, .35); }
-.ob-deeper .ob-deeper-link .ob-invite-copy { height: 44px; padding: 0 18px; font-size: 14px; }
+.ob-share-block { display: flex; flex-direction: column; gap: 10px; }
+.ob-share-link.ob-invite { height: 56px; border-radius: 14px; padding-left: 14px; background: rgba(0, 0, 0, .35); }
+.ob-share-link.ob-invite > span { color: var(--accent-text); font-family: var(--mono); font-size: 12.5px; }
+.ob-share-link .ob-invite-copy { height: 44px; padding: 0 18px; border-radius: 999px; background: var(--gold-grad); color: #1C1030; font-size: 14px; }
 .ob-share { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 52px; gap: 8px; }
 .ob-share-btn { height: 52px; border: 0; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .1s ease, filter .15s ease; }
 .ob-share-btn:hover { filter: brightness(1.06); }
@@ -788,13 +790,64 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-share-btn.tg { background: #229ED9; }
 .ob-share-btn.x { width: 52px; background: #000; border: 1px solid rgba(255, 255, 255, .22); }
 .ob-share-btn.fb { grid-column: 1 / -1; background: #1877F2; }
-.ob-deeper-note { margin: -4px 0 0; font-size: 13px; font-weight: 600; color: var(--success); text-align: center; }
+.ob-share-note { margin: -4px 0 0; font-size: 13px; font-weight: 600; color: var(--success); text-align: center; }
 /* The message preview, as a chat bubble */
-.ob-deeper-msg { border-radius: 18px; border: 1px solid var(--border); background: rgba(255, 255, 255, .03); overflow: hidden; }
-.ob-deeper-msg-h { width: 100%; height: 48px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-.ob-deeper-msg-h svg { color: var(--text-3); transition: transform .2s ease; }
+.ob-share-msg { border-radius: 18px; border: 1px solid var(--border); background: rgba(255, 255, 255, .03); overflow: hidden; }
+.ob-share-msg-h { width: 100%; height: 48px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.ob-share-msg-h svg { color: var(--text-3); transition: transform .2s ease; }
 .ob-bubble-preview { margin: 0 12px; padding: 12px 14px; border-radius: 4px 18px 18px 18px; background: #1F2C33; color: #E9EDEF; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
 .ob-bubble-preview p { margin: 0; }
 .ob-bubble-preview u { color: #53BDEB; text-decoration: underline; }
-.ob-deeper-msg-acts { display: flex; justify-content: flex-end; gap: 16px; padding: 6px 14px 8px; }
-.ob-deeper-msg-acts .ob-textlink { min-height: 36px; font-size: 13.5px; }
+.ob-share-msg-acts { display: flex; justify-content: flex-end; gap: 16px; padding: 6px 14px 8px; }
+.ob-share-msg-acts .ob-textlink { min-height: 36px; font-size: 13.5px; }
+
+.ob-deeper-ladder .out { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+.ob-deeper-ladder .out small { font-size: 11px; color: var(--text-3); }
+
+/* Home: balance to date on top of the drill card */
+.ob-home-hero .bal { display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, .16); color: #fff; text-decoration: none; }
+.ob-home-hero .bal:hover { color: #fff; }
+.ob-home-hero .bal .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #E4DCFF; }
+.ob-home-hero .bal .ob-roll-digits { color: #fff; text-shadow: 0 2px 18px rgba(23, 13, 74, .5); }
+.ob-home-hero .bal .ob-roll-digits .fine { color: #FFDB8E; }
+.ob-home-hero .bal .ob-roll-digits .unit { color: #E4DCFF; }
+.ob-home-hero .bal .sub { font-size: 12.5px; color: rgba(228, 220, 255, .8); font-variant-numeric: tabular-nums; }
+.ob-home-hero .big { font-size: 19px; }
+
+/* Founder: invite 10 friends (FounderCard.jsx) */
+.ob-founder { display: flex; flex-direction: column; gap: 14px; padding: 20px 18px 18px; border-radius: 24px; border: 1px solid rgba(242, 198, 107, .26);
+  background: radial-gradient(120% 70% at 100% 0%, rgba(242, 198, 107, .12) 0%, rgba(242, 198, 107, 0) 60%), var(--panel); }
+.ob-founder h2 { margin: 0; font-family: var(--display); font-size: 25px; line-height: 1.12; font-weight: 600; letter-spacing: -.03em; text-wrap: balance; }
+.ob-founder-prog { display: flex; flex-direction: column; gap: 8px; }
+.ob-founder-prog > span:first-child { font-size: 14px; color: var(--text-2); }
+.ob-founder-prog b { color: #FFDB8E; font-weight: 700; font-size: 16px; }
+.ob-founder-prog .segs { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; }
+.ob-founder-prog .segs i { height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); }
+.ob-founder-prog .segs i.on { background: linear-gradient(90deg, #FFDB8E, #EBA33B); box-shadow: 0 0 10px rgba(245, 184, 77, .45); }
+.ob-founder-sub { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+.ob-founder-sub b { color: var(--text); font-weight: 600; }
+.ob-founder-sub a { color: #FFDB8E; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.ob-founder-sub a::after { content: " →"; }
+
+/* The ALKÉ Network series: thumbnails that scroll sideways (Series.jsx) */
+.ob-series { list-style: none; margin: 0 -16px; padding: 2px 16px 6px; display: grid; grid-auto-flow: column; grid-auto-columns: min(72%, 280px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; }
+.ob-series::-webkit-scrollbar { display: none; }
+.ob-series li { scroll-snap-align: start; min-width: 0; }
+.ob-ep { display: flex; flex-direction: column; gap: 8px; color: var(--text); text-decoration: none; }
+.ob-ep:hover { color: var(--text); }
+.ob-ep .thumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #120E22; border: 1px solid rgba(198, 182, 255, .18); }
+.ob-ep .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ob-ep .thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 7, 13, 0) 55%, rgba(8, 7, 13, .55)); }
+.ob-ep .play { position: absolute; z-index: 1; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); box-shadow: 0 10px 24px -10px rgba(245, 184, 77, .8); transition: transform .15s ease; }
+.ob-ep:active .play { transform: scale(.94); }
+.ob-ep .len { position: absolute; z-index: 1; right: 8px; bottom: 8px; padding: 2px 7px; border-radius: 6px; background: rgba(8, 7, 13, .78); font-size: 11.5px; font-weight: 600; }
+.ob-ep .seen { position: absolute; z-index: 1; left: 8px; top: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(110, 231, 183, .18); color: var(--success); font-size: 11px; font-weight: 700; }
+.ob-ep .meta { display: flex; flex-direction: column; gap: 1px; padding: 0 2px; }
+.ob-ep .meta small { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; color: var(--gold); }
+.ob-ep .meta b { font-family: var(--display); font-size: 15.5px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
+
+.ob-row .ic .ob-lvl { background: none; }
+/* How invites work: numbered steps */
+.ob-how { margin: 0; padding: 16px 16px 16px 40px; display: flex; flex-direction: column; gap: 10px; border-radius: 22px; border: 1px solid var(--border); background: var(--panel); font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.ob-how li::marker { font-family: var(--mono); color: var(--gold); font-size: 12px; }
+.ob-how b { color: var(--text); font-weight: 600; }

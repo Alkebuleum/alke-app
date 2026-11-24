@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
-import { handleOf, liveStreak, tintHex } from "../../lib/member";
+import { handleOf, tintHex } from "../../lib/member";
 import { gameStatus } from "../../lib/games";
-import { useMemberData } from "../../lib/useMemberData";
 import { AppBar, AppPage, Avatar, Ico, IconLink, Row, Section, Stat } from "../../ui/shell";
-import { fmtAlke } from "../../lib/genesis";
+import { FOUNDER_INVITES, fmtAlke } from "../../lib/genesis";
+import { useDrilling } from "./drilling";
+import { rigName } from "./drillScene";
 
 export default function Profile() {
   const { member, person, displayName, initials } = useAuth();
-  const { allocation } = useMemberData({ allocation: true });
+  const m = useDrilling();
   const g = gameStatus();
   const [handle, setHandle] = useState("");
   useEffect(() => {
@@ -28,7 +29,10 @@ export default function Profile() {
     ["7-day streak", best >= 7, <Ico.Flame key="i" size={18} />],
     ["30-day streak", best >= 30, <Ico.Flame key="i" size={18} />],
     ["100 game XP", g.total >= 100, <Ico.Star key="i" />],
+    ["Level 1 rig", m.level >= 1, <Ico.Users key="i" />],
+    ["Founder", m.activeInvites >= FOUNDER_INVITES, <Ico.Star key="i" />],
   ];
+  const founder = m.activeInvites >= FOUNDER_INVITES;
 
   return (
     <AppPage
@@ -47,6 +51,7 @@ export default function Profile() {
           <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayName}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontSize: 14, color: "var(--text-3)" }}>
             {handle ? <span className="ob-pill accent">{handle}</span> : <span className="ob-pill">Member</span>}
+            {founder ? <span className="ob-pill gold">Founder</span> : null}
             {since ? <span>since {since.toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span> : null}
           </div>
         </div>
@@ -59,13 +64,13 @@ export default function Profile() {
       </ul>
 
       <div className="ob-stats">
-        <Stat label="Streak" value={liveStreak(member)} unit="days" />
-        <Stat label="Drills" value={sessions} />
-        <Stat label="Game XP" value={g.total} />
+        <Stat label="Drills" value={sessions} to="/drill/history" />
+        <Stat label="Invites" value={m.activeInvites} unit="active" to="/network" />
+        <Stat label="Game XP" value={g.total} to="/games" />
       </div>
 
       <Section title="Badges" action={<span>{badges.filter((b) => b[1]).length} of {badges.length}</span>}>
-        <div className="ob-badges">
+        <div className="ob-badges three">
           {badges.map(([t, on, icon]) => (
             <div key={t} className={on ? "ob-badge on" : "ob-badge"}>
               <span className="b">{on ? icon : <Ico.Lock size={15} />}</span>
@@ -78,7 +83,10 @@ export default function Profile() {
       <Section title="Activity">
         <ul className="ob-list">
           <li>
-            <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Allocation" end={<span className="num">{fmtAlke(allocation?.locked, 2)} ALKE</span>} />
+            <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Your ALKE" sub="Provisional, to date" end={<span className="num">{fmtAlke(m.rewardsAlke, 4)} ALKE</span>} />
+          </li>
+          <li>
+            <Row to="/network" icon={<Ico.Users />} tone="gold" title={rigName(m.level)} sub={`×${m.rig.toFixed(2)} daily ALKE share · ${m.activeInvites}/${FOUNDER_INVITES} to Founder`} />
           </li>
           <li>
             <Row to="/drill/history" icon={<Ico.History />} title="History" end={<span className="num">{sessions} drills</span>} />

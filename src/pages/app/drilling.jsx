@@ -6,7 +6,7 @@ import { sendBoost, watchBoost } from "../../lib/boost";
 import { watchLive } from "../../lib/network";
 import { useMemberData } from "../../lib/useMemberData";
 import { MarkPaths } from "../../ui/ob";
-import { BASE_DEPTH, Scene, rigDepth, rigLevel } from "./drillScene";
+import { BASE_DEPTH, Scene, rigBoost, rigDepth, rigLevel } from "./drillScene";
 
 /* The drilling engine for Drill and stream mode.
    Today's counter is an ESTIMATE: today's expected share (the server's
@@ -45,15 +45,16 @@ export function useDrilling() {
   const boost = streakBoost(streak);
   const phase = phaseFor(live?.members || 0);
   const perSession = live?.estPerSession != null ? Number(live.estPerSession) : phase.maxPerMember;
-  const baseC = toC(perSession) * boost; // today's share before the tap boost
+  const activeInvites = Number(invites?.active) || 0;
+  const level = rigLevel(activeInvites);
+  const rig = rigBoost(level);
+  const baseC = toC(perSession) * boost * rig; // today's share before the tap boost (streak × rig)
   const estToday = baseC * tapMult;
   const fraction = running ? 1 - remaining / SESSION_MS : 0;
   const balanceC = toC(allocation?.locked);
 
   // Depth: every finished drill went BASE_DEPTH; this one goes as deep as the
   // rig level allows (active invites), further still with the tap boost.
-  const activeInvites = Number(invites?.active) || 0;
-  const level = rigLevel(activeInvites);
   const sessions = member?.sessionCount || 0;
   const pastDepth = Math.max(0, sessions - (running ? 1 : 0)) * BASE_DEPTH;
   const sessionTarget = rigDepth(level) * tapMult;
@@ -105,6 +106,7 @@ export function useDrilling() {
     todayAlke: toAlke(running ? estToday * fraction : 0),
     perHourAlke: toAlke(estToday) / 24,
     level,
+    rig,
     activeInvites,
     joinedInvites: Number(invites?.joined) || 0,
     depth: pastDepth + sessionDepth,

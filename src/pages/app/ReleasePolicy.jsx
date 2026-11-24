@@ -1,39 +1,38 @@
-import { C_PER_ALKE, fmtC } from "../../lib/genesis";
 import { AppPage, SubBar } from "../../ui/shell";
 
-/* The release policy: how cALKE in this app becomes ALKE in Nuru.
+/* The release policy: how cold ALKE in this app becomes ALKE in Nuru.
    The vesting terms aren't set yet; this says what is decided and what isn't.
    Bump POLICY.version (and the date) whenever the text changes. */
-export const POLICY = { version: "Draft 1", date: "November 2026", final: false };
+export const POLICY = { version: "Draft 2", date: "November 2026", final: false };
 
 const SECTIONS = [
   [
     "What you hold in ALKE",
     [
-      "Your drilling and contributions are recorded as cALKE (cold ALKE). cALKE is a record inside this app: it isn't a cryptocurrency, it can't be sold, sent or exchanged, and it has no cash value.",
+      "Your drilling and contributions are recorded as cold ALKE, shown to six decimals. Cold ALKE is a record inside this app: it isn't a cryptocurrency, it can't be sold, sent or exchanged, and it has no cash value.",
       "The ALKE app never holds or sends crypto and never asks for a wallet.",
     ],
   ],
   [
     "Warming",
     [
-      "Contributions warm a share of your cALKE each day: active invites, game XP up to a daily cap and, later, lessons and discussions. Drilling sessions record participation but don't warm.",
-      "Only warm cALKE can be claimed. Cold cALKE stays cold until it's warmed.",
+      "Contributions warm a share of your cold ALKE each day: active invites, game XP up to a daily cap and, later, lessons and discussions. Drills record participation but don't warm.",
+      "Only warm ALKE can be claimed. Cold ALKE stays cold until it's warmed.",
     ],
   ],
   [
     "Who can claim",
     [
       "You've passed the personhood check: one person, one account.",
-      "Your account follows the Participation Rules. Accounts that break them (duplicate accounts, fake invites, automated play) can lose their cALKE.",
+      "Your account follows the Participation Rules. Accounts that break them (duplicate accounts, fake invites, automated play) can lose their cold ALKE.",
       "Claiming is offered only where the law allows it, so availability can depend on where you live.",
     ],
   ],
   [
     "Claiming happens in Nuru",
     [
-      "When claiming opens, you claim your warm cALKE inside the Nuru app, where you have a wallet. Nuru handles every crypto step.",
-      `Claimed cALKE becomes ALKE at ${fmtC(C_PER_ALKE)} cALKE = 1 ALKE.`,
+      "When claiming opens, you claim your warm ALKE inside the Nuru app, where you have a wallet. Nuru handles every crypto step.",
+      "Claimed ALKE moves to your Nuru wallet one for one.",
     ],
   ],
   [
@@ -58,7 +57,7 @@ export default function ReleasePolicy() {
       <div style={{ margin: "0 4px" }}>
         <span className="ob-pill">{POLICY.final ? "Published" : "Draft"}</span>
         <p className="ob-sub" style={{ marginTop: 10 }}>
-          How cALKE in this app becomes ALKE in Nuru. {POLICY.version} · {POLICY.date}.
+          How cold ALKE in this app becomes ALKE in Nuru. {POLICY.version} · {POLICY.date}.
         </p>
       </div>
       <ol className="ob-guide">

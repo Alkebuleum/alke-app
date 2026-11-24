@@ -29,6 +29,7 @@ export function Episodes({ start = 0 }) {
           key={ep.id}
           className="ep-player"
           src={ep.src}
+          poster={ep.poster}
           controls
           autoPlay
           playsInline
@@ -38,9 +39,13 @@ export function Episodes({ start = 0 }) {
         />
       ) : (
         <button type="button" className="ep-player ep-cover" onClick={() => setPlaying(true)} aria-label={`Play episode ${ep.n}: ${ep.title}, ${mmss(ep.secs)}`}>
-          <span className="mark" aria-hidden="true">
-            <Mark size={140} color="#FFFFFF" width={3} />
-          </span>
+          {ep.poster ? (
+            <img className="poster" src={ep.poster} alt="" />
+          ) : (
+            <span className="mark" aria-hidden="true">
+              <Mark size={140} color="#FFFFFF" width={3} />
+            </span>
+          )}
           <span className="play" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24">
               <path d="M8 5.5v13l11-6.5z" fill="#1C1030" />

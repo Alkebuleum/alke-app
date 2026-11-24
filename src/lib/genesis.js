@@ -37,6 +37,10 @@ export const approxAlke = (c) => {
   const a = (Number(c) || 0) / C_PER_ALKE;
   return `≈ ${a.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: a < 1 ? 4 : 2 })} ALKE`;
 };
+/* Founder: a member with FOUNDER_INVITES active invites (each has completed
+   3 drills). A status and a profile badge; it carries no extra reward. */
+export const FOUNDER_INVITES = 10;
+
 /** cALKE → real ALKE. */
 export const toAlke = (c) => (Number(c) || 0) / C_PER_ALKE;
 /** "1,234.567890": ALKE to [d] decimals (6 = every cALKE), rounded down. */

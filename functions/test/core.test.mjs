@@ -39,7 +39,7 @@ test("settlement shares the pool by streak, locks it, and runs once", async () =
   const e3 = await get("alke_members/AA3/entries/s30");
   assert.equal(e3.status, "locked");
   assert.equal(e3.amount, 1.25);
-  assert.equal(e3.breakdown.length, 5); // pool, sessions, streak, tap boost, share
+  assert.equal(e3.breakdown.length, 6); // pool, drills, streak, tap boost, rig boost, share
   assert.equal((await get("alke_members/AA1/allocation/summary")).locked, 1);
   assert.equal((await get("alke_network/genesis")).distributed["1"], 3.35);
 
@@ -103,4 +103,21 @@ test("tap boost: needs a session, capped per day, multiplies that day's share", 
   const e = await get("alke_members/BB1/entries/s1");
   assert.equal(e.amount, 3);
   assert.ok(e.breakdown.some((b) => b.label === "Your tap boost" && b.value === "×3"));
+});
+
+test("rig boost: every 3 active invites add ×0.25 to the day's share, up to ×2", async () => {
+  const D3 = "2026-11-14";
+  const t = (h) => Timestamp.fromDate(new Date(`${D3}T${String(h).padStart(2, "0")}:00:00Z`));
+  for (const [id, active] of [["RG1", 0], ["RG2", 7], ["RG3", 40]]) {
+    await db.doc(`alke_members/${id}`).set({ username: id.toLowerCase(), streak: 1, sessionCount: 1, lastSessionAt: t(8) });
+    await db.doc(`alke_members/${id}/allocation/invites`).set({ joined: active, active });
+    await recordSession(db, id, { n: 1, startedAt: t(8) });
+  }
+  const r = await settleDay(db, D3);
+  assert.equal(r.sessions, 3);
+  assert.equal((await get("alke_members/RG1/entries/s1")).amount, 1); // starter rig
+  assert.equal((await get("alke_members/RG2/entries/s1")).amount, 1.5); // 7 active → Level 2
+  const e3 = await get("alke_members/RG3/entries/s1");
+  assert.equal(e3.amount, 2); // capped at Level 4
+  assert.ok(e3.breakdown.some((b) => b.label === "Your rig boost" && b.value === "×2" && b.note === "Level 4 rig"));
 });

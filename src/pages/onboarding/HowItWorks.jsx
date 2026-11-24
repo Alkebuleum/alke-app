@@ -1,7 +1,7 @@
 import { Bar, Button, Heading, Page } from "../../ui/ob";
 
 const STEPS = [
-  ["Tap once a day", "Starts a 24-hour session. Nothing runs on your phone."],
+  ["Tap once a day", "Starts a 24-hour drill. Nothing runs on your phone."],
   ["Learn and play", "Lessons and games build your community record."],
   ["Qualify for a share", "Of the community allocation, locked until release."],
 ];

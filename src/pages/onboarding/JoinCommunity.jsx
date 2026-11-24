@@ -86,7 +86,7 @@ export default function JoinCommunity() {
           ALKÉ posts every announcement here first. Each one adds ALKE to <span className="onb-mono">{member?.alkerId || "your account"}</span>.
         </>
       }
-      footer={<Gold onClick={next}>Next: start my first session</Gold>}
+      footer={<Gold onClick={next}>Next: start my first drill</Gold>}
     >
       {CHANNELS.map((c) => {
         const ok = done.includes(c.id);
