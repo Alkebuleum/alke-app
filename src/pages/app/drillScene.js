@@ -5,8 +5,16 @@
    1 px per metre, not a measurement. */
 
 export const BASE_DEPTH = 2400; // metres a starter rig drills in one 24-hour session
-export const MAX_LEVEL = 4; // rig levels (not live yet: always 0 for now)
+export const MAX_LEVEL = 4;
 const BOOST = 0.25;
+
+/* Rig levels: every RIG.perLevel active invites (server-counted) add a level,
+   up to MAX_LEVEL. A level drills 25% deeper per drill. Depth only: rewards
+   don't change with the level (that would need a server rule). */
+export const RIG = { perLevel: 3, step: BOOST, max: MAX_LEVEL };
+export const rigLevel = (active) => Math.min(MAX_LEVEL, Math.floor((Number(active) || 0) / RIG.perLevel));
+export const rigDepth = (level) => BASE_DEPTH * (1 + BOOST * level);
+export const rigName = (level) => (level ? `Level ${level} rig` : "Starter rig");
 
 function mulberry32(a) {
   return function () {

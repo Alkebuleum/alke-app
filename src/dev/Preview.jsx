@@ -95,6 +95,11 @@ const SCREENS = {
     }, 4300);
     return <Drill />;
   },
+  // Drill, scrolled down to the invite section.
+  deeper: () => {
+    setTimeout(() => document.querySelector(".ob-deeper")?.scrollIntoView({ block: "start" }), 1500);
+    return <Drill />;
+  },
   hexhub: HexHub,
   hexplay: HexPlay,
   hexboard: () => <Leaderboard game="hex" boards={{ hexToday: [], hexAll: [], rushToday: [], rushAll: [] }} />,

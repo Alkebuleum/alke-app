@@ -305,7 +305,6 @@
 .ob-drill { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 4px 0; text-align: center; }
 .ob-drill::before { content: ""; position: absolute; left: -16px; right: -16px; top: -40px; height: 420px; background: radial-gradient(60% 50% at 50% 40%, rgba(110, 72, 255, .28), rgba(110, 72, 255, 0) 70%); pointer-events: none; z-index: 0; }
 .ob-drill > * { position: relative; z-index: 1; }
-.ob-drill-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .ob-boost { box-shadow: 0 0 0 1px rgba(245, 196, 81, .35), 0 0 14px rgba(245, 196, 81, .35); animation: obBoost 2.4s ease-in-out infinite; }
 @keyframes obBoost { 50% { box-shadow: 0 0 0 1px rgba(245, 196, 81, .55), 0 0 22px rgba(245, 196, 81, .55); } }
 .ob-live-core { position: relative; display: flex; justify-content: center; width: min(440px, calc(100% - 32px)); }
@@ -331,15 +330,9 @@
 .ob-roll-digits .sep { display: inline-block; width: .28em; text-align: center; }
 .ob-roll-digits .fine { font-size: .6em; color: #F5B84D; margin-bottom: .14em; }
 .ob-roll-digits .unit { margin: 0 0 .14em .22em; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1; letter-spacing: .12em; color: var(--text-2); }
-.ob-drill-meter { width: 100%; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.ob-drill-meter .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--text-2); }
-.ob-drill-prov { height: 22px; padding: 0 9px; border-radius: 999px; border: 1px dashed rgba(245, 184, 77, .6); color: #F5B84D; font-size: 11.5px; font-weight: 600; display: inline-flex; align-items: center; }
-.ob-drill-meter .sub { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0 6px; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
-.ob-drill-meter .sub b { color: #FFDB8E; font-weight: 600; }
-.ob-drill-meter .sub .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: obBlink 1.6s ease-in-out infinite; }
 .ob-live-count .ob-roll { width: min(440px, calc(100vw - 32px)); }
 .ob-live-count .ob-roll-digits { justify-content: center; text-shadow: 0 0 30px rgba(180, 162, 255, .6); }
-@media (prefers-reduced-motion: reduce) { .ob-roll-digits .strip { transition: none; } .ob-drill-meter .sub .dot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ob-roll-digits .strip { transition: none; } }
 
 /* The drilling scene (drilling.jsx DrillScene, drawn by drillScene.js) */
 .ob-drill-scene { position: relative; width: 100%; border-radius: 24px; overflow: hidden; background: #08070D; border: 1px solid rgba(198, 182, 255, .12); box-shadow: 0 24px 60px -36px rgba(94, 58, 255, .7); isolation: isolate; }
@@ -368,20 +361,8 @@
 .ob-drill-pressure small.next { letter-spacing: .02em; text-transform: none; font-weight: 600; color: var(--text-3); white-space: nowrap; }
 .ob-drill-scene.charged .ob-drill-pressure { border-color: rgba(245, 184, 77, .7); box-shadow: 0 0 18px rgba(245, 184, 77, .45); }
 @keyframes obPressPop { from { transform: scale(1.35); } to { transform: scale(1); } }
-/* 24 hour cells */
-.ob-drill-gauge { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-.ob-drill-gauge .top { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
-.ob-drill-gauge .top b { color: var(--text); font-weight: 600; }
-.ob-drill-cells { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; height: 12px; }
-.ob-drill-cells span { position: relative; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; }
-.ob-drill-cells i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(180deg, #FFDB8E, #EBA33B); }
-.ob-drill-cells .now { box-shadow: 0 0 10px rgba(245, 184, 77, .55); }
-.ob-drill-cells .now i::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 2px; background: #fff; opacity: 0; animation: obEdge 1.4s ease-in-out infinite; }
-@keyframes obEdge { 50% { opacity: .9; } }
-.ob-drill-go { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.ob-drill-go .ob-btn { width: 100%; }
 @media (prefers-reduced-motion: reduce) {
-  .ob-drill-badge[data-s="drilling"] i, .ob-drill-cells .now i::after, .ob-drill-pressure.live b { animation: none; }
+  .ob-drill-badge[data-s="drilling"] i, .ob-drill-pressure.live b { animation: none; }
 }
 
 
@@ -737,3 +718,57 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-composer { background: rgba(10, 9, 17, .96); }
 .ob-hero.vivid .ob-btn.primary, .ob-hero.vivid .ob-btn.primary:hover { background: var(--gold-grad); color: #1C1030; box-shadow: 0 10px 24px -12px rgba(245, 184, 77, .7), inset 0 1px 0 rgba(255, 255, 255, .55); }
 .ob-badge { background: var(--panel); border-color: var(--border); border-radius: 18px; }
+
+/* Drill tab, minimal like stream mode: info line, scene, the number, one action */
+.ob-drill { flex: 1 0 auto; justify-content: center; gap: 18px; padding: 0; }
+.ob-drill-info { margin: 0; font-size: 13px; color: var(--text-2); text-align: center; text-wrap: balance; font-variant-numeric: tabular-nums; }
+.ob-drill-total { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.ob-drill-total .lbl { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-text); }
+.ob-drill-total .ob-roll-digits { justify-content: center; text-shadow: 0 0 30px rgba(180, 162, 255, .45); }
+.ob-drill-total .sub { font-size: 14px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.ob-drill-total .ob-btn { margin-top: 6px; }
+
+/* The first screen fills the view; the invite section waits below the fold. */
+.ob-drill { min-height: calc(100cqh - 140px - var(--safe-top, 0px) - var(--safe-bottom, 0px)); }
+.ob-drill-cue { margin-top: auto; display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px; border: 0; background: transparent; color: var(--text-3); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.ob-drill-cue svg { animation: obCue 1.8s ease-in-out infinite; }
+@keyframes obCue { 50% { transform: translateY(3px); } }
+
+/* Drill deeper: grow your rig with invites (DrillDeeper.jsx) */
+.ob-deeper { display: flex; flex-direction: column; gap: 14px; padding: 22px 18px 20px; margin-top: 8px; border-radius: 26px; border: 1px solid rgba(242, 198, 107, .22);
+  background: radial-gradient(120% 60% at 50% 0%, rgba(242, 198, 107, .10) 0%, rgba(242, 198, 107, 0) 65%), var(--panel);
+  opacity: 0; transform: translateY(24px); transition: opacity .5s ease, transform .6s cubic-bezier(.2, .8, .2, 1); scroll-margin-top: 12px; }
+.ob-deeper.in { opacity: 1; transform: none; }
+.ob-deeper .ob-eyebrow { margin: 0; }
+.ob-deeper-title { margin: -6px 0 0; font-family: var(--display); font-size: 26px; line-height: 1.12; font-weight: 600; letter-spacing: -.03em; text-wrap: balance; }
+.ob-deeper-sub { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--text-2); }
+.ob-deeper-sub b { color: var(--text); font-weight: 600; }
+.ob-deeper-now { position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(242, 198, 107, .3); background: linear-gradient(180deg, rgba(242, 198, 107, .08), rgba(242, 198, 107, .02)); }
+.ob-deeper-now::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--p, 0%); background: linear-gradient(90deg, #FFDB8E, #EBA33B); transition: width .6s ease; }
+.ob-deeper-now .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ob-deeper-now b { font-size: 14.5px; font-weight: 600; }
+.ob-deeper-now small { font-size: 12.5px; color: #FFDB8E; }
+.ob-lvl { position: relative; flex: none; display: grid; place-items: center; }
+.ob-lvl svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ob-lvl path { fill: url(#obLvlGold); stroke: rgba(255, 236, 190, .75); stroke-width: 1.2; }
+.ob-lvl b { position: relative; font-family: var(--display); font-weight: 700; line-height: 1; color: #1C1030; }
+.ob-lvl[data-l="0"] path { fill: rgba(139, 109, 255, .16); stroke: rgba(198, 182, 255, .6); }
+.ob-lvl[data-l="0"] b { color: var(--accent-text); }
+.ob-deeper-ladder { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ob-deeper-ladder li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 12px 7px 8px; border-radius: 14px; border: 1px solid var(--border); font-size: 13.5px; font-weight: 600; color: var(--text-3); }
+.ob-deeper-ladder li > span:nth-child(2) { display: flex; flex-direction: column; }
+.ob-deeper-ladder small { font-size: 12px; font-weight: 400; color: var(--text-3); }
+.ob-deeper-ladder li.got { color: var(--text-2); }
+.ob-deeper-ladder li.cur { border-color: rgba(245, 184, 77, .55); background: rgba(245, 184, 77, .08); color: var(--text); }
+.ob-deeper-ladder .out { font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--text); }
+.ob-deeper-ladder li:not(.cur):not(.got) .out { color: var(--text-3); }
+.ob-deeper-invite { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.ob-deeper-invite .lbl { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--text-2); }
+.ob-deeper .ob-invite { height: 48px; border-radius: 14px; padding-left: 14px; background: rgba(255, 255, 255, .05); }
+.ob-deeper .ob-invite > span { color: var(--accent-text); font-family: var(--mono); font-size: 12.5px; }
+.ob-deeper .ob-invite-copy { height: 36px; border-radius: 999px; background: var(--gold-grad); color: #1C1030; }
+.ob-deeper-stats { margin: -4px 0 0; display: flex; justify-content: center; gap: 18px; font-size: 13px; color: var(--text-2); }
+.ob-deeper-stats b { color: var(--text); font-weight: 600; }
+.ob-deeper-rules { margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--text-3); }
+@media (prefers-reduced-motion: reduce) { .ob-deeper { opacity: 1; transform: none; transition: none; } .ob-drill-cue svg { animation: none; } }
+.ob-drill > .ob-drill-info { margin-top: auto; }

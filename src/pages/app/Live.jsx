@@ -86,6 +86,7 @@ export default function Live() {
           sessionDepth={m.sessionDepth}
           sessionTarget={m.sessionTarget}
           fraction={m.fraction}
+          level={m.level}
           running={m.running}
           onVein={vein.strike}
           locked={!!vein.vein}

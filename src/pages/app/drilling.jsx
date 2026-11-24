@@ -6,7 +6,7 @@ import { sendBoost, watchBoost } from "../../lib/boost";
 import { watchLive } from "../../lib/network";
 import { useMemberData } from "../../lib/useMemberData";
 import { MarkPaths } from "../../ui/ob";
-import { BASE_DEPTH, Scene } from "./drillScene";
+import { BASE_DEPTH, Scene, rigDepth, rigLevel } from "./drillScene";
 
 /* The drilling engine for Drill and stream mode.
    Today's counter is an ESTIMATE: today's expected share (the server's
@@ -20,7 +20,7 @@ const MILESTONE = 100_000; // cALKE: a burst every time today's counter passes o
 
 export function useDrilling() {
   const { member, nuruId } = useAuth();
-  const { allocation } = useMemberData({ allocation: true });
+  const { allocation, invites } = useMemberData({ allocation: true, invites: true });
   const [live, setLive] = useState(null);
   const [now, setNow] = useState(Date.now());
 
@@ -50,10 +50,13 @@ export function useDrilling() {
   const fraction = running ? 1 - remaining / SESSION_MS : 0;
   const balanceC = toC(allocation?.locked);
 
-  // Depth: every finished session drilled BASE_DEPTH; this one goes deeper with the tap boost.
+  // Depth: every finished drill went BASE_DEPTH; this one goes as deep as the
+  // rig level allows (active invites), further still with the tap boost.
+  const activeInvites = Number(invites?.active) || 0;
+  const level = rigLevel(activeInvites);
   const sessions = member?.sessionCount || 0;
   const pastDepth = Math.max(0, sessions - (running ? 1 : 0)) * BASE_DEPTH;
-  const sessionTarget = BASE_DEPTH * tapMult;
+  const sessionTarget = rigDepth(level) * tapMult;
   const sessionDepth = running ? sessionTarget * fraction : 0;
 
   // Smooth ticking while drilling (~30 fps); once a second otherwise.
@@ -101,6 +104,9 @@ export function useDrilling() {
     rewardsAlke: toAlke(balanceC + (running ? estToday * fraction : 0)),
     todayAlke: toAlke(running ? estToday * fraction : 0),
     perHourAlke: toAlke(estToday) / 24,
+    level,
+    activeInvites,
+    joinedInvites: Number(invites?.joined) || 0,
     depth: pastDepth + sessionDepth,
     sessionDepth,
     sessionTarget,

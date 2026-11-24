@@ -1,31 +1,13 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
-import { SESSION_MS, STREAK_MS, startSession } from "../../lib/member";
+import { STREAK_MS, startSession } from "../../lib/member";
 import { fmtAlke, toAlke } from "../../lib/genesis";
 import { Button, Notice } from "../../ui/ob";
-import { AppBar, AppPage, Ico, IconLink, Row, Stat, clock, hhmm } from "../../ui/shell";
+import { AppBar, AppPage, Ico, IconLink, clock, hhmm } from "../../ui/shell";
 import { Burst, DrillScene, RollingNumber, Vein, buzz, useDrilling, useMilestones, useVein } from "./drilling";
 import { makeShareCard } from "./shareCard";
 import { ShareSheet } from "./ShareSheet";
-
-const HOUR = SESSION_MS / 24;
-
-/** 24 cells, one per hour of the drill; the current one fills and glows. */
-function HourCells({ fraction }) {
-  const done = fraction * 24;
-  return (
-    <div className="ob-drill-cells" aria-hidden="true">
-      {Array.from({ length: 24 }, (_, i) => {
-        const f = Math.max(0, Math.min(1, done - i));
-        return (
-          <span key={i} className={f > 0 && f < 1 ? "now" : undefined}>
-            <i style={{ width: `${f * 100}%` }} />
-          </span>
-        );
-      })}
-    </div>
-  );
-}
+import { DrillDeeper } from "./DrillDeeper";
 
 /* Community drilling: one tap starts a 24-hour drill; the rig bores down
    while your ALKE Rewards climb live (real ALKE, six decimals). Tapping the rock to a steady
@@ -47,6 +29,7 @@ export default function Drill() {
   useMilestones(m.todayC, onMilestone);
 
   const vein = useVein(m);
+  const deeper = useRef(null);
   const [card, setCard] = useState(null);
   const [cardBusy, setCardBusy] = useState(false);
   const openCard = async () => {
@@ -80,7 +63,10 @@ export default function Drill() {
 
   const last = member?.lastSessionAt?.toDate?.();
   const keepBy = last ? new Date(last.getTime() + STREAK_MS) : null;
-  const hour = Math.min(24, Math.floor((m.fraction * SESSION_MS) / HOUR) + 1);
+  const info = [`Phase ${m.phase.n} · ${m.phase.name}`];
+  if (m.streak) info.push(`${m.streak}-day streak`);
+  if (m.boost > 1) info.push(`×${m.boost.toFixed(2)} streak boost`);
+  if (m.running) info.push(`${m.tapCount}/${m.tapMax} veins`);
 
   return (
     <AppPage
@@ -90,6 +76,9 @@ export default function Drill() {
           <IconLink to="/drill/live" label="Stream mode">
             <Ico.Play size={20} />
           </IconLink>
+          <button type="button" className="ob-icon-btn" aria-label="Share card" onClick={openCard} disabled={cardBusy}>
+            {cardBusy ? <span className="ob-spin" aria-hidden="true" /> : <Ico.Link size={20} />}
+          </button>
           <IconLink to="/drill/history" label="Drilling history">
             <Ico.History size={22} />
           </IconLink>
@@ -97,131 +86,55 @@ export default function Drill() {
       }
     >
       <section className="ob-drill" aria-label="Drilling">
-        <div className="ob-drill-pills">
-          <span className="ob-pill accent">
-            Phase {m.phase.n} · {m.phase.name}
-          </span>
-          {m.boost > 1 ? (
-            <span className="ob-pill gold ob-boost">
-              <Ico.Flame size={12} />×{m.boost.toFixed(2)} streak boost
-            </span>
-          ) : null}
-          {m.running ? (
-            <span className={m.tapCount ? "ob-pill gold ob-boost" : "ob-pill"}>
-              ×{m.tapMult.toFixed(1)} tap boost · {m.tapCount}/{m.tapMax} veins
-            </span>
-          ) : null}
-        </div>
+        <p className="ob-drill-info">{info.join(" · ")}</p>
 
         <DrillScene
           depth={m.depth}
           sessionDepth={m.sessionDepth}
           sessionTarget={m.sessionTarget}
           fraction={m.fraction}
+          level={m.level}
           running={m.running}
           onIdleTap={start}
           onVein={vein.strike}
           locked={!!vein.vein}
           flare={burst}
           veinKey={vein.vein && !vein.vein.empty ? vein.vein.k : 0}
-          height="clamp(260px, 42dvh, 340px)"
+          height="clamp(280px, 46dvh, 420px)"
         >
           <Burst k={burst} />
           {toast ? <span className="ob-toast">{toast}</span> : null}
         </DrillScene>
 
-        <div className="ob-drill-meter">
-          <div className="top">
-            <span>Your ALKE Rewards</span>
-            <span className="ob-drill-prov">Provisional</span>
-          </div>
-          <RollingNumber value={m.rewardsAlke} label={`Your ALKE Rewards: ${fmtAlke(m.rewardsAlke)} ALKE`} />
+        <div className="ob-drill-total">
+          <span className="lbl">ALKE Rewards · provisional</span>
+          <RollingNumber value={m.rewardsAlke} size={44} label={`Your ALKE Rewards: ${fmtAlke(m.rewardsAlke)} ALKE`} />
           {m.running ? (
-            <p className="sub" role="status">
-              <span className="dot" />
-              +{fmtAlke(m.todayAlke)} today{m.hasLive ? " (est.)" : " (up to)"} · <b>{fmtAlke(m.perHourAlke, 4)} ALKE / hr</b>
-            </p>
+            <span className="sub" role="status">
+              +{fmtAlke(m.todayAlke)} today{m.hasLive ? " (est.)" : " (up to)"} · {clock(m.remaining)} left
+            </span>
           ) : (
-            <p className="sub">
-              Start a drill to earn · <b>{fmtAlke(m.perHourAlke, 4)} ALKE / hr</b>
-            </p>
+            <>
+              <Button busy={busy} onClick={start}>
+                Start drilling
+              </Button>
+              <span className="ob-small">
+                {m.streak && keepBy ? `Start by ${hhmm(keepBy)} ${keepBy.toLocaleDateString(undefined, { weekday: "short" })} to keep your streak` : "One tap starts a 24-hour drill"}
+              </span>
+            </>
           )}
         </div>
-
-        {m.running ? (
-          <div className="ob-drill-gauge" aria-label={`Hour ${hour} of 24, ${clock(m.remaining)} left`}>
-            <div className="top">
-              <span>
-                Hour <b>{hour}</b> of 24
-              </span>
-              <span>
-                <b>{clock(m.remaining)}</b> left
-              </span>
-            </div>
-            <HourCells fraction={m.fraction} />
-            <span className="ob-small">
-              {m.tapCount >= m.tapMax ? `Max tap boost ×${m.tapMult.toFixed(1)} for today` : `Tap the rock to a steady beat: full pressure strikes a vein (${m.tapCount}/${m.tapMax} today)`}
-            </span>
-          </div>
-        ) : (
-          <div className="ob-drill-go">
-            <Button busy={busy} onClick={start}>
-              Start drilling
-            </Button>
-            <span className="ob-small">
-              {m.streak && keepBy ? `Start by ${hhmm(keepBy)} ${keepBy.toLocaleDateString(undefined, { weekday: "short" })} to keep your ${m.streak}-day streak` : "One tap starts a 24-hour drill"}
-            </span>
-          </div>
-        )}
         {error ? <Notice kind="error">{error}</Notice> : null}
+        <button type="button" className="ob-drill-cue" onClick={() => deeper.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+          Drill deeper
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
       </section>
 
-      {m.live ? (
-        <div className="ob-pulse" aria-label="Network">
-          <span>
-            <i className="dot" />
-            <b className="num">{(m.live.miningNow || 0).toLocaleString("en-US")}</b> drilling now
-          </span>
-          {m.live.poolToday ? (
-            <span>
-              Pool <b className="num">{Number(m.live.poolToday).toLocaleString("en-US")}</b> ALKE
-            </span>
-          ) : null}
-          {m.live.members ? (
-            <span>
-              <b className="num">{Math.min(100, Math.round((m.live.members / m.phase.untilMembers) * 100))}%</b> to Phase {m.phase.n + 1}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
+      <DrillDeeper ref={deeper} nuruId={nuruId} level={m.level} active={m.activeInvites} joined={m.joinedInvites} />
 
-      <div className="ob-stats">
-        <Stat label="Cold" icon={<Ico.Lock size={13} />} value={fmtAlke(toAlke(m.balanceC), 2)} unit="ALKE" to="/drill/allocation" />
-        <Stat label="Streak" icon={<Ico.Flame size={13} />} value={m.streak} unit={`best ${member?.bestStreak || 0}`} />
-        <Stat label="Drills" value={member?.sessionCount || 0} to="/drill/history" />
-      </div>
-
-      <div className="ob-stats two">
-        <Button kind="secondary" size="sm" to="/drill/live" style={{ width: "100%" }}>
-          <Ico.Play size={14} />
-          Stream mode
-        </Button>
-        <Button kind="secondary" size="sm" style={{ width: "100%" }} busy={cardBusy} onClick={openCard}>
-          <Ico.Link size={16} />
-          Share card
-        </Button>
-      </div>
-
-      <ul className="ob-list">
-        <li>
-          <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Allocation" sub="Pending, verified and locked" />
-        </li>
-        <li>
-          <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="From cALKE to ALKE in Nuru" />
-        </li>
-      </ul>
-
-      <p className="ob-small center">Today's figure is an estimate; the amount is set when the day is verified. Drilling is app participation: your phone does no computing, and drills never create new ALKE.</p>
       <Vein vein={vein.vein} onDone={vein.close} />
       <ShareSheet card={card} onClose={closeCard} />
     </AppPage>
