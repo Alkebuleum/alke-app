@@ -81,7 +81,7 @@ export const DrillDeeper = forwardRef(function DrillDeeper({ nuruId, level, acti
   };
   const more = async () => {
     try {
-      await navigator.share({ title: "Drill ALKE with me", text: message });
+      await navigator.share({ title: "Drill ALKE for free", text: message });
     } catch (e) {
       if (e?.name !== "AbortError") copyMessage();
     }

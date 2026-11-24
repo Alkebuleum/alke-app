@@ -1,27 +1,38 @@
 /* The invite message and the share links for each app (WhatsApp, Telegram,
-   X, Facebook). One place to tune the wording. Keep it honest: rewards are
-   provisional, and inviting grows your rig (depth), never "earn from friends". */
+   X, Facebook). One place to tune the wording.
+   Pitch it to crypto people, but stay on the safe side: say what MAY happen
+   on the mainnet, never what will. No price, profit, returns or "investment"
+   talk; always "no guarantees", "provisional", "not an investment", and
+   "not transferable today". Free means free: nothing to buy, ever.
+   Write it as crypto, not as a game: token, Genesis allocation, mainnet,
+   on-chain. Leave out tap, rig, levels and "climb live". */
+
+const NL = String.fromCharCode(10);
+const HEAD = "⛏️ DRILL ALKE FOR FREE!!";
 
 /** The full message, link at the top and the bottom (WhatsApp, copy). */
 export function inviteMessage({ link, phase = "Phase 1 · Genesis" }) {
   return [
-    "⛏️ DRILL ALKE WITH ME",
+    HEAD,
     "",
     link,
     "⬆️ ⬆️",
-    "I'm drilling ALKE on the ALKÉ Network. One tap a day starts a 24-hour drill, and my ALKE Rewards climb live. It's free: no payment, no crypto wallet, and your phone does no computing.",
+    "ALKE is the native fuel of the ALKÉ Network, a post-quantum blockchain in development. The Genesis allocation is open: drill your daily share of it for free. No purchase, no wallet, no hardware.",
     "",
-    `Rewards are provisional until claims open, so no guarantees. But it's early (${phase}), and every friend who joins helps my rig drill deeper 🚀`,
+    `🔐 When the ALKÉ post-quantum mainnet launches and claims open, the ALKE you drill may become claimable on-chain. We're in ${phase}, when the daily share per member is at its highest.`,
+    "",
+    "No guarantees: Genesis rewards are provisional, not an investment, and not transferable today.",
     "",
     `Join me on ALKÉ: ${link}`,
-  ].join("\n");
+  ].join(NL);
 }
 
 /** Telegram puts the link above the text itself, so the text skips the top link. */
-const telegramText = ({ link, phase }) => inviteMessage({ link, phase }).split("\n").slice(4).join("\n");
+const telegramText = ({ link, phase }) => [HEAD, "", ...inviteMessage({ link, phase }).split(NL).slice(4)].join(NL);
 
-/** X has a short limit: one line and the link. */
-const xText = ({ phase }) => `⛏️ I'm drilling ALKE on the ALKÉ Network: one tap a day, free, no wallet needed. It's early (${phase}). Join me and help my rig drill deeper:`;
+/** X has a short limit: the pitch, the caveat and the link. */
+const xText = ({ phase }) =>
+  `⛏️ Drill ALKE for free!! The Genesis allocation of the ALKÉ post-quantum blockchain is open (${phase}). Drilled ALKE may become claimable on-chain at mainnet. No purchase, no guarantees, not an investment. Join me:`;
 
 const enc = encodeURIComponent;
 
