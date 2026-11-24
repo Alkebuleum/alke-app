@@ -50,7 +50,7 @@ export const alkeOnMemberCreated = onDocumentCreated("alke_members/{id}", async 
     await notify(db, m.invitedBy, {
       kind: "invite",
       title: "Someone joined with your invite",
-      body: `${m.username || "A new member"} joined ALKE. Their invite becomes active after 3 sessions.`,
+      body: `${m.username || "A new member"} joined ALKE. Their invite becomes active after 3 drills.`,
       link: "/network",
     });
   }
@@ -65,7 +65,7 @@ export const alkeOnMemberUpdated = onDocumentUpdated("alke_members/{id}", async 
     await notify(db, after.invitedBy, {
       kind: "invite",
       title: "An invite is now active",
-      body: `${after.username || "Your invite"} finished 3 sessions. It now warms 1% of your cALKE a day.`,
+      body: `${after.username || "Your invite"} finished 3 drills. It now warms 1% of your cold ALKE a day.`,
       link: "/network",
     });
   }

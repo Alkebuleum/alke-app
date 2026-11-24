@@ -101,7 +101,7 @@ export async function sendSessionReminders(db, now = Date.now(), windowMs = 15 *
     await mark.set({ session: n, at: FieldValue.serverTimestamp() });
     await notify(db, d.id, {
       kind: "session",
-      title: "Your next session is ready",
+      title: "Your next drill is ready",
       body: `Tap to start it and keep your ${d.get("streak") || 1}-day streak going.`,
       link: "/drill",
     });
