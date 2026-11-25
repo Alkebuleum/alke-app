@@ -94,3 +94,33 @@ test("team: request info, member replies, then approve; rejected waits to reappl
   res = await memberAction(db, "AM1", { action: "get" });
   assert.equal(res.canApply, true);
 });
+
+test("ID checks: only approved ambassadors (or everyone when opened); no real-time key means manual review", async () => {
+  const { startVerification, realtimeReady } = await import("../verification.js");
+  assert.equal(realtimeReady("PLACEHOLDER"), false);
+  assert.equal(realtimeReady("sk_live_abc"), true);
+  await db.doc("alke_members/AM2").set({ username: "am2", sessionCount: 1, createdAt: ts(T0) });
+  assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { check: true }), { open: false });
+  await assert.rejects(startVerification(db, "PLACEHOLDER", "AM2", { country: "NG" }), /aren't open/);
+
+  await db.doc("alke_ambassadors/AM2").set({ status: "approved" });
+  assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { check: true }), { open: true });
+  // Nigeria is a Stripe country, but with no real key the details are collected for review.
+  assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { country: "NG" }), { method: "manual" });
+  assert.equal((await db.doc("alke_members/AM2/verification/status").get()).get("status"), "manual");
+});
+
+test("activation needs a verified identity; requireVerified counts only verified referrals", async () => {
+  await db.doc("alke_ambassadors/AM1").set({ status: "approved" }, { merge: true });
+  await assert.rejects(adminAction(db, "ADMIN", { action: "decide", id: "AM1", status: "active" }), /verified/);
+  await db.doc("alke_members/AM1/verification/status").set({ status: "verified" });
+  await adminAction(db, "ADMIN", { action: "decide", id: "AM1", status: "active" });
+  assert.equal((await db.doc("alke_ambassadors/AM1").get()).get("status"), "active");
+
+  const cfg = await config(db);
+  cfg.qualifying.requireVerified = true;
+  for (let i = 0; i < 3; i++) await db.doc(`alke_members/Q${i}/verification/status`).set({ status: "verified" });
+  const r = await referrals(db, "AM1", cfg);
+  assert.equal(r.qualified, 3);
+  assert.equal(r.unverified, 22);
+});

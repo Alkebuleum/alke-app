@@ -19,6 +19,13 @@
  *
  * The Stripe-supported list can be changed without a deploy: set
  * alke_config/verification { stripeCountries: ["US", ...] } in Firestore.
+ *
+ * Who can verify: approved, active or suspended ambassadors (they get
+ * paid, so we must know who they are), or everyone once
+ * alke_config/verification { open: true } is set.
+ * Real time or later: without a real Stripe key every country falls back
+ * to the manual review: details and ID are collected now, checked later,
+ * and the member waits until the check is done.
  */
 import { createHmac } from "node:crypto";
 import Stripe from "stripe";
@@ -42,6 +49,17 @@ const ID_TYPES = ["passport", "id_card", "driving_license", "residence_permit", 
 const MAX_FILE = 10 * 1024 * 1024;
 
 const statusRef = (db, id) => db.doc(`alke_members/${id}/verification/status`);
+
+/** A real Stripe key, so real-time checks can run (placeholders fall back to manual review). */
+export const realtimeReady = (key) => /^(sk|rk)_(live|test)_/.test(String(key || ""));
+
+/** May this member start a personhood check yet? */
+export async function verifyAllowed(db, id) {
+  const cfg = await db.doc("alke_config/verification").get();
+  if (cfg.exists && cfg.get("open") === true) return true;
+  const amb = await db.doc(`alke_ambassadors/${id}`).get();
+  return ["approved", "active", "suspended"].includes(amb.get("status"));
+}
 const recordRef = (db, id) => db.doc(`alke_verifications/${id}`);
 
 export async function stripeCountries(db) {
@@ -82,7 +100,10 @@ async function tell(db, id, status) {
 
 /* ── Start: pick the method for the country ──────────────────────────── */
 
-export async function startVerification(db, stripeKey, id, { country } = {}) {
+export async function startVerification(db, stripeKey, id, { country, check } = {}) {
+  const allowed = await verifyAllowed(db, id);
+  if (check) return { open: allowed };
+  if (!allowed) throw new HttpsError("failed-precondition", "ID checks aren't open for your account yet.");
   const cc = String(country || "").toUpperCase();
   if (!/^[A-Z]{2}$/.test(cc)) throw new HttpsError("invalid-argument", "Choose the country where you live.");
   const member = await db.doc(`alke_members/${id}`).get();
@@ -91,11 +112,11 @@ export async function startVerification(db, stripeKey, id, { country } = {}) {
   if (current.status === "verified") return { status: "verified" };
   if (current.status === "review") return { status: "review" };
 
-  if (!(await stripeCountries(db)).includes(cc)) {
+  // No real-time check for this country (or none set up yet): collect now, review later.
+  if (!realtimeReady(stripeKey) || !(await stripeCountries(db)).includes(cc)) {
     await setStatus(db, id, "manual", { method: "manual", country: cc, reason: null });
     return { method: "manual" };
   }
-  if (!stripeKey) throw new HttpsError("unavailable", "ID checks aren't switched on yet. Try again later.");
 
   const stripe = new Stripe(stripeKey);
   const session = await stripe.identity.verificationSessions.create({
@@ -178,6 +199,7 @@ export async function submitManual(db, hashSecret, id, input = {}) {
   if (!/^[A-Z]{2}$/.test(cc) || name.length < 3 || !/^\d{4}-\d{2}-\d{2}$/.test(dob) || !idType || number.length < 4) {
     throw new HttpsError("invalid-argument", "Fill in every field.");
   }
+  if (!(await verifyAllowed(db, id))) throw new HttpsError("failed-precondition", "ID checks aren't open for your account yet.");
   const current = (await statusRef(db, id).get()).data() || {};
   if (current.status === "verified") return { status: "verified" };
 

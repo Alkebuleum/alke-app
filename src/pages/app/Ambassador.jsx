@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import { NURU_URL, STATUS, ambassador, money, statusLabel } from "../../lib/ambassador";
-import { countries, useVerification, verificationLabel } from "../../lib/verification";
+import { countries, useVerification, useVerifyOpen, verificationLabel } from "../../lib/verification";
 import { Button, Field, Notice } from "../../ui/ob";
 import { AppBar, AppPage, Ico, Row, Section } from "../../ui/shell";
 import { InviteShare } from "./InviteShare";
@@ -271,6 +271,8 @@ function Tracker({ data, error, busy, act }) {
 
 function Onboarding() {
   const verification = useVerification();
+  const open = useVerifyOpen();
+  const vs = verification?.status;
   return (
     <>
       <section className="ob-hero ob-amb-hero" aria-labelledby="ambWelcome">
@@ -283,12 +285,16 @@ function Onboarding() {
           <span className="num">1</span>
           <div className="body">
             <h2>Verify your identity</h2>
-            <p>Your legal name, date of birth, government ID and country, checked by our verification provider. Your documents are never stored in the app.</p>
+            <p>
+              We need to know who we're paying. Enter your legal name, date of birth and country, and add your government ID. Where an instant check is available
+              it's done right away; otherwise the team verifies your documents later. Your documents are never kept in the app.
+            </p>
             <ul className="ob-list">
               <li>
-                <Row to="/verify" icon={<Ico.Shield />} tone="plain" title="Identity verification" end={verificationLabel(verification)} />
+                <Row to="/verify" icon={<Ico.Shield />} tone={vs === "verified" ? "green" : "plain"} title="Identity verification" end={verificationLabel(verification, open !== false)} />
               </li>
             </ul>
+            {vs === "review" ? <Notice>We've got your ID. Verification happens later; you'll continue once the team has checked it.</Notice> : null}
           </div>
         </li>
         <li className="ob-guide-step">

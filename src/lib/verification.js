@@ -27,14 +27,30 @@ export function useVerification() {
 
 export const isVerified = (v) => v?.status === "verified";
 
-/** "Done" / "In review" / "Not yet", for status rows. */
-export function verificationLabel(v) {
+/** "Done" / "In review" / "Not yet", for status rows. [open]: checks are open to this member. */
+export function verificationLabel(v, open = VERIFY_OPEN) {
   if (!v) return "…";
-  return { verified: "Done", review: "In review", pending: "In progress", processing: "Checking", needs_input: "Try again", rejected: "Not approved" }[v.status] || (VERIFY_OPEN ? "Not yet" : "Opens soon");
+  return { verified: "Done", review: "In review", pending: "In progress", processing: "Checking", needs_input: "Try again", rejected: "Not approved", manual: "Not finished" }[v.status] || (open ? "Not yet" : "Opens soon");
 }
 
-/** Personhood checks are open (Stripe set up and alkeVerifyStart/Submit deployed). Until then the Verify screen says "opening soon". */
+/** Personhood checks are open to everyone. Until then only approved ambassadors can verify (the server decides: useVerifyOpen). */
 export const VERIFY_OPEN = false;
+
+/** Whether this member may verify now: true for everyone once VERIFY_OPEN, else the server's answer (approved ambassadors). undefined while asking. */
+export function useVerifyOpen() {
+  const [open, setOpen] = useState(VERIFY_OPEN || undefined);
+  useEffect(() => {
+    if (VERIFY_OPEN) return;
+    let live = true;
+    startVerification({ check: true })
+      .then((r) => live && setOpen(r?.open === true))
+      .catch(() => live && setOpen(false));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return open;
+}
 
 const call = (name) => async (data) => (await httpsCallable(functions, name)(data)).data;
 

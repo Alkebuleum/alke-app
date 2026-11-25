@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { Bar, Button, Field, Notice, Page } from "../../ui/ob";
 import { Ico } from "../../ui/shell";
-import { countries, startVerification, submitManualVerification, uploadVerificationPhoto, useVerification, VERIFY_OPEN } from "../../lib/verification";
+import { countries, startVerification, submitManualVerification, uploadVerificationPhoto, useVerification, useVerifyOpen } from "../../lib/verification";
 
 /* Personhood check: one person, one account.
    Stripe (ID + live selfie + ID number) where it's available; elsewhere,
@@ -133,6 +133,7 @@ function ManualForm({ country, onDone }) {
 
 export default function Verify() {
   const v = useVerification();
+  const open = useVerifyOpen();
   const list = useMemo(() => countries(), []);
   const [country, setCountry] = useState("");
   const [busy, setBusy] = useState(false);
@@ -140,17 +141,17 @@ export default function Verify() {
   const [manual, setManual] = useState(false);
   const back = <Button to="/home">Back to Home</Button>;
 
-  if (v === undefined) return <Message title="Personhood check" sub="Loading…" />;
+  if (v === undefined || open === undefined) return <Message title="Personhood check" sub="Loading…" />;
 
   const status = v.status;
   if (status === "verified")
-    return <Message title="You're verified" sub="One person, one account: your personhood check is done. You can claim in Nuru when claiming opens." footer={back} />;
+    return <Message title="You're verified" sub="One person, one account: your identity check is done." footer={back} />;
   if (status === "review")
-    return <Message title="In review" sub="The ALKE team is reviewing your documents, usually within a few days. We'll notify you. Your drills keep counting meanwhile." footer={back} />;
+    return <Message title="In review" sub="We've got your details and ID. Verification happens later: the ALKE team reviews them and we'll notify you when it's done. Anything that needs a verified identity, like Ambassador pay, waits until then. Your drills keep counting meanwhile." footer={back} />;
   if (status === "processing" || (status === "pending" && new URLSearchParams(window.location.search).get("back")))
     return <Message title="Checking your ID" sub="Stripe is checking your documents. This usually takes a few minutes; we'll notify you when it's done." footer={back} />;
 
-  if (!VERIFY_OPEN)
+  if (!open)
     return (
       <Message
         title="Personhood checks open soon"
@@ -182,7 +183,7 @@ export default function Verify() {
       <Shell>
         <div>
           <h1 className="ob-title">Verify with your ID</h1>
-          <p className="ob-sub">Automatic ID checks aren't available where you live yet, so the ALKE team checks your documents by hand.</p>
+          <p className="ob-sub">An instant ID check isn't available for you yet, so we'll collect your details and ID now and the ALKE team verifies them later. You'll wait until that's done.</p>
         </div>
         <ManualForm country={cc} onDone={() => setManual(false)} />
       </Shell>
@@ -194,7 +195,7 @@ export default function Verify() {
       ? ["Verification wasn't approved", v.reason || "Your check couldn't be approved. You can try again."]
       : status === "needs_input"
         ? ["Let's try that again", "Stripe couldn't finish the check (often a blurry photo or glare). Start again when you're ready."]
-        : ["Personhood check", "One person, one account. Verify once to claim your ALKE in Nuru when claiming opens. Your drills keep counting meanwhile."];
+        : ["Verify your identity", "One person, one account. We need to know who we're paying, so verify once with your ID. Where an instant check is available it's done right away; otherwise the team reviews your documents later."];
 
   return (
     <Shell

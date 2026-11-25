@@ -23,8 +23,9 @@ export const DEFAULTS = {
   // Countries: open = applications accepted; others can register interest.
   countries: { NG: { name: "Nigeria", open: true, positions: 1 } },
   eligibility: { activeDays: 14, directReferrals: 25, minAge: 18 },
-  // A qualifying referral: this many drills within this many days of joining.
-  qualifying: { drills: 7, withinDays: 30 },
+  // A qualifying referral: this many drills within this many days of joining,
+  // and (once ID checks are open to everyone) a verified person.
+  qualifying: { drills: 7, withinDays: 30, requireVerified: false },
   compensation: {
     currency: "USDC",
     direct: 0.4,
@@ -80,18 +81,25 @@ export async function referrals(db, id, cfg, now = Date.now()) {
   const { drills, withinDays } = cfg.qualifying;
   const candidates = people.filter((d) => (Number(d.get("sessionCount")) || 0) >= drills);
   let qualified = 0;
-  // The Nth drill has to fall within the window after joining.
-  for (let i = 0; i < candidates.length; i += 300) {
-    const chunk = candidates.slice(i, i + 300);
-    const snaps = await db.getAll(...chunk.map((d) => db.doc(`alke_members/${d.id}/sessions/${drills}`)));
-    snaps.forEach((s, k) => {
-      const joined = ms(chunk[k].get("createdAt"));
+  let unverified = 0;
+  // The Nth drill has to fall within the window after joining; with
+  // requireVerified, the person must also have passed the ID check.
+  const per = cfg.qualifying.requireVerified ? 2 : 1;
+  for (let i = 0; i < candidates.length; i += 200) {
+    const chunk = candidates.slice(i, i + 200);
+    const refs = chunk.flatMap((d) => [db.doc(`alke_members/${d.id}/sessions/${drills}`), ...(per === 2 ? [db.doc(`alke_members/${d.id}/verification/status`)] : [])]);
+    const snaps = await db.getAll(...refs);
+    chunk.forEach((d, k) => {
+      const s = snaps[k * per];
+      const joined = ms(d.get("createdAt"));
       const at = ms(s.get("startedAt"));
-      if (s.exists && joined && at && at - joined <= withinDays * DAY) qualified++;
+      if (!(s.exists && joined && at && at - joined <= withinDays * DAY)) return;
+      if (per === 2 && snaps[k * per + 1].get("status") !== "verified") return void unverified++;
+      qualified++;
     });
   }
   const pending = people.filter((d) => (Number(d.get("sessionCount")) || 0) < drills && now - ms(d.get("createdAt")) <= withinDays * DAY).length;
-  return { joined: people.length, qualified, pending };
+  return { joined: people.length, qualified, pending, unverified };
 }
 
 /** The checklist, from real data. country: the one the member chose. */
@@ -280,6 +288,11 @@ export async function adminAction(db, adminId, data = {}) {
     const cur = (await ref(db, id).get()).data();
     if (!cur?.status) throw new HttpsError("not-found", "No application for that member.");
     const note = str(data.note, 2000);
+    // Nobody is paid without a verified identity.
+    if (status === "active") {
+      const v = await db.doc(`alke_members/${id}/verification/status`).get();
+      if (v.get("status") !== "verified") throw new HttpsError("failed-precondition", "Their identity isn't verified yet. Activate once the ID check is done.");
+    }
     if (status === "info_required") {
       if (!note) throw new HttpsError("invalid-argument", "Say what information you need.");
       await ref(db, id).set({ info: { request: note, askedAt: Timestamp.now(), by: adminId } }, { merge: true });
