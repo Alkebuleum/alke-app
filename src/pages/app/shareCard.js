@@ -95,7 +95,7 @@ export async function makeShareCard({ name, streak, balanceC, todayC, nuruId }) 
 
   ctx.font = font(400, 26);
   ctx.fillStyle = "rgba(255,255,255,.55)";
-  ctx.fillText("ALKE Rewards are provisional: locked until warmed and released. Estimates until verified.", 80, 1250);
+  ctx.fillText("ALKE Rewards are provisional: redeemable at mainnet under published rules. Estimates until verified.", 80, 1250);
 
   const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
   if (!blob) throw new Error("Couldn't draw the card on this device.");

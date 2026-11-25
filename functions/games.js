@@ -9,7 +9,7 @@
  *
  * These are plausibility checks, not a replay of the game: they stop made-up
  * totals, repeated results, out-of-range scores and more runs than a day
- * allows. Game warming is capped per day anyway (core.js warmDay).
+ * allows. Game XP is for the leaderboards; it doesn't pay ALKE.
  */
 import { FieldValue } from "firebase-admin/firestore";
 

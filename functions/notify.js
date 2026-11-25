@@ -120,7 +120,7 @@ export async function sendGameAlerts(db) {
     await notify(db, id, {
       kind: "games",
       title: "Today's games are ready",
-      body: "A new ALKE Hex board and 5 scored Rush runs. Game XP warms your cALKE.",
+      body: "A new ALKE Hex board and 5 scored Rush runs. Climb the leaderboards.",
       link: "/games",
     });
     sent++;

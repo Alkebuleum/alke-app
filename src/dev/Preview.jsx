@@ -24,7 +24,6 @@ import Notifications from "../pages/app/Notifications";
 import Settings from "../pages/app/Settings";
 import Leaderboard from "../pages/app/Leaderboard";
 import Chat from "../pages/app/Chat";
-import { WarmingSection } from "../pages/app/Warming";
 import Redeem from "../pages/app/Redeem";
 import Live from "../pages/app/Live";
 import { AppPage, SubBar } from "../ui/shell";
@@ -78,7 +77,7 @@ const SCREENS = {
           entries: [
             { id: "s11", session: 11, label: "Drill 11", amount: 1.925, status: "locked", breakdown: br, batch: "2026-11-22" },
             { id: "s10", session: 10, label: "Drill 10", amount: 1.54, status: "verified", breakdown: br, batch: "2026-11-21" },
-            { id: "g1", kind: "contrib", label: "Game warming", note: "0.2% of cold ALKE", amount: 0.003, status: "verified", at: ts(30) },
+            { id: "m1", kind: "match", label: "Invite match", note: "1 active invite drilled · 75% match", amount: 225, status: "locked", at: ts(30) },
           ],
         }}
       />
@@ -95,18 +94,13 @@ const SCREENS = {
           { id: "1", kind: "session", title: "Your next drill is ready", body: "Tap to start it and keep your 5-day streak going.", at: ts(0.2), read: false, link: "/drill" },
           { id: "2", kind: "invite", title: "Kojo joined with your link", body: "Kojo joined ALKE. Their invite becomes active after 3 drills.", at: ts(3), read: false, link: "/network" },
           { id: "3", kind: "games", title: "Today's challenges are ready", body: "A new Hex board and Rush challenge are waiting.", at: ts(5), read: false, link: "/games" },
-          { id: "4", kind: "invite", title: "Esi is an active invite", body: "Esi finished 3 drills. It now warms 1% of your cold ALKE a day.", at: ts(27), read: true, link: "/network" },
-          { id: "5", kind: "policy", title: "Release policy updated", body: "Draft 2: cold ALKE and how claiming works.", at: ts(50), read: true, link: "/release-policy" },
+          { id: "4", kind: "invite", title: "Esi is an active invite", body: "Esi finished 3 drills. You now earn the invite match on their drills.", at: ts(27), read: true, link: "/network" },
+          { id: "5", kind: "policy", title: "Release policy updated", body: "Draft 3: ALKE rewards and redeeming at mainnet.", at: ts(50), read: true, link: "/release-policy" },
         ]}
       />
     );
   },
   settings: Settings,
-  warming: () => (
-    <AppPage tab="drill" bar={<SubBar title="Allocation" back="/drill" />}>
-      <WarmingSection cold={120} />
-    </AppPage>
-  ),
   chat: () => {
     const t = (min) => ({ toDate: () => new Date(Date.now() - min * 60000) });
     const msgs = [

@@ -59,9 +59,6 @@ export default function Network() {
             </li>
           ) : null}
           <li>
-            <b>Your ALKE warms.</b> Each active invite warms 1% of your cold ALKE a day.
-          </li>
-          <li>
             <b>Become a Founder</b> with {FOUNDER_INVITES} active invites: a Founder badge on your profile.
           </li>
         </ol>
@@ -86,7 +83,7 @@ export default function Network() {
             />
           </li>
           <li>
-            <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Drilling, warming and converting, step by step" />
+            <Row to="/how-to-redeem" icon={<Ico.Doc />} title="How to redeem ALKE" sub="Drilling and redeeming, step by step" />
           </li>
         </ul>
       </Section>

@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { initializeApp } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
-import { dayPayouts, memberCreated, memberUpdated, recordBoost, recordSession, settleDay, shares, updateLive, warmDay } from "../core.js";
+import { dayPayouts, memberCreated, memberUpdated, recordBoost, recordSession, settleDay, shares, updateLive } from "../core.js";
 import { BRACKETS, PHASES, bracketDrill, currentBracket } from "../genesis.js";
 
 initializeApp({ projectId: "demo-alke-fn" });
@@ -112,18 +112,6 @@ test("invites: joined on sign-up, active after 3 sessions", async () => {
   const inv = await get("alke_members/AA1/allocation/invites");
   assert.equal(inv.joined, 2);
   assert.equal(inv.active, 1);
-});
-
-test("warming: invites + games (capped), never above the cold balance", async () => {
-  await db.doc("alke_scores/AA1").set({ hexXp: 100, rushXp: 0 });
-  await db.doc("alke_members/AA1/allocation/summary").set({ lastXp: 5 }, { merge: true }); // gained 95 XP → games 0.3%
-  const r = await warmDay(db, DAY);
-  assert.ok(r.members >= 3);
-  const a = await get("alke_members/AA1/allocation/summary");
-  assert.equal(a.warmRate, 1.3); // 1 active invite (1%) + games 0.3%
-  assert.equal(a.warmed, 3.9); // 300 ALKE × 1.3%
-  assert.equal(a.lastXp, 100);
-  assert.equal((await warmDay(db, DAY)).skipped, true);
 });
 
 test("live figures: members, mining now, today's estimate", async () => {

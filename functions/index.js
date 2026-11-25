@@ -14,7 +14,7 @@ import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import Stripe from "stripe";
 import { logger } from "firebase-functions/v2";
-import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, updateLive, warmDay } from "./core.js";
+import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, updateLive } from "./core.js";
 import { ACTIVE_AFTER, dayKey } from "./genesis.js";
 import { syncGames } from "./games.js";
 import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
@@ -65,17 +65,16 @@ export const alkeOnMemberUpdated = onDocumentUpdated("alke_members/{id}", async 
     await notify(db, after.invitedBy, {
       kind: "invite",
       title: "An invite is now active",
-      body: `${after.username || "Your invite"} finished 3 drills. It now warms 1% of your cold ALKE a day.`,
+      body: `${after.username || "Your invite"} finished 3 drills. You now earn the invite match on their drills.`,
       link: "/network",
     });
   }
 });
 
-/** 00:10 UTC: settle yesterday's pool, then warm everyone's cold ALKE. */
+/** 00:10 UTC: settle yesterday's drills and invite matches. */
 export const alkeDaily = onSchedule({ schedule: "10 0 * * *", timeZone: "UTC", timeoutSeconds: 540, memory: "1GiB" }, async () => {
   const day = dayKey(Date.now() - 24 * 60 * 60 * 1000);
   logger.info("settle", await settleDay(db, day));
-  logger.info("warm", await warmDay(db, day));
 });
 
 /** Every 10 minutes: the live figures the Drill screen shows. */

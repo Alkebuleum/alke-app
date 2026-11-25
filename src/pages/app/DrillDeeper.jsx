@@ -114,7 +114,6 @@ export const DrillDeeper = forwardRef(function DrillDeeper({ nuruId, level, acti
 
       <ul className="ob-deeper-rules">
         <li>A friend counts as active once they've completed 3 drills.</li>
-        <li>Each active invite also warms 1% of your cold ALKE a day.</li>
         <li>The rig boost is a bigger share of the same daily pool, like a streak. Inviting is optional: a starter rig drills every day.</li>
       </ul>
     </section>

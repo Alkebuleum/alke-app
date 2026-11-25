@@ -2,7 +2,7 @@
  *
  *   alke_days/{day}/sessions/{nuruId}      a session started that UTC day
  *   alke_members/{id}/entries/s{n}         ledger line for session n
- *   alke_members/{id}/allocation/summary   { locked, warmed, warmRate, lastXp, updatedAt }
+ *   alke_members/{id}/allocation/summary   { locked (your ALKE rewards), updatedAt }
  *   alke_members/{id}/allocation/invites   { joined, active }
  *   alke_members/{id}/entries/m{day}       ledger line for that day's invite match
  *   alke_network/genesis                   { distributed: {phase: ALKE}, spent: {bracket: ALKE}, members }
@@ -12,7 +12,7 @@
  * Amounts are ALKE (the app shows cALKE = ALKE × 1,000,000).
  */
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { ACTIVE_AFTER, SESSION_MS, TAP_BOOST, WARMING, bracketDrill, currentBracket, currentPhase, dayKey, rigBoost, rigLevel, roundAlke, streakBoost, tapBoost } from "./genesis.js";
+import { ACTIVE_AFTER, SESSION_MS, TAP_BOOST, bracketDrill, currentBracket, currentPhase, dayKey, rigBoost, rigLevel, roundAlke, streakBoost, tapBoost } from "./genesis.js";
 
 const ms = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : Number(t) || 0);
 const summaryRef = (db, id) => db.doc(`alke_members/${id}/allocation/summary`);
@@ -97,7 +97,7 @@ export async function memberUpdated(db, nuruId, before, after) {
   }
 }
 
-/* ── Daily settlement: split the day's pool, then warm ────────────────── */
+/* ── Daily settlement: pay the day's drills and invite matches ────────── */
 
 /** Each row's share of [pool]: by weight (streak × taps × rig), capped at maxPerMember × weight. */
 export function shares(pool, rows, maxPerMember) {
@@ -258,42 +258,6 @@ export async function settleDay(db, day) {
   }
   await done.set({ day, phase: phase ? phase.n : null, bracket: bracket ? bracket.n : null, cap, sessions: rows.length, weight: W, total, matched, scale: pay.scale, members, at: FieldValue.serverTimestamp() });
   return { day, phase: phase?.n ?? null, bracket: bracket?.n ?? null, sessions: rows.length, total, matched };
-}
-
-/** Warms every member's cold balance for one day: invites + games (capped). */
-export async function warmDay(db, day) {
-  const done = db.doc(`alke_settlements/${day}`);
-  const s = (await done.get()).data() || {};
-  if (s.warmed) return { day, skipped: true };
-
-  const ids = (await allDocs(db.collection("alke_members"))).map((d) => d.id);
-
-  let warmedMembers = 0;
-  const ops = [];
-  // Read each member's summary, invites and scores together, 300 members at a time.
-  for (let i = 0; i < ids.length; i += 300) {
-    const chunk = ids.slice(i, i + 300);
-    const refs = chunk.flatMap((id) => [summaryRef(db, id), invitesRef(db, id), db.doc(`alke_scores/${id}`)]);
-    const snaps = await db.getAll(...refs);
-    chunk.forEach((id, k) => {
-      const a = snaps[k * 3].data() || {};
-      const inv = snaps[k * 3 + 1].data() || {};
-      const sc = snaps[k * 3 + 2].data() || {};
-      const locked = Number(a.locked) || 0;
-      const xp = (Number(sc.hexXp) || 0) + (Number(sc.rushXp) || 0);
-      if (!locked && a.lastXp == null && !xp) return; // nothing to warm or track yet
-      const gained = a.lastXp == null ? 0 : Math.max(0, xp - a.lastXp);
-      const games = Math.min(WARMING.gamesCap, Math.floor(gained / 30) * 0.1);
-      const active = Number(inv.active) || 0;
-      const rate = Math.round((active * WARMING.perActiveInvite + games) * 100) / 100; // % per day
-      const warmed = Math.min(locked, roundAlke((Number(a.warmed) || 0) + (locked * rate) / 100));
-      if (rate > 0) warmedMembers++;
-      ops.push((b) => b.set(summaryRef(db, id), { warmed, warmRate: rate, lastXp: xp, warmedAt: FieldValue.serverTimestamp() }, { merge: true }));
-    });
-  }
-  await commitAll(db, ops);
-  await done.set({ warmed: true, warmedMembers }, { merge: true });
-  return { day, members: ids.length, warmedMembers };
 }
 
 /* ── Live figures for the Drill screen ────────────────────────────────── */

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { gameStatus, gameWarmingToday } from "../../lib/games";
+import { gameStatus, gameXpToday } from "../../lib/games";
 import { AppBar, AppPage, Ico, Row, Section, clock, useNow } from "../../ui/shell";
 
 const HEX = "0,-13 11.26,-6.5 11.26,6.5 0,13 -11.26,6.5 -11.26,-6.5";
@@ -55,29 +55,24 @@ function GameCard({ to, art, theme, name, tag, status, xp, progress, progressLab
   );
 }
 
-/* Games: your game XP and today's warming up top (like Home's main card),
-   today's two challenges, then the leaderboards. */
+/* Games: your game XP up top (like Home's main card), today's two
+   challenges, then the leaderboards. Games are just games for now. */
 export default function Games() {
   useNow(1000);
   const g = gameStatus();
-  const w = gameWarmingToday();
+  const today = gameXpToday();
 
   return (
     <AppPage tab="games" bar={<AppBar title="Games" />}>
-      <Link to="/drill/allocation" className="ob-games-hero" aria-label={`Your game XP ${g.total}. Warming from games today ${(w.warm * 0.1).toFixed(1)}% of ${(w.cap * 0.1).toFixed(1)}%`}>
+      <Link to="/games/hex/leaderboards" className="ob-games-hero" aria-label={`Your game XP ${g.total}, ${today} today. Leaderboards`}>
         <span className="lbl">Your game XP</span>
         <b className="num">{g.total.toLocaleString("en-US")}</b>
         <span className="warm">
           <span className="row num">
             <span>
-              Warming today <b>{(w.warm * 0.1).toFixed(1)}%</b> / {(w.cap * 0.1).toFixed(1)}%
+              Today <b>+{today.toLocaleString("en-US")} XP</b>
             </span>
-            <span>{w.nextAt ? `${w.nextAt - w.xp} XP to the next` : "Maxed for today"}</span>
-          </span>
-          <span className="segs" aria-hidden="true">
-            {Array.from({ length: w.cap }, (_, i) => (
-              <i key={i} className={i < w.warm ? "on" : undefined} />
-            ))}
+            <span>Leaderboards</span>
           </span>
         </span>
       </Link>
@@ -108,7 +103,7 @@ export default function Games() {
         </ul>
       </Section>
 
-      <p className="ob-small center">Game XP never becomes ALKE. It counts as a contribution that warms up to {(w.cap * 0.1).toFixed(1)}% of your cold ALKE a day.</p>
+      <p className="ob-small center">Game XP is for play and the leaderboards for now. Later, games will also help you drill deeper, along with other contributions.</p>
     </AppPage>
   );
 }

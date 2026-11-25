@@ -8,13 +8,13 @@ import { fmtAlke } from "../../lib/genesis";
 const TABS = [
   ["all", "All"],
   ["session", "Drills"],
-  ["contrib", "Contributions"],
+  ["contrib", "Invite matches"],
 ];
 
 const STATUS = {
   pending: ["Pending", "ob-pill dashed"],
   verified: ["Verified", "ob-pill green"],
-  locked: ["Locked", "ob-pill accent"],
+  locked: ["Credited", "ob-pill accent"],
   recorded: ["Recorded", "ob-pill"],
 };
 
@@ -62,7 +62,7 @@ export default function History({ demo }) {
       if (e.session != null) continue;
       const at = e.at?.toDate?.();
       if (!at) continue;
-      out.push({ key: "e" + e.id, kind: e.kind === "session" ? "session" : "contrib", at, title: e.label || "Contribution", sub: e.note || hhmm(at), amount: e.amount, status: e.status || "pending", breakdown: e.breakdown, batch: e.batch });
+      out.push({ key: "e" + e.id, kind: e.kind === "session" ? "session" : "contrib", at, title: e.label || "Invite match", sub: e.note || hhmm(at), amount: e.amount, status: e.status || "pending", breakdown: e.breakdown, batch: e.batch });
     }
     out.sort((a, b) => b.at - a.at);
     return out;
@@ -106,7 +106,7 @@ export default function History({ demo }) {
             <Ico.History size={24} />
           </span>
           <b>Nothing here yet</b>
-          <p>{filter === "contrib" ? "Lessons and discussions will show here." : "Start a drill from the Drill tab."}</p>
+          <p>{filter === "contrib" ? "Invite matches show here once an active friend drills." : "Start a drill from the Drill tab."}</p>
         </div>
       ) : null}
 

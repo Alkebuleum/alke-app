@@ -1,52 +1,39 @@
 import { AppPage, SubBar } from "../../ui/shell";
 
-/* The release policy: how cold ALKE in this app becomes ALKE in Nuru.
-   The vesting terms aren't set yet; this says what is decided and what isn't.
+/* The release policy: how ALKE rewards in this app become redeemable at the
+   ALKÉ post-quantum mainnet. The redemption and release terms aren't set yet;
+   this says what is decided and what isn't.
    Bump POLICY.version (and the date) whenever the text changes. */
-export const POLICY = { version: "Draft 2", date: "November 2026", final: false };
+export const POLICY = { version: "Draft 3", date: "November 2026", final: false };
 
 const SECTIONS = [
   [
-    "What you hold in ALKE",
+    "Your ALKE rewards",
     [
-      "Your drilling and contributions are recorded as cold ALKE, shown to six decimals. Cold ALKE is a record inside this app: it isn't a cryptocurrency, it can't be sold, sent or exchanged, and it has no cash value.",
+      "Your daily drills and invite matches are recorded as ALKE rewards, shown to six decimals. They're a record inside this app: not yet a cryptocurrency, they can't be sold, sent or exchanged, and they have no cash value.",
       "The ALKE app never holds or sends crypto and never asks for a wallet.",
     ],
   ],
   [
-    "Warming",
-    [
-      "Contributions warm a share of your cold ALKE each day: active invites, game XP up to a daily cap and, later, lessons and discussions. Drills record participation but don't warm.",
-      "Only warm ALKE can be claimed. Cold ALKE stays cold until it's warmed.",
-    ],
-  ],
-  [
-    "Who can claim",
+    "Who can redeem",
     [
       "You've passed the personhood check: one person, one account.",
-      "Your account follows the Participation Rules. Accounts that break them (duplicate accounts, fake invites, automated play) can lose their cold ALKE.",
-      "Claiming is offered only where the law allows it, so availability can depend on where you live.",
+      "Your account follows the Participation Rules. Accounts that break them (duplicate accounts, fake invites, automated play) can lose their ALKE rewards.",
+      "Redeeming is offered only where the law allows it, so availability can depend on where you live.",
     ],
   ],
   [
-    "Claiming happens in Nuru",
+    "Redeeming at mainnet",
     [
-      "When claiming opens, you claim your warm ALKE inside the Nuru app, where you have a wallet. Nuru handles every crypto step.",
-      "Claimed ALKE moves to your Nuru wallet one for one.",
-    ],
-  ],
-  [
-    "Locked, then released",
-    [
-      "Claimed ALKE starts locked in your Nuru wallet and is released over time, like vesting.",
-      "The release terms (how long, how often and in what amounts) aren't set yet. They'll be published here before claiming opens, and the terms in force when you claim are the ones that apply to that claim.",
+      "ALKE rewards are intended to become redeemable when the ALKÉ post-quantum mainnet launches.",
+      "How you redeem, and any release schedule (how long, how often and in what amounts), aren't set yet. They'll be published here before redemption opens, and the terms in force when you redeem are the ones that apply.",
     ],
   ],
   [
     "No promises",
     [
-      "No price, exchange listing or release date is promised. Nothing here is financial advice.",
-      "This policy can change before claiming opens. Each version is dated, and you'll be told in the app when it changes.",
+      "No price, exchange listing or launch date is promised. Nothing here is financial advice.",
+      "This policy can change before redemption opens. Each version is dated, and you'll be told in the app when it changes.",
     ],
   ],
 ];
@@ -57,7 +44,7 @@ export default function ReleasePolicy() {
       <div style={{ margin: "0 4px" }}>
         <span className="ob-pill">{POLICY.final ? "Published" : "Draft"}</span>
         <p className="ob-sub" style={{ marginTop: 10 }}>
-          How cold ALKE in this app becomes ALKE in Nuru. {POLICY.version} · {POLICY.date}.
+          How your ALKE rewards become redeemable at the post-quantum mainnet. {POLICY.version} · {POLICY.date}.
         </p>
       </div>
       <ol className="ob-guide">

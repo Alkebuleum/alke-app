@@ -37,12 +37,6 @@ export const RIG = { perLevel: 3, step: 0.25, max: 4 };
 export const rigLevel = (active) => Math.min(RIG.max, Math.floor((Number(active) || 0) / RIG.perLevel));
 export const rigBoost = (active) => 1 + RIG.step * rigLevel(active);
 
-/** Warming, as % of the cold balance per day. */
-export const WARMING = {
-  perActiveInvite: 1, // each invitee who has completed ACTIVE_AFTER sessions
-  gamesPerXp: 0.1 / 30, // 0.1% per 30 game XP
-  gamesCap: 0.3,
-};
 /** Until personhood checks exist, an invite counts once the invitee has this many sessions. */
 export const ACTIVE_AFTER = 3;
 

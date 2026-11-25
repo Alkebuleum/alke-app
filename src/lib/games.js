@@ -1,4 +1,5 @@
-/* ALKE Hex and ALKE Rush: game XP. Daily game XP warms cold ALKE (capped).
+/* ALKE Hex and ALKE Rush: game XP, for play and the leaderboards. (Later, games
+   will also help members drill deeper, along with other contributions.)
  *
  * The games keep their progress on the device (localStorage 'alke.hex.v1' /
  * 'alke.rush.v1'). Progress belongs to the signed-in member: switching
@@ -51,13 +52,8 @@ export function gameTotals() {
   return { hexXp, rushXp, total: hexXp + rushXp };
 }
 
-/* Games are one kind of contribution that warms cold ALKE (see
-   lib/contribution.js for all of them and their weights). */
-export const WARMING = { perInvite: 10, gameCap: 3, xpPerUnit: 30 };
-
-/** Game XP earned today (won Hex rounds, banked scored Rush runs) and the
-    warming it adds, capped. Estimate only: applied once verified server-side. */
-export function gameWarmingToday(now = new Date()) {
+/** Game XP earned today (won Hex rounds, banked scored Rush runs), from this device. */
+export function gameXpToday(now = new Date()) {
   const today = dayKey(now);
   const onToday = (t) => t && dayKey(new Date(t)) === today;
   const hex = read("alke.hex.v1") || {};
@@ -65,8 +61,7 @@ export function gameWarmingToday(now = new Date()) {
   let xp = 0;
   for (const h of hex.history || []) if (onToday(h.t) && h.result === "won") xp += int(h.xp);
   for (const h of rush.history || []) if (onToday(h.t) && h.result === "banked" && !h.practice) xp += int(h.xp) + int(h.bonus);
-  const warm = Math.min(WARMING.gameCap, Math.floor(xp / WARMING.xpPerUnit));
-  return { xp, warm, cap: WARMING.gameCap, nextAt: warm < WARMING.gameCap ? (warm + 1) * WARMING.xpPerUnit : null };
+  return xp;
 }
 
 /** Today's state of both games, for the Home and Games screens. */

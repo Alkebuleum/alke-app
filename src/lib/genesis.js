@@ -1,9 +1,9 @@
 /* The ALKÉ Genesis Program: how the 10,000,000 ALKE for the first members is
- * shared out, in one place. The server applies these (pool split,
- * verification, warming); the app shows them and estimates from them.
+ * shared out, in one place. The server applies these (brackets, pool split,
+ * invite match); the app shows them and estimates from them.
  *
- * Unit: 1 ALKE = 1,000,000 cALKE (cold ALKE). A fixed rate, like satoshis.
- * Only warmed cALKE converts; unwarmed cALKE stays cold.
+ * Unit: amounts are kept in micro-ALKE (cALKE): 1 ALKE = 1,000,000, like
+ * satoshis. Members only ever see ALKE rewards.
  */
 
 export const C_PER_ALKE = 1_000_000;
