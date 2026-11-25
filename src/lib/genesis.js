@@ -12,8 +12,24 @@ export const GENESIS_POOL = 10_000_000; // ALKE
 /* Each day's pool is shared by everyone with a verified session that day, up
    to a per-member maximum; what isn't handed out goes back to the pool. A
    phase ends at its member milestone or when its pool is used up. */
+/* Phase 1 runs in brackets by total members. Brackets 1-4 pay a fixed drill
+   reward (`drill` [low, high]: boosts move you from low to high) out of
+   their own `budget`; bracket 5 shares the daily pool. A bracket ends at its
+   member count or when its budget is spent. `match`: the invite match, the
+   share of each active invitee's drill reward their inviter also earns that
+   day (direct invites; the inviter drills that day too; at most the
+   inviter's own drill reward). It ends with Phase 1. Keep in step with
+   functions/genesis.js. */
+export const BRACKETS = [
+  { n: 1, upTo: 100, drill: [300, 500], match: 0.75, budget: 400_000 },
+  { n: 2, upTo: 500, drill: [100, 200], match: 0.5, budget: 600_000 },
+  { n: 3, upTo: 1_000, drill: [40, 80], match: 0.25, budget: 400_000 },
+  { n: 4, upTo: 5_000, drill: [10, 20], match: 0.1, budget: 600_000 },
+  { n: 5, upTo: Infinity, match: 0.05 },
+];
+
 export const PHASES = [
-  { n: 1, name: "Genesis", untilMembers: 250_000, pool: 4_000_000, daily: 30_000, maxPerMember: 1 },
+  { n: 1, name: "Genesis", untilMembers: 250_000, pool: 4_000_000, daily: 30_000, maxPerMember: 5, brackets: BRACKETS },
   { n: 2, name: "Growth", untilMembers: 1_000_000, pool: 3_000_000, daily: 15_000, maxPerMember: 0.5 },
   { n: 3, name: "Expansion", untilMembers: 3_000_000, pool: 3_000_000, daily: 7_500, maxPerMember: 0.25 },
 ];
@@ -64,4 +80,24 @@ export const shortC = (c) => {
    the day settles. Keep in step with functions/genesis.js. */
 export const TAP_BOOST = { combo: 25, step: 0.2, perDay: 10 };
 export const tapBoost = (count) => Math.round((1 + TAP_BOOST.step * Math.min(Math.max(0, count || 0), TAP_BOOST.perDay)) * 100) / 100;
+
+/** The bracket now: the server's (alke_network/live), else the one for the member count. */
+export function bracketFor(live) {
+  if (live?.bracket?.n) return { ...BRACKETS.find((b) => b.n === live.bracket.n), ...live.bracket, upTo: live.bracket.upTo ?? Infinity };
+  const members = Number(live?.members) || 0;
+  if (members >= PHASES[0].untilMembers) return null;
+  return BRACKETS.find((b) => members <= b.upTo) || null;
+}
+
+/* Every boost maxed: streak ×1.25 × veins ×3 × rig ×2 (Level 4, drillScene RIG). */
+const MAX_WEIGHT = streakBoost(Infinity) * tapBoost(TAP_BOOST.perDay) * 2;
+const floorAlke = (v) => Math.floor(v * C_PER_ALKE) / C_PER_ALKE;
+
+/** A fixed bracket's drill reward (ALKE) for share weight [w]: low at ×1, high with every boost. */
+export function bracketDrill(bracket, w) {
+  const [lo, hi] = bracket.drill;
+  return floorAlke(lo + (hi - lo) * Math.min(1, Math.max(0, (w - 1) / (MAX_WEIGHT - 1))));
+}
+
+export const pctMatch = (m) => `${Math.round((Number(m) || 0) * 100)}%`;
 export const utcDay = (d = Date.now()) => new Date(d).toISOString().slice(0, 10);

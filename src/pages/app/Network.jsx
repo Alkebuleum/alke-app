@@ -1,5 +1,5 @@
 import { useAuth } from "../../auth/AuthProvider";
-import { FOUNDER_INVITES } from "../../lib/genesis";
+import { FOUNDER_INVITES, pctMatch } from "../../lib/genesis";
 import { AppBar, AppPage, Ico, Row, Section, Stat } from "../../ui/shell";
 import { useDrilling } from "./drilling";
 import { FounderCard } from "./FounderCard";
@@ -19,7 +19,7 @@ export default function Network() {
 
   return (
     <AppPage tab="network" bar={<AppBar title="Network" />}>
-      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} more={false} />
+      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} bracket={m.bracket} members={m.live?.members ?? null} more={false} />
 
       <div className="ob-stats">
         <Stat label="Joined" value={m.joinedInvites} />
@@ -52,6 +52,12 @@ export default function Network() {
           <li>
             <b>Your rig grows.</b> Every {RIG.perLevel} active invites add a level: +{Math.round(RIG.step * 100)}% to your daily ALKE share, up to ×{rigBoost(RIG.max)} at Level {RIG.max}. It's a bigger share of the same daily pool, like a streak.
           </li>
+          {m.bracket?.match ? (
+            <li>
+              <b>You earn the invite match.</b> In Genesis bracket {m.bracket.n}, each day an active friend drills, you also earn {pctMatch(m.bracket.match)} of their drill reward
+              (on days you drill too, up to your own drill reward). It shrinks as the network grows and ends with Phase 1.
+            </li>
+          ) : null}
           <li>
             <b>Your ALKE warms.</b> Each active invite warms 1% of your cold ALKE a day.
           </li>

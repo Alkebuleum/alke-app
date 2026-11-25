@@ -1,5 +1,5 @@
 import { CONTRIBUTIONS, pct } from "../../lib/contribution";
-import { GENESIS_POOL, PHASES, STREAK_BOOSTS, TAP_BOOST, tapBoost } from "../../lib/genesis";
+import { BRACKETS, GENESIS_POOL, PHASES, STREAK_BOOSTS, TAP_BOOST, pctMatch, tapBoost } from "../../lib/genesis";
 import { RIG, rigBoost } from "./drillScene";
 import { AppPage, Ico, Row, SubBar } from "../../ui/shell";
 import { useVerification, verificationLabel } from "../../lib/verification";
@@ -33,8 +33,8 @@ export default function Redeem() {
       <ol className="ob-guide">
         <Step n="1" title="Drill cold ALKE">
           <p>
-            Start a drill each day. Everyone with a verified drill shares that day's pool, up to a per-member maximum. Your share arrives as <b>cold ALKE</b>: locked,
-            not transferable.
+            Start a drill each day. Early in Genesis each drill earns a fixed reward that shrinks as the network grows; after that, everyone with a verified drill
+            shares that day's pool, up to a per-member maximum. Your ALKE arrives as <b>cold ALKE</b>: locked, not transferable.
           </p>
           <ul className="ob-list">
             {PHASES.map((p) => (
@@ -55,7 +55,30 @@ export default function Redeem() {
             ))}
           </ul>
           <p>
-            Boosts earn a bigger share of the same pool: streaks {STREAK_BOOSTS.slice().reverse().map((b) => `×${b.boost} at ${b.days} days`).join(", ")}; your rig ×
+            <b>Phase 1 brackets.</b> Each bracket ends at its member count or when its budget is spent. The invite match is what you also earn from each active friend's
+            drill; it ends with Phase 1.
+          </p>
+          <ul className="ob-list">
+            {BRACKETS.map((b, i) => {
+              const from = i ? BRACKETS[i - 1].upTo + 1 : 1;
+              return (
+                <li key={b.n}>
+                  <div className="ob-row static" style={{ minHeight: 52 }}>
+                    <span className="tx">
+                      <b>Bracket {b.n}</b>
+                      <span>{Number.isFinite(b.upTo) ? `Members ${from.toLocaleString("en-US")}–${b.upTo.toLocaleString("en-US")}` : `${from.toLocaleString("en-US")}+ members`}</span>
+                    </span>
+                    <span className="end" style={{ flexDirection: "column", alignItems: "flex-end", gap: 0 }}>
+                      <b className="num">{b.drill ? `${b.drill[0]}–${b.drill[1]} ALKE/drill` : `Share of ${PHASES[0].daily.toLocaleString("en-US")}/day`}</b>
+                      <span style={{ fontSize: 12 }}>{pctMatch(b.match)} invite match</span>
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <p>
+            In a fixed bracket, boosts move you from the low to the high end. After that, boosts earn a bigger share of the same pool: streaks {STREAK_BOOSTS.slice().reverse().map((b) => `×${b.boost} at ${b.days} days`).join(", ")}; your rig ×
             {rigBoost(1)} per level (every {RIG.perLevel} active invites, up to ×{rigBoost(RIG.max)}); and veins up to ×{tapBoost(TAP_BOOST.perDay)} a day. The Genesis
             Program shares {GENESIS_POOL.toLocaleString("en-US")} ALKE in total.
           </p>

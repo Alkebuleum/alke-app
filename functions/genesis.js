@@ -4,8 +4,25 @@
 
 export const C_PER_ALKE = 1_000_000;
 
+/* Phase 1 runs in brackets by total members. Brackets 1-4 pay a fixed drill
+   reward (`drill` [low, high]: boosts move you from low to high) out of
+   their own `budget`; bracket 5 shares `daily` by weight, capped at
+   maxPerMember × weight, out of whatever is left of the phase pool. A
+   bracket ends at its member count or when its budget is spent. `match` is
+   the invite match: the share of each active invitee's drill reward their
+   inviter also earns that day (direct invites only; the inviter must drill
+   that day; at most the inviter's own drill reward). Invite match ends with
+   Phase 1. Keep in step with the app's src/lib/genesis.js. */
+export const BRACKETS = [
+  { n: 1, upTo: 100, drill: [300, 500], match: 0.75, budget: 400_000 },
+  { n: 2, upTo: 500, drill: [100, 200], match: 0.5, budget: 600_000 },
+  { n: 3, upTo: 1_000, drill: [40, 80], match: 0.25, budget: 400_000 },
+  { n: 4, upTo: 5_000, drill: [10, 20], match: 0.1, budget: 600_000 },
+  { n: 5, upTo: Infinity, match: 0.05 },
+];
+
 export const PHASES = [
-  { n: 1, name: "Genesis", untilMembers: 250_000, pool: 4_000_000, daily: 30_000, maxPerMember: 1 },
+  { n: 1, name: "Genesis", untilMembers: 250_000, pool: 4_000_000, daily: 30_000, maxPerMember: 5, brackets: BRACKETS },
   { n: 2, name: "Growth", untilMembers: 1_000_000, pool: 3_000_000, daily: 15_000, maxPerMember: 0.5 },
   { n: 3, name: "Expansion", untilMembers: 3_000_000, pool: 3_000_000, daily: 7_500, maxPerMember: 0.25 },
 ];
@@ -34,6 +51,23 @@ export function currentPhase(members, distributed = {}) {
   return (
     PHASES.find((p) => members < p.untilMembers && (distributed[p.n] || 0) < p.pool) || null
   );
+}
+
+/** The phase's current bracket: the first whose member count and budget aren't reached
+    (null for a phase without brackets). */
+export function currentBracket(phase, members, spent = {}) {
+  if (!phase?.brackets) return null;
+  return phase.brackets.find((b) => members <= b.upTo && (b.budget == null || (spent[b.n] || 0) < b.budget)) || null;
+}
+
+/** The highest share weight: every boost maxed (streak × taps × rig). */
+export const MAX_WEIGHT = () => streakBoost(30) * tapBoost(TAP_BOOST.perDay) * rigBoost(RIG.perLevel * RIG.max);
+
+/** A fixed bracket's drill reward for share weight [w]: low at ×1, high with every boost maxed. */
+export function bracketDrill(bracket, w) {
+  const [lo, hi] = bracket.drill;
+  const t = Math.min(1, Math.max(0, (w - 1) / (MAX_WEIGHT() - 1)));
+  return roundAlke(lo + (hi - lo) * t);
 }
 
 /** UTC day key, e.g. "2026-11-13". */

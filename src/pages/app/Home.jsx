@@ -110,7 +110,7 @@ export default function Home() {
         <Stat to="/games" label="Game XP" value={games.total} />
       </div>
 
-      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} />
+      <FounderCard nuruId={nuruId} phase={phase} active={m.activeInvites} bracket={m.bracket} members={m.live?.members ?? null} />
 
       <Series />
 

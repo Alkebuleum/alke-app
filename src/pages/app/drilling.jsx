@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/AuthProvider";
 import { SESSION_MS, liveStreak, sessionRemaining } from "../../lib/member";
-import { TAP_BOOST, fmtAlke, phaseFor, streakBoost, tapBoost, toAlke, toC, utcDay } from "../../lib/genesis";
+import { TAP_BOOST, bracketDrill, bracketFor, fmtAlke, phaseFor, streakBoost, tapBoost, toAlke, toC, utcDay } from "../../lib/genesis";
 import { sendBoost, watchBoost } from "../../lib/boost";
 import { watchLive } from "../../lib/network";
 import { useMemberData } from "../../lib/useMemberData";
@@ -9,10 +9,11 @@ import { MarkPaths } from "../../ui/ob";
 import { BASE_DEPTH, Scene, rigBoost, rigDepth, rigLevel } from "./drillScene";
 
 /* The drilling engine for Drill and stream mode.
-   Today's counter is an ESTIMATE: today's expected share (the server's
-   estPerSession, or the phase's per-member maximum until it publishes one),
-   times the streak boost and today's tap boost, filled in over the 24-hour
-   session. The real amount is set when the day is verified.
+   Today's counter is an ESTIMATE, filled in over the 24-hour session. In a
+   fixed Genesis bracket it's the bracket's drill reward for your boosts
+   (streak × rig × taps move it from low to high); otherwise today's expected
+   share (the server's estPerSession, or the phase's per-member maximum until
+   it publishes one) times those boosts. The real amount is set when the day is verified.
    Depth is a picture of progress: BASE_DEPTH metres a session, deeper with
    today's tap boost (each vein struck drills further). */
 
@@ -48,8 +49,12 @@ export function useDrilling() {
   const activeInvites = Number(invites?.active) || 0;
   const level = rigLevel(activeInvites);
   const rig = rigBoost(level);
-  const baseC = toC(perSession) * boost * rig; // today's share before the tap boost (streak × rig)
-  const estToday = baseC * tapMult;
+  const bracket = bracketFor(live);
+  const fixed = !!bracket?.drill;
+  // Today's estimate (cALKE) with [taps] tap boosts.
+  const estFor = (taps) => (fixed ? toC(bracketDrill(bracket, boost * rig * tapBoost(taps))) : toC(perSession) * boost * rig * tapBoost(taps));
+  const estToday = estFor(tapCount);
+  const veinC = Math.max(0, estFor(tapCount + 1) - estToday); // what the next vein adds
   const fraction = running ? 1 - remaining / SESSION_MS : 0;
   const balanceC = toC(allocation?.locked);
 
@@ -93,8 +98,9 @@ export function useDrilling() {
     tapMult,
     tapMax: TAP_BOOST.perDay,
     boostNow,
-    baseC,
+    veinC,
     phase,
+    bracket,
     live,
     hasLive: live?.estPerSession != null,
     estToday,
@@ -137,7 +143,7 @@ export function useMilestones(value, onMilestone) {
 export function useVein(m) {
   const [vein, setVein] = useState(null);
   const busy = useRef(false);
-  const { boostNow, baseC, tapCount, tapMax } = m;
+  const { boostNow, veinC, tapCount, tapMax } = m;
   const strike = useCallback(async () => {
     if (busy.current) return;
     busy.current = true;
@@ -148,7 +154,7 @@ export function useVein(m) {
       }
       const r = await boostNow();
       if (r?.ok) {
-        setVein({ k: Date.now(), amountC: Math.round(baseC * TAP_BOOST.step), mult: r.mult, count: r.count, perDay: r.perDay });
+        setVein({ k: Date.now(), amountC: Math.round(veinC), mult: r.mult, count: r.count, perDay: r.perDay });
         buzz([40, 40, 40, 40, 140]);
       } else if (r?.reason === "cap") {
         setVein({ k: Date.now(), empty: true, mult: r.mult, count: r.count, perDay: r.perDay });
@@ -160,7 +166,7 @@ export function useVein(m) {
     } finally {
       busy.current = false;
     }
-  }, [boostNow, baseC, tapCount, tapMax]);
+  }, [boostNow, veinC, tapCount, tapMax]);
   const close = useCallback(() => setVein(null), []);
   return { vein, strike, close };
 }
