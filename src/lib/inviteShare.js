@@ -7,6 +7,8 @@
    Write it as crypto, not as a game: token, Genesis allocation, mainnet,
    on-chain. Leave out tap, rig, levels and "climb live". */
 
+import { isInsideNuru } from "./account";
+
 const NL = String.fromCharCode(10);
 const HEAD = "⛏️ DRILL ALKE FOR FREE!!";
 
@@ -44,8 +46,24 @@ export const SHARE_TARGETS = {
   facebook: (o) => `https://www.facebook.com/sharer/sharer.php?u=${enc(o.link)}`,
 };
 
+/* Opens the app's share page in a new window. Not with "noopener": that
+   makes window.open return null even when the window opened, and the
+   fallback below then also sent this page to wa.me / t.me, which redirect
+   to whatsapp:// / intent:// links an in-app browser can't open (the error
+   page inside Nuru). The opener link is cut by hand instead. Only a real
+   pop-up block falls back to this page, and never inside Nuru, whose browser
+   always opens new windows outside itself. */
 export function openShare(target, o) {
   const url = SHARE_TARGETS[target](o);
-  const w = window.open(url, "_blank", "noopener,noreferrer");
-  if (!w) window.location.href = url; // pop-ups blocked (some in-app browsers)
+  const w = window.open(url, "_blank");
+  if (w) {
+    try {
+      w.opener = null;
+    } catch {
+      /* cross-origin already: fine */
+    }
+    return;
+  }
+  if (isInsideNuru()) return;
+  window.location.href = url; // pop-ups blocked (some in-app browsers)
 }
