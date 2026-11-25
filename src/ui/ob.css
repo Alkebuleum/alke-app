@@ -828,16 +828,9 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-founder-sub b { color: var(--text); font-weight: 600; }
 .ob-founder-sub a { color: #FFDB8E; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .ob-founder-sub a::after { content: " →"; }
-/* Genesis invite match, at the top of the Founder card */
-.ob-founder-match { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
-.ob-founder-match .kick { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
-.ob-founder-match .big { margin: 0; font-family: var(--display); font-size: 19px; line-height: 1.2; font-weight: 600; letter-spacing: -.02em; text-wrap: balance; }
-.ob-founder-match .big b { color: #FFDB8E; font-weight: 700; }
-.ob-founder-match .bar { display: flex; flex-direction: column; gap: 6px; }
-.ob-founder-match .track { display: block; height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
-.ob-founder-match .track i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #FFDB8E, #EBA33B); }
-.ob-founder-match .txt { font-size: 13.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
-.ob-founder-match .txt b { color: var(--text); font-weight: 700; }
+/* Genesis invite match: how full this bracket is (same look as the Founder segments) */
+.ob-founder-prog .track { display: block; height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.ob-founder-prog .track i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #FFDB8E, #EBA33B); box-shadow: 0 0 10px rgba(245, 184, 77, .45); }
 .ob-match-cover { width: 100%; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; text-align: left; }
 .ob-match-video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: #120E22; border: 1px solid rgba(198, 182, 255, .18); }
 
