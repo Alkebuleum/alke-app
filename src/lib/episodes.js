@@ -33,14 +33,12 @@ export function markWatched(id) {
 }
 
 /* The Genesis invite match explainer (HeyGen), on the invite card while the
-   match runs. Drop the files in public/videos/ and set `src` (and `poster`,
-   `secs`, `aspect`: "16 / 9", "1 / 1" or "9 / 16"). Until `src` is set the
-   slot is hidden in the live app (a placeholder shows in dev only). */
+   match runs, with the series thumbnail. Files in public/videos/; without
+   `src` the slot is hidden. */
 export const GENESIS_VIDEO = {
   id: "genesis-invite",
   title: "Early wins: the Genesis invite match",
   src: `${base}videos/alke-genesis-invite.mp4`,
-  poster: null, // add public/videos/alke-genesis-invite.jpg and set it here; until then the cover is the gold-on-purple play tile
+  poster: `${base}videos/alke-genesis-invite.jpg`,
   secs: 208,
-  aspect: "16 / 9",
 };
