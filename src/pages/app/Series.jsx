@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { EPISODES, mmss, watched } from "../../lib/episodes";
 
-/* The ALKÉ Network series: the episodes as a row of thumbnails that scrolls
-   sideways. Tapping one opens the player on that episode. */
+/* The ALKÉ Network series: the episodes as a list (thumbnail, then title),
+   so Home only scrolls one way. Tapping one opens the player on that episode. */
 export function Series() {
   const seen = watched();
   return (

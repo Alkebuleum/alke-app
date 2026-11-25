@@ -835,9 +835,16 @@ a.ob-row:active, button.ob-row:active { background: rgba(255, 255, 255, .04); }
 .ob-match-video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: #120E22; border: 1px solid rgba(198, 182, 255, .18); }
 
 /* The ALKÉ Network series: thumbnails that scroll sideways (Series.jsx) */
-.ob-series { list-style: none; margin: 0 -16px; padding: 2px 16px 6px; display: grid; grid-auto-flow: column; grid-auto-columns: min(72%, 280px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; }
-.ob-series::-webkit-scrollbar { display: none; }
-.ob-series li { scroll-snap-align: start; min-width: 0; }
+.ob-series { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ob-series li { min-width: 0; }
+/* In the list each episode is a row: thumbnail left, title right */
+.ob-series .ob-ep { flex-direction: row; align-items: center; gap: 12px; }
+.ob-series .ob-ep .thumb { flex: 0 0 42%; max-width: 168px; border-radius: 12px; }
+.ob-series .ob-ep .play { width: 32px; height: 32px; margin: -16px 0 0 -16px; }
+.ob-series .ob-ep .play svg { width: 12px; height: 12px; }
+.ob-series .ob-ep .len { right: 6px; bottom: 6px; font-size: 11px; }
+.ob-series .ob-ep .seen { left: 6px; top: 6px; padding: 1px 7px; font-size: 10.5px; }
+.ob-series .ob-ep .meta { flex: 1; min-width: 0; }
 .ob-ep { display: flex; flex-direction: column; gap: 8px; color: var(--text); text-decoration: none; }
 .ob-ep:hover { color: var(--text); }
 .ob-ep .thumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #120E22; border: 1px solid rgba(198, 182, 255, .18); }
