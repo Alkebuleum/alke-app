@@ -16,6 +16,7 @@ import Stripe from "stripe";
 import { logger } from "firebase-functions/v2";
 import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, updateLive } from "./core.js";
 import { ACTIVE_AFTER, dayKey } from "./genesis.js";
+import { migrationGuard, resolveMoved } from "./identity.js";
 import { syncGames } from "./games.js";
 import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
 import { adminAction as ambassadorAdmin, memberAction as ambassadorAction } from "./ambassador.js";
@@ -36,16 +37,25 @@ const BREVO_KEY = defineSecret("BREVO_API_KEY");
 
 initializeApp();
 const db = getFirestore();
+// Triggers stand down for the Alker ID migration's own writes (identity.js).
+const duringMigration = migrationGuard(db);
 
 /** A session started: log it for its day; History shows it as Pending. */
 export const alkeOnSession = onDocumentCreated("alke_members/{id}/sessions/{n}", async (e) => {
+  if (await duringMigration(e.time)) return;
   if (e.data) await recordSession(db, e.params.id, e.data.data());
 });
 
-/** A member joined: credit the inviter. */
+/** A member joined: credit the inviter. An invite link from before the
+    Alker ID switch (?ref=N…) is corrected to the inviter's Alker ID first. */
 export const alkeOnMemberCreated = onDocumentCreated("alke_members/{id}", async (e) => {
-  if (!e.data) return;
-  const m = e.data.data();
+  if (!e.data || (await duringMigration(e.time))) return;
+  const m = { ...e.data.data() };
+  const by = await resolveMoved(db, m.invitedBy);
+  if (by !== m.invitedBy) {
+    await e.data.ref.update({ invitedBy: by });
+    m.invitedBy = by;
+  }
   await memberCreated(db, e.params.id, m);
   if (m.invitedBy && m.invitedBy !== e.params.id) {
     await notify(db, m.invitedBy, {
@@ -59,6 +69,7 @@ export const alkeOnMemberCreated = onDocumentCreated("alke_members/{id}", async 
 
 /** A member's sessions grew: an invite becomes active after a few sessions. */
 export const alkeOnMemberUpdated = onDocumentUpdated("alke_members/{id}", async (e) => {
+  if (await duringMigration(e.time)) return;
   const before = e.data.before.data() || {};
   const after = e.data.after.data() || {};
   await memberUpdated(db, e.params.id, before, after);

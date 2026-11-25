@@ -213,6 +213,12 @@ export async function reserveAlkerId(db, nuruId) {
   const member = await memberRef.get();
   if (!member.exists) throw new HttpsError("failed-precondition", "Finish creating your account first.");
   if (member.get("alkerId")) return { alkerId: member.get("alkerId") };
+  // After the Alker ID switch the Nuru ID IS the Alker ID (Nuru reserved it
+  // in the registry when it was issued): nothing new to reserve.
+  if (/^ALK-\d{4}-\d{4}-\d{4}$/.test(nuruId)) {
+    await memberRef.update({ alkerId: nuruId, alkerIdAt: FieldValue.serverTimestamp() });
+    return { alkerId: nuruId };
+  }
 
   const ain = (await db.doc(`nuru_people/${nuruId}`).get()).get("ain") || null;
   for (let i = 0; i < 8; i++) {

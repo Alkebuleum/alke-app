@@ -2,6 +2,7 @@ import { cloneElement, lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { Loading } from "./ui/kit";
+import { useMaintenance } from "./lib/maintenance";
 import { namesOf, normInvite } from "./lib/member";
 import { refreshPush } from "./lib/notifications";
 import { SITE_URL, usesSiteWelcome } from "./lib/handoff";
@@ -251,6 +252,20 @@ function Shell() {
     const code = new URLSearchParams(search).get("invite");
     if (code) rememberInvite(code);
   }, [search]);
+
+  // A short maintenance pause (e.g. the Alker ID switch): nothing else runs.
+  const paused = useMaintenance();
+  if (paused) {
+    return (
+      <div className="stage">
+        <div className="device">
+          <div className="screen">
+            <Loading label="We're upgrading ALKÉ. Back in a moment…" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="stage">

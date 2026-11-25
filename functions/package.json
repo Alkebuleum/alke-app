@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "firebase emulators:exec --only firestore --project demo-alke-fn \"node --test test/core.test.mjs\"",
+    "test:identity": "firebase emulators:exec --only firestore --project demo-alke-id \"node --test test/identity.test.mjs\"",
     "test:ambassador": "firebase emulators:exec --only firestore --project demo-alke-amb \"node --test test/ambassador.test.mjs\"",
     "test:signup": "firebase emulators:exec --only firestore,auth --project demo-alke-fn \"node --test test/signup.test.mjs test/community.test.mjs\""
   },
