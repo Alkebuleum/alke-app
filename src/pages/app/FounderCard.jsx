@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BRACKETS, FOUNDER_INVITES, pctMatch } from "../../lib/genesis";
+import { GENESIS_VIDEO, markWatched, mmss, watched } from "../../lib/episodes";
 import { InviteShare } from "./InviteShare";
 import { RIG, rigBoost } from "./drillScene";
 
@@ -83,6 +85,52 @@ function InviteMatch({ bracket, members }) {
       ) : (
         <span className="ob-small">{next ? `Drops to ${pctMatch(next.match)} as the network grows.` : "The invite match ends with Phase 1."}</span>
       )}
+      <MatchVideo />
     </div>
+  );
+}
+
+/** The explainer video: a tap-to-play cover; nothing downloads until tapped. */
+function MatchVideo() {
+  const v = GENESIS_VIDEO;
+  const [playing, setPlaying] = useState(false);
+  const [seen, setSeen] = useState(() => watched().has(v.id));
+  if (!v.src) {
+    if (!import.meta.env.DEV) return null;
+    return (
+      <div className="ob-match-video empty" style={{ aspectRatio: v.aspect }}>
+        <span>Video slot · set GENESIS_VIDEO.src in lib/episodes.js</span>
+      </div>
+    );
+  }
+  if (playing) {
+    return (
+      <video
+        className="ob-match-video"
+        style={{ aspectRatio: v.aspect }}
+        src={v.src}
+        poster={v.poster || undefined}
+        controls
+        autoPlay
+        playsInline
+        preload="auto"
+        onEnded={() => setSeen(markWatched(v.id).has(v.id))}
+        aria-label={v.title}
+      />
+    );
+  }
+  return (
+    <button type="button" className="ob-match-video cover" style={{ aspectRatio: v.aspect }} onClick={() => setPlaying(true)} aria-label={`Play: ${v.title}, ${mmss(v.secs)}`}>
+      {v.poster ? <img src={v.poster} alt="" loading="lazy" /> : null}
+      <span className="play" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path d="M8 5.5v13l11-6.5z" fill="#1C1030" />
+        </svg>
+      </span>
+      <span className="cap">
+        <b>{seen ? "Watch again" : "Watch: how early + invites win"}</b>
+        <small className="num">{mmss(v.secs)}</small>
+      </span>
+    </button>
   );
 }
