@@ -164,7 +164,15 @@ export async function sessionNuruId(user = auth.currentUser, forceRefresh = fals
  */
 export async function openNuruAccount(user = auth.currentUser) {
   if (!user) throw new AccountError("Not signed in.");
-  const existing = (await sessionNuruId(user)) || (await sessionNuruId(user, true).catch(() => null));
+  let existing = (await sessionNuruId(user)) || (await sessionNuruId(user, true).catch(() => null));
+  // A cached token can be up to an hour old. After the Alker ID switch the
+  // server has given everyone a new ID; an old-shape one (N… / AIN) on a
+  // token more than a few minutes old is re-checked once, so nobody opens
+  // the app as their retired ID (and starts a duplicate account there).
+  if (existing && !/^ALK-\d{4}-\d{4}-\d{4}$/.test(existing)) {
+    const issued = Date.parse((await user.getIdTokenResult()).issuedAtTime) || 0;
+    if (Date.now() - issued > 5 * 60 * 1000) existing = (await sessionNuruId(user, true).catch(() => existing)) || existing;
+  }
   if (existing) return { nuruId: existing, created: false };
   try {
     const res = await httpsCallable(functions, "nuruAuth")({});

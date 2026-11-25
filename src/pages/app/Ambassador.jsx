@@ -151,7 +151,7 @@ function Eligibility({ data, busy, act }) {
     <Section title="Your eligibility">
       <Field id="amb-country" label="Country of residence">
         <div className="ob-input">
-          <select id="amb-country" className="ob-select" value={country} disabled={busy} onChange={(e) => act(() => ambassador.setCountry(e.target.value))}>
+          <select id="amb-country" className="ob-select" value={country} disabled={busy} onChange={(e) => e.target.value && act(() => ambassador.setCountry(e.target.value))}>
             <option value="">Choose your country…</option>
             {list.map((c) => (
               <option key={c.code} value={c.code}>
