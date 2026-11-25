@@ -95,19 +95,11 @@ function MatchVideo() {
   const v = GENESIS_VIDEO;
   const [playing, setPlaying] = useState(false);
   const [seen, setSeen] = useState(() => watched().has(v.id));
-  if (!v.src) {
-    if (!import.meta.env.DEV) return null;
-    return (
-      <div className="ob-match-video empty" style={{ aspectRatio: v.aspect }}>
-        <span>Video slot · set GENESIS_VIDEO.src in lib/episodes.js</span>
-      </div>
-    );
-  }
+  if (!v.src) return null;
   if (playing) {
     return (
       <video
         className="ob-match-video"
-        style={{ aspectRatio: v.aspect }}
         src={v.src}
         poster={v.poster || undefined}
         controls
@@ -119,17 +111,18 @@ function MatchVideo() {
       />
     );
   }
+  // Same thumbnail as the series row (Series.jsx).
   return (
-    <button type="button" className="ob-match-video cover" style={{ aspectRatio: v.aspect }} onClick={() => setPlaying(true)} aria-label={`Play: ${v.title}, ${mmss(v.secs)}`}>
-      {v.poster ? <img src={v.poster} alt="" loading="lazy" /> : null}
-      <span className="play" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path d="M8 5.5v13l11-6.5z" fill="#1C1030" />
-        </svg>
-      </span>
-      <span className="cap">
-        <b>{seen ? "Watch again" : "Watch: how early + invites win"}</b>
-        <small className="num">{mmss(v.secs)}</small>
+    <button type="button" className="ob-ep ob-match-cover" onClick={() => setPlaying(true)} aria-label={`Play: ${v.title}, ${mmss(v.secs)}${seen ? ", watched" : ""}`}>
+      <span className="thumb">
+        {v.poster ? <img src={v.poster} alt="" loading="lazy" /> : null}
+        <span className="play" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <path d="M8 5.5v13l11-6.5z" fill="#1C1030" />
+          </svg>
+        </span>
+        <span className="len num">{mmss(v.secs)}</span>
+        {seen ? <span className="seen">Watched</span> : null}
       </span>
     </button>
   );
