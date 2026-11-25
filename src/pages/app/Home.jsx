@@ -109,7 +109,7 @@ export default function Home() {
 
       <div className="ob-stats">
         <Stat to="/drill/history" label="Drills" value={member?.sessionCount || 0} />
-        <Stat to="/network" label="Invites" value={m.activeInvites} unit="active" />
+        <Stat to="/drill" label="Invites" value={m.activeInvites} unit="active" />
         <Stat to="/games" label="Game XP" value={games.total} />
       </div>
 

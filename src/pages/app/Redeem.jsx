@@ -118,7 +118,7 @@ export default function Redeem() {
           <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Your ALKE rewards" sub="Drills and invite matches so far" />
         </li>
         <li>
-          <Row to="/network" icon={<Ico.Users />} title="Invite friends" sub="Earn the invite match" />
+          <Row to="/home" icon={<Ico.Users />} title="Invite friends" sub="Earn the invite match" />
         </li>
       </ul>
 

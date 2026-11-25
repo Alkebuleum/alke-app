@@ -65,7 +65,7 @@ export default function Profile() {
 
       <div className="ob-stats">
         <Stat label="Drills" value={sessions} to="/drill/history" />
-        <Stat label="Invites" value={m.activeInvites} unit="active" to="/network" />
+        <Stat label="Invites" value={m.activeInvites} unit="active" to="/drill" />
         <Stat label="Game XP" value={g.total} to="/games" />
       </div>
 
@@ -86,7 +86,7 @@ export default function Profile() {
             <Row to="/drill/allocation" icon={<Ico.Wallet />} title="Your ALKE" sub="Provisional, to date" end={<span className="num">{fmtAlke(m.rewardsAlke, 4)} ALKE</span>} />
           </li>
           <li>
-            <Row to="/network" icon={<Ico.Users />} tone="gold" title={rigName(m.level)} sub={`×${m.rig.toFixed(2)} daily ALKE share · ${m.activeInvites}/${FOUNDER_INVITES} to Founder`} />
+            <Row to="/drill" icon={<Ico.Users />} tone="gold" title={rigName(m.level)} sub={`×${m.rig.toFixed(2)} daily ALKE share · ${m.activeInvites}/${FOUNDER_INVITES} to Founder`} />
           </li>
           <li>
             <Row to="/drill/history" icon={<Ico.History />} title="History" end={<span className="num">{sessions} drills</span>} />

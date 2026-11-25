@@ -53,7 +53,7 @@ const TABS = [
   ["home", "/home", "Home"],
   ["games", "/games", "Games"],
   ["drill", "/drill", "Drill"],
-  ["network", "/network", "Network"],
+  ["ambassador", "/ambassador", "Network"],
   ["profile", "/profile", "Profile"],
 ];
 
@@ -306,7 +306,13 @@ const TabIcons = {
     </svg>
   ),
   games: icon(<path d="M6.7 5.5h10.6a3.9 3.9 0 0 1 3.9 3.5l.7 6.4a2.9 2.9 0 0 1-5 2.3l-1.6-1.8a2 2 0 0 0-1.5-.7h-3.6a2 2 0 0 0-1.5.7l-1.6 1.8a2.9 2.9 0 0 1-5-2.3l.7-6.4a3.9 3.9 0 0 1 3.9-3.5zM8 9.2v3.6M6.2 11h3.6M15.5 10.5v.01M17.5 12.5v.01" />, 22),
-  network: () => <Ico.Users size={22} />,
+  ambassador: icon(
+    <>
+      <circle cx="12" cy="9" r="5.5" />
+      <path d="m8.6 13.4-1.6 7.1 5-2.6 5 2.6-1.6-7.1M12 6.6l.8 1.6 1.7.2-1.2 1.2.3 1.7-1.6-.8-1.6.8.3-1.7-1.2-1.2 1.7-.2z" />
+    </>,
+    22,
+  ),
   profile: icon(
     <>
       <circle cx="12" cy="8.5" r="4" />

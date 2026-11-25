@@ -39,7 +39,10 @@ const RushIntro = lazy(() => import("./screens/RushIntro"));
 const RushPlay = lazy(() => import("./screens/RushPlay"));
 const RushHazard = lazy(() => import("./screens/RushHazard"));
 const RushBanked = lazy(() => import("./screens/RushBanked"));
-const Network = lazy(() => import("./pages/app/Network"));
+const Ambassador = lazy(() => import("./pages/app/Ambassador"));
+const AmbassadorHow = lazy(() => import("./pages/app/AmbassadorHow"));
+const AmbassadorApply = lazy(() => import("./pages/app/AmbassadorApply"));
+const AmbassadorReviews = lazy(() => import("./pages/app/AmbassadorReviews"));
 const Profile = lazy(() => import("./pages/app/Profile"));
 const Notifications = lazy(() => import("./pages/app/Notifications"));
 const Settings = lazy(() => import("./pages/app/Settings"));
@@ -206,7 +209,12 @@ const ROUTES = [
   ["/games/rush/lost", member(<RushHazard />)],
   ["/games/rush/banked", member(<Boards><RushBanked /></Boards>)],
   ["/games/rush/leaderboards", member(<Boards><Leaderboard game="rush" /></Boards>)],
-  ["/network", member(<Network />)],
+  ["/ambassador", member(<Ambassador />)],
+  ["/ambassador/how", member(<AmbassadorHow />)],
+  ["/ambassador/apply", member(<AmbassadorApply />)],
+  ["/team/ambassadors", member(<AmbassadorReviews />)],
+  // The Network tab now holds the Ambassador Program.
+  ["/network", <Navigate to="/ambassador" replace />],
   ["/chat", member(<Chat />)],
   ["/how-to-redeem", member(<Redeem />)],
   ["/release-policy", member(<ReleasePolicy />)],

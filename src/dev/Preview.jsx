@@ -18,7 +18,10 @@ import Drill from "../pages/app/Drill";
 import Allocation from "../pages/app/Allocation";
 import History from "../pages/app/History";
 import Games from "../pages/app/Games";
-import Network from "../pages/app/Network";
+import Ambassador from "../pages/app/Ambassador";
+import AmbassadorHow from "../pages/app/AmbassadorHow";
+import AmbassadorApply from "../pages/app/AmbassadorApply";
+import { MOCK, MOCK_WORKSPACE } from "../lib/ambassador";
 import Profile from "../pages/app/Profile";
 import Notifications from "../pages/app/Notifications";
 import Settings from "../pages/app/Settings";
@@ -84,7 +87,13 @@ const SCREENS = {
     );
   },
   games: Games,
-  network: Network,
+  // ?state= intro | interest | eligible | submitted | under_review | info_required | waitlisted | rejected | withdrawn | approved | active | suspended
+  ambassador: () => {
+    const st = new URLSearchParams(window.location.search).get("state") || "intro";
+    return <Ambassador preview={MOCK[st] || MOCK.intro} workspace={st === "active" ? MOCK_WORKSPACE : undefined} />;
+  },
+  "ambassador-how": () => <AmbassadorHow preview={MOCK.intro} />,
+  "ambassador-apply": () => <AmbassadorApply preview={MOCK.eligible} />,
   profile: Profile,
   notifications: () => {
     const ts = (h) => ({ toDate: () => new Date(T0 - h * 3600e3) });
@@ -92,9 +101,9 @@ const SCREENS = {
       <Notifications
         demo={[
           { id: "1", kind: "session", title: "Your next drill is ready", body: "Tap to start it and keep your 5-day streak going.", at: ts(0.2), read: false, link: "/drill" },
-          { id: "2", kind: "invite", title: "Kojo joined with your link", body: "Kojo joined ALKE. Their invite becomes active after 3 drills.", at: ts(3), read: false, link: "/network" },
+          { id: "2", kind: "invite", title: "Kojo joined with your link", body: "Kojo joined ALKE. Their invite becomes active after 3 drills.", at: ts(3), read: false, link: "/drill" },
           { id: "3", kind: "games", title: "Today's challenges are ready", body: "A new Hex board and Rush challenge are waiting.", at: ts(5), read: false, link: "/games" },
-          { id: "4", kind: "invite", title: "Esi is an active invite", body: "Esi finished 3 drills. You now earn the invite match on their drills.", at: ts(27), read: true, link: "/network" },
+          { id: "4", kind: "invite", title: "Esi is an active invite", body: "Esi finished 3 drills. You now earn the invite match on their drills.", at: ts(27), read: true, link: "/drill" },
           { id: "5", kind: "policy", title: "Release policy updated", body: "Draft 3: ALKE rewards and redeeming at mainnet.", at: ts(50), read: true, link: "/release-policy" },
         ]}
       />

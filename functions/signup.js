@@ -42,7 +42,7 @@ function needEmail(raw) {
 
 /* ── Email ───────────────────────────────────────────────────────────── */
 
-async function sendBrevo(apiKey, { to, subject, html }) {
+export async function sendBrevo(apiKey, { to, subject, html }) {
   if (!apiKey) throw new Error("BREVO_API_KEY is not set");
   const res = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",

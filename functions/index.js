@@ -18,6 +18,7 @@ import { memberCreated, memberUpdated, recordBoost, recordSession, settleDay, up
 import { ACTIVE_AFTER, dayKey } from "./genesis.js";
 import { syncGames } from "./games.js";
 import { notify, sendGameAlerts, sendSessionReminders } from "./notify.js";
+import { adminAction as ambassadorAdmin, memberAction as ambassadorAction } from "./ambassador.js";
 import { decideReview, handleStripeEvent, isAdmin, listReviews, startVerification, submitManual } from "./verification.js";
 import { deleteMembership } from "./account.js";
 import { createAccount, reserveAlkerId, sendCode, verifyCode } from "./signup.js";
@@ -51,7 +52,7 @@ export const alkeOnMemberCreated = onDocumentCreated("alke_members/{id}", async 
       kind: "invite",
       title: "Someone joined with your invite",
       body: `${m.username || "A new member"} joined ALKE. Their invite becomes active after 3 drills.`,
-      link: "/network",
+      link: "/drill",
     });
   }
 });
@@ -66,7 +67,7 @@ export const alkeOnMemberUpdated = onDocumentUpdated("alke_members/{id}", async 
       kind: "invite",
       title: "An invite is now active",
       body: `${after.username || "Your invite"} finished 3 drills. You now earn the invite match on their drills.`,
-      link: "/network",
+      link: "/drill",
     });
   }
 });
@@ -144,6 +145,12 @@ async function adminId(req) {
   if (!(await isAdmin(db, id))) throw new HttpsError("permission-denied", "Only the ALKE team can do this.");
   return id;
 }
+
+/* Ambassador Program: one callable for members, one for the team. */
+export const alkeAmbassador = onCall({ secrets: [BREVO_KEY] }, async (req) =>
+  ambassadorAction(db, memberId(req), req.data || {}, { email: req.auth?.token?.email || "", brevoKey: BREVO_KEY.value() }),
+);
+export const alkeAmbassadorAdmin = onCall(async (req) => ambassadorAdmin(db, await adminId(req), req.data || {}));
 
 export const alkeIsAdmin = onCall(async (req) => ({ admin: await isAdmin(db, memberId(req)) }));
 export const alkeReviewList = onCall(async (req) => {

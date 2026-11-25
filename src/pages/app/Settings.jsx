@@ -149,6 +149,9 @@ export default function Settings() {
             <li>
               <Row to="/team/reviews" icon={<Ico.Shield />} title="ID reviews" sub="Manual personhood checks waiting" />
             </li>
+            <li>
+              <Row to="/team/ambassadors" icon={<Ico.Star />} title="Ambassadors" sub="Applications and ambassador status" />
+            </li>
           </ul>
         </Section>
       ) : null}

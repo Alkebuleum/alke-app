@@ -106,7 +106,7 @@ export default function Chat({ demo }) {
   return (
     <div className="ob">
       <header className="ob-appbar sub" style={{ gridTemplateColumns: "44px minmax(0,1fr) 44px" }}>
-        <Link to="/network" className="ob-icon-btn" aria-label="Back">
+        <Link to="/home" className="ob-icon-btn" aria-label="Back">
           <Ico.Back />
         </Link>
         <div style={{ textAlign: "center", minWidth: 0 }}>

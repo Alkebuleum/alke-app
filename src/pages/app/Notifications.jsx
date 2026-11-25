@@ -11,6 +11,7 @@ const KINDS = {
   verification: [Ico.Shield, "green"],
   policy: [Ico.Doc, "plain"],
   games: [Ico.Star, "cyan"],
+  ambassador: [Ico.Star, "gold"],
 };
 
 function when(d) {

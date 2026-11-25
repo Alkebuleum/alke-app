@@ -16,7 +16,7 @@ export function FounderCard({ nuruId, phase, active = 0, bracket = null, members
   const link = more ? (
     <>
       {" "}
-      <Link to="/network">How invites work</Link>
+      <Link to="/how-to-redeem">How it works</Link>
     </>
   ) : null;
   return (
