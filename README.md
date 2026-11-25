@@ -134,3 +134,16 @@ Verification emails appear in the Auth emulator
 
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages on every
 push to `main`; `public/CNAME` sets the domain to `app.alke.network`.
+
+## Later (ideas, not planned)
+
+Notes for the future. None of these is scheduled; don't build them yet.
+
+- **Games deepen the drill.** Games are just games for now (XP and
+  leaderboards). Later, game XP may help members drill deeper, along with
+  other contributions such as lessons and discussions. The app already says so
+  on the Games, Hex and Rush screens.
+- **Ideas from the community, on Home.** A place on the Home page where
+  members suggest how the ALKÉ Network can succeed, so the team can gather
+  ideas from the public and use the best ones to improve the network. Not now,
+  and not any time soon.

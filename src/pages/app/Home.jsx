@@ -17,6 +17,9 @@ function greeting(d = new Date()) {
   return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
 }
 
+/* Later, not soon (README "Later"): a spot on Home where members suggest
+   how the ALKÉ Network can succeed, so the team can gather ideas from the
+   public. Not planned yet; don't add it until it is. */
 export default function Home() {
   const { nuruId, member, person, displayName, initials } = useAuth();
   const { sessions } = useMemberData({ sessions: true });
