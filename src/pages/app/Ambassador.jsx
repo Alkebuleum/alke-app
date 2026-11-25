@@ -97,7 +97,7 @@ function Intro({ data, error, busy, act }) {
           compensation for your impact.
         </p>
         <div className="earn">
-          <b className="num">Up to {money(c.monthlyMax, c.currency)}</b> a month
+          <b className="num">Up to {money(c.monthlyMax)}</b> a month
           <span>Performance-based, from the Kedo Treasury, paid through the Nuru app. Not a salary, and not guaranteed.</span>
         </div>
         <div className="acts">

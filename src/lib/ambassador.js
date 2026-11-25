@@ -51,7 +51,11 @@ export function estimate(c, { direct = 0, indirect = 0, tasksDone = true } = {})
   const raw = d + i + mgmt;
   return { direct: d, indirect: i, mgmt, total: Math.min(raw, c.monthlyMax), capped: raw > c.monthlyMax };
 }
-export const money = (v, cur = "USDC") => `${(Number(v) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${cur}`;
+/** "$250", "$0.40", "$105.50": pay amounts in dollars (whole amounts without cents). */
+export const money = (v) => {
+  const n = Number(v) || 0;
+  return `$${n.toLocaleString("en-US", { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 })}`;
+};
 
 /* ── Dev preview data ─────────────────────────────────────────────────── */
 

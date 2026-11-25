@@ -93,8 +93,8 @@ function Overview({ data, c, est }) {
       <section className="ob-hero" aria-label="This month's estimated earnings">
         <span className="lbl">This month's estimated earnings</span>
         <div className="big num">
-          {money(est.total, "")}
-          <small className="ob-small"> / {money(c.monthlyMax, c.currency)}</small>
+          {money(est.total)}
+          <small className="ob-small"> / {money(c.monthlyMax)}</small>
         </div>
         <Progress value={est.total} max={c.monthlyMax} label={`${Math.round((est.total / c.monthlyMax) * 100)}% of the monthly maximum`} />
         <p className="ob-small">Estimate only. The team approves real pay each month; approved and paid amounts are in Nuru.</p>
@@ -236,21 +236,21 @@ function Earnings({ data, c, est }) {
       <Section title="This month (estimate)">
         <ul className="ob-list">
           <li>
-            <Row tone="plain" title="Direct referrals" sub={`${data.metrics.directQualified} × ${money(c.direct, c.currency)}`} end={<b className="num">{money(est.direct, "")}</b>} />
+            <Row tone="plain" title="Direct referrals" sub={`${data.metrics.directQualified} × ${money(c.direct)}`} end={<b className="num">{money(est.direct)}</b>} />
           </li>
           <li>
             <Row
               tone="plain"
               title="Indirect referrals"
-              sub={c.indirectEnabled ? `${data.metrics.indirectQualified} × ${money(c.indirect, c.currency)}` : "Not active yet: pending compliance approval"}
-              end={<b className="num">{money(est.indirect, "")}</b>}
+              sub={c.indirectEnabled ? `${data.metrics.indirectQualified} × ${money(c.indirect)}` : "Not active yet: pending compliance approval"}
+              end={<b className="num">{money(est.indirect)}</b>}
             />
           </li>
           <li>
-            <Row tone="plain" title="Management fee" sub={`${c.mgmtCombined}+ qualifying referrals, ${c.mgmtDirect}+ direct, assignments done`} end={<b className="num">{money(est.mgmt, "")}</b>} />
+            <Row tone="plain" title="Management fee" sub={`${c.mgmtCombined}+ qualifying referrals, ${c.mgmtDirect}+ direct, assignments done`} end={<b className="num">{money(est.mgmt)}</b>} />
           </li>
           <li>
-            <Row tone="plain" title="Remaining this month" sub={`Monthly maximum ${money(c.monthlyMax, c.currency)}`} end={<b className="num">{money(c.monthlyMax - est.total, "")}</b>} />
+            <Row tone="plain" title="Remaining this month" sub={`Monthly maximum ${money(c.monthlyMax)}`} end={<b className="num">{money(c.monthlyMax - est.total)}</b>} />
           </li>
         </ul>
       </Section>
@@ -268,7 +268,7 @@ function Earnings({ data, c, est }) {
           </Field>
         </div>
         <p className="ob-small">
-          Estimated: <b>{money(e.total, c.currency)}</b>
+          Estimated: <b>{money(e.total)}</b>
           {e.capped ? " (monthly maximum reached)" : ""}. A projection, not a promise.
         </p>
       </Section>
@@ -276,7 +276,7 @@ function Earnings({ data, c, est }) {
         <ul className="ob-list">
           {data.ledger.map((l, i) => (
             <li key={i}>
-              <Row tone="plain" title={l.type} sub={`${l.date} · ${l.ref}`} end={<span className="ob-pill">{`${money(l.amount, "")} · ${l.status}`}</span>} />
+              <Row tone="plain" title={l.type} sub={`${l.date} · ${l.ref}`} end={<span className="ob-pill">{`${money(l.amount)} · ${l.status}`}</span>} />
             </li>
           ))}
         </ul>

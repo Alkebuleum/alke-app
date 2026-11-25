@@ -72,7 +72,7 @@ function Body({ config }) {
                   <span>People you invite</span>
                 </span>
                 <span className="end">
-                  <b className="num">{money(c.direct, c.currency)}</b>
+                  <b className="num">{money(c.direct)}</b>
                 </span>
               </div>
             </li>
@@ -83,7 +83,7 @@ function Body({ config }) {
                   <span>{c.indirectEnabled ? "People your referrals invite" : "Not active yet: pending compliance approval"}</span>
                 </span>
                 <span className="end">
-                  <b className="num">{money(c.indirect, c.currency)}</b>
+                  <b className="num">{money(c.indirect)}</b>
                 </span>
               </div>
             </li>
@@ -96,7 +96,7 @@ function Body({ config }) {
                   </span>
                 </span>
                 <span className="end">
-                  <b className="num">{money(c.managementFee, c.currency)}</b>
+                  <b className="num">{money(c.managementFee)}</b>
                 </span>
               </div>
             </li>
@@ -107,12 +107,12 @@ function Body({ config }) {
                   <span>Third generation and beyond: nothing</span>
                 </span>
                 <span className="end">
-                  <b className="num">{money(c.monthlyMax, c.currency)}</b>
+                  <b className="num">{money(c.monthlyMax)}</b>
                 </span>
               </div>
             </li>
           </ul>
-          <div className="ob-formula">Monthly pay = direct + indirect + management fee, up to {money(c.monthlyMax, c.currency)}</div>
+          <div className="ob-formula">Monthly pay = direct + indirect + management fee, up to {money(c.monthlyMax)}</div>
           <table className="ob-amb-table">
             <caption className="ob-small">Examples (qualifying referrals in a month)</caption>
             <thead>
@@ -131,7 +131,7 @@ function Body({ config }) {
                     <td className="num">{d}</td>
                     <td className="num">{i}</td>
                     <td className="num">{x.mgmt}</td>
-                    <td className="num">{money(x.total, "")}</td>
+                    <td className="num">{money(x.total)}</td>
                   </tr>
                 );
               })}
