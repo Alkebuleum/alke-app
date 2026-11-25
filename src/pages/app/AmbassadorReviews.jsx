@@ -5,7 +5,7 @@ import { AppPage, SubBar } from "../../ui/shell";
 
 /* The ALKE team's Ambassador applications (alke_admins only: the server
    refuses everyone else). Each decision notifies the applicant and is
-   logged (alke_ambassador_log). Pay is never handled here. */
+   logged (alke_config/ambassadors/log). Pay is never handled here. */
 
 const ACTIONS = [
   ["under_review", "Under review"],

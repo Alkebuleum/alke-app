@@ -57,7 +57,7 @@ export const realtimeReady = (key) => /^(sk|rk)_(live|test)_/.test(String(key ||
 export async function verifyAllowed(db, id) {
   const cfg = await db.doc("alke_config/verification").get();
   if (cfg.exists && cfg.get("open") === true) return true;
-  const amb = await db.doc(`alke_ambassadors/${id}`).get();
+  const amb = await db.doc(`alke_config/ambassadors/members/${id}`).get();
   return ["approved", "active", "suspended"].includes(amb.get("status"));
 }
 const recordRef = (db, id) => db.doc(`alke_verifications/${id}`);

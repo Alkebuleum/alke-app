@@ -2,7 +2,9 @@
  *
  *   alke_config/ambassador        program settings, edited by the team (merged over DEFAULTS)
  *   alke_config/ambassadorRefs    { next } reference counter
- *   alke_ambassadors/{nuruId}     { country, interest, status, ref, application, stats,
+ * Stored under alke_config/ (server-only: Nuru's rules fall back to PUBLIC
+ * read for any collection not on their deny list, and alke_config is on it):
+ *   alke_config/ambassadors/members/{nuruId}  { country, interest, status, ref, application, stats,
  *                                   timeline: [{ status, at, note }], info, decidedAt, ... }
  *
  * Members never read these collections directly: everything goes through
@@ -57,7 +59,8 @@ const MESSAGES = {
   suspended: ["Ambassador status changed", "Your Ambassador status has been suspended. Open the Ambassador tab for details."],
 };
 
-const ref = (db, id) => db.doc(`alke_ambassadors/${id}`);
+export const AMBASSADORS = "alke_config/ambassadors/members";
+const ref = (db, id) => db.doc(`${AMBASSADORS}/${id}`);
 const ms = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : Number(t) || 0);
 const DAY = 24 * 60 * 60 * 1000;
 const str = (v, max) => String(v ?? "").trim().slice(0, max);
@@ -276,7 +279,7 @@ ${refNo ? `<tr><td style="padding-top:18px;font-size:14px;color:#A9A6B6">Referen
 export async function adminAction(db, adminId, data = {}) {
   const action = data.action || "list";
   if (action === "list") {
-    const snap = await db.collection("alke_ambassadors").where("status", "in", ["submitted", "under_review", "info_required", "waitlisted", "approved", "active", "suspended"]).get();
+    const snap = await db.collection(AMBASSADORS).where("status", "in", ["submitted", "under_review", "info_required", "waitlisted", "approved", "active", "suspended"]).get();
     const out = snap.docs.map((d) => ({ id: d.id, ...view(d.data()), stats: d.get("stats") || null }));
     out.sort((a, b) => (a.submittedAt || 0) - (b.submittedAt || 0));
     return { applications: out };
@@ -298,7 +301,7 @@ export async function adminAction(db, adminId, data = {}) {
       await ref(db, id).set({ info: { request: note, askedAt: Timestamp.now(), by: adminId } }, { merge: true });
     }
     await move(db, id, status, note);
-    await db.collection("alke_ambassador_log").add({ id, status, note, by: adminId, at: FieldValue.serverTimestamp() });
+    await db.collection("alke_config/ambassadors/log").add({ id, status, note, by: adminId, at: FieldValue.serverTimestamp() });
     return { ok: true };
   }
   throw new HttpsError("invalid-argument", "Unknown action.");

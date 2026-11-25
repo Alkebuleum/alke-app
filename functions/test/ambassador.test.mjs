@@ -58,7 +58,7 @@ test("eligible member applies, gets a reference, can't apply twice, can withdraw
   assert.match(res.record.ref, /^AMB-NG-\d{5}$/);
   assert.equal(res.record.application.email, "ada@example.com");
   assert.equal(res.canApply, false);
-  const saved = (await db.doc("alke_ambassadors/AM1").get()).data();
+  const saved = (await db.doc("alke_config/ambassadors/members/AM1").get()).data();
   assert.equal(saved.stats.referrals.qualified, 25);
   const note = (await db.collection("alke_members/AM1/notifications").get()).docs.map((d) => d.data());
   assert.ok(note.some((n) => n.kind === "ambassador" && n.link === "/ambassador"));
@@ -90,7 +90,7 @@ test("team: request info, member replies, then approve; rejected waits to reappl
   await adminAction(db, "ADMIN", { action: "decide", id: "AM1", status: "rejected" });
   res = await memberAction(db, "AM1", { action: "get" });
   assert.equal(res.canApply, false, "rejected: waits reapplyDays");
-  await db.doc("alke_ambassadors/AM1").update({ decidedAt: ts(Date.now() - 61 * DAY) });
+  await db.doc("alke_config/ambassadors/members/AM1").update({ decidedAt: ts(Date.now() - 61 * DAY) });
   res = await memberAction(db, "AM1", { action: "get" });
   assert.equal(res.canApply, true);
 });
@@ -103,7 +103,7 @@ test("ID checks: only approved ambassadors (or everyone when opened); no real-ti
   assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { check: true }), { open: false });
   await assert.rejects(startVerification(db, "PLACEHOLDER", "AM2", { country: "NG" }), /aren't open/);
 
-  await db.doc("alke_ambassadors/AM2").set({ status: "approved" });
+  await db.doc("alke_config/ambassadors/members/AM2").set({ status: "approved" });
   assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { check: true }), { open: true });
   // Nigeria is a Stripe country, but with no real key the details are collected for review.
   assert.deepEqual(await startVerification(db, "PLACEHOLDER", "AM2", { country: "NG" }), { method: "manual" });
@@ -111,11 +111,11 @@ test("ID checks: only approved ambassadors (or everyone when opened); no real-ti
 });
 
 test("activation needs a verified identity; requireVerified counts only verified referrals", async () => {
-  await db.doc("alke_ambassadors/AM1").set({ status: "approved" }, { merge: true });
+  await db.doc("alke_config/ambassadors/members/AM1").set({ status: "approved" }, { merge: true });
   await assert.rejects(adminAction(db, "ADMIN", { action: "decide", id: "AM1", status: "active" }), /verified/);
   await db.doc("alke_members/AM1/verification/status").set({ status: "verified" });
   await adminAction(db, "ADMIN", { action: "decide", id: "AM1", status: "active" });
-  assert.equal((await db.doc("alke_ambassadors/AM1").get()).get("status"), "active");
+  assert.equal((await db.doc("alke_config/ambassadors/members/AM1").get()).get("status"), "active");
 
   const cfg = await config(db);
   cfg.qualifying.requireVerified = true;
